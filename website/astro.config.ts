@@ -60,8 +60,8 @@ export default defineConfig({
 				},
 				{
 					slug: "docs/polling",
-					label: "Subscription polling & task progress",
-					translations: { "zh-CN": "订阅轮询与任务进度" },
+					label: "Subscription polling",
+					translations: { "zh-CN": "订阅轮询" },
 				},
 				{
 					slug: "docs/cache",

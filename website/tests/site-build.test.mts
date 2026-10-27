@@ -244,7 +244,7 @@ test("feature guides are discoverable in the sidebar and render the maintained A
 		const prefix = locale === "en" ? "" : "zh-CN/";
 		const queries = await readFile(path.join(build, prefix, "docs/queries/index.html"), "utf8");
 		for (const [slug, declarations] of [
-			["polling", ["RefetchInterval", "task:42", "Updates()", "SetEnabled", "Close"]],
+			["polling", ["RefetchInterval", "StaleTime", "Updates()", "SetEnabled", "Close"]],
 			[
 				"query-options",
 				["QueryOptions", "QueryDefinition", "Disable", "Prefetch", "ErrTooManyOptions"],

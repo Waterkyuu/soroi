@@ -208,7 +208,7 @@ Read the [documentation website](https://waterkyuu.github.io/soroi/) in English 
 | [Business workload benchmarks](docs/business-benchmarks.en-US.md) | Reproducible failure and batch scenarios, physical source work, latency populations, success rates, and resource measurements |
 | [Queries and conditions](docs/queries.en-US.md) | `Query`, snapshots, updates, enablement, refresh, `Fetch`, and HTTP loaders |
 | [Query options](docs/query-options.en-US.md) | Shared loading options, reusable typed query definitions, freshness, retries, and timeouts |
-| [Subscription polling](docs/polling.en-US.md) | Runnable task-progress view, fixed refresh intervals, shared scheduling, pause/resume, and cleanup |
+| [Subscription polling](docs/polling.en-US.md) | Fixed refresh intervals, shared scheduling, pause/resume, and subscription lifecycle |
 | [Query filters](docs/query-filters.en-US.md) | Reusable key and predicate selection for invalidation, awaited refresh, cancellation, and removal |
 | [Query tags](docs/query-tags.en-US.md) | Declare related query groups, select by label, and manage registration and retention |
 | [Automatic batch loading](docs/batching.en-US.md) | Concurrent-key batching, LoadMany for known keys, query API integration, per-key results, and cancellation |

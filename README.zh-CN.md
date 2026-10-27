@@ -179,7 +179,7 @@ go test -run '^$' -bench '^BenchmarkCacheBenefit$' -benchmem -count=3 -cpu=1
 | [业务场景基准](docs/business-benchmarks.zh-CN.md) | 可复现的故障与批量场景、实际回源、延迟总体、成功率和资源测量 |
 | [查询与条件请求](docs/queries.zh-CN.md) | `Query`、状态、更新通知、条件开关、刷新、`Fetch` 和 HTTP 加载函数 |
 | [查询配置](docs/query-options.zh-CN.md) | 共享加载配置、可复用的类型化查询定义、新鲜期、重试和超时 |
-| [订阅轮询](docs/polling.zh-CN.md) | 可运行的任务进度界面、固定刷新间隔、共享调度、暂停恢复与资源清理 |
+| [订阅轮询](docs/polling.zh-CN.md) | 固定刷新间隔、共享调度、暂停恢复与订阅生命周期 |
 | [统一查询筛选](docs/query-filters.zh-CN.md) | 为失效、等待刷新、取消和删除复用精确键与条件筛选 |
 | [查询标签](docs/query-tags.zh-CN.md) | 声明关联查询分组，按标签筛选，管理登记和保留规则 |
 | [自动批量加载](docs/batching.zh-CN.md) | 并发 key 组批、通过 LoadMany 加载已知 key、查询 API 集成、逐 key 结果和取消 |
