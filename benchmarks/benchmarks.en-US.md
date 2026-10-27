@@ -4,6 +4,11 @@ Raw measurement files retain the historical `cacheq` package name; the project i
 
 [简体中文](benchmarks.zh-CN.md)
 
+For hot-key expiration, Redis outages, downstream deadlines and batch reads, see
+the [business workload guide](../docs/business-benchmarks.en-US.md). It reports
+source work, P95/P99 latency, success rates and resources alongside
+[raw measurements](business-darwin-arm64.jsonl), rather than extrapolating from lookup throughput.
+
 The main comparison answers a practical question: how much work does soroi save
 when an application reads the same data repeatedly?
 
