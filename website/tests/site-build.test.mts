@@ -182,6 +182,7 @@ test("Go search results resolve to published sections and public source declarat
 	for (const locale of ["en", "zh-CN"]) {
 		const prefix = locale === "en" ? "" : "zh-CN/";
 		for (const [slug, declaration] of [
+			["queries", "QueriesSnapshot"],
 			["query-filters", "QueryFilter"],
 			["query-options", "RefetchInterval"],
 			["query-tags", "Definition.Tags"],
@@ -243,6 +244,7 @@ test("feature guides are discoverable in the sidebar and render the maintained A
 		const prefix = locale === "en" ? "" : "zh-CN/";
 		const queries = await readFile(path.join(build, prefix, "docs/queries/index.html"), "utf8");
 		for (const [slug, declarations] of [
+			["queries", ["Queries", "QueriesSnapshot", "QuerySpec", "Results", "HasData", "Fetching"]],
 			[
 				"query-options",
 				[

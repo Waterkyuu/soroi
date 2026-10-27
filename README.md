@@ -46,6 +46,8 @@ For simple local values that only need expiration, a TTL cache may be sufficient
   same-key requests across consumers, with context cancellation.
 - **Observable query state.** Read snapshots or subscribe to updates for
   loading, background refreshes, and errors while retaining available data after a failed refresh.
+- **Multiple query subscriptions.** Combine independent typed definitions with `Queries`, preserve
+  ordered partial results, and observe aggregate data availability, loading, and errors through one stream.
 - **Subscription polling.** Refresh enabled queries at a fixed `RefetchInterval`, share same-key
   scheduling, and stop scheduling when the last enabled polling subscriber leaves.
 - **Reusable definitions and loading policies.** Share typed query
@@ -206,7 +208,7 @@ Read the [documentation website](https://waterkyuu.github.io/soroi/) in English 
 | --- | --- |
 | [HTTP, gRPC, and telemetry](docs/service-integrations.en-US.md) | Runnable HTTP-to-gRPC queries, injected OpenTelemetry tracing, Prometheus metrics, and HTTP error mapping |
 | [Business workload benchmarks](docs/business-benchmarks.en-US.md) | Reproducible failure and batch scenarios, physical source work, latency populations, success rates, and resource measurements |
-| [Queries and conditions](docs/queries.en-US.md) | `Query`, snapshots, updates, enablement, refresh, `Fetch`, and HTTP loaders |
+| [Queries and conditions](docs/queries.en-US.md) | `Query`, `Queries`, snapshots, combined updates, enablement, refresh, `Fetch`, and HTTP loaders |
 | [Query options](docs/query-options.en-US.md) | Shared loading options, reusable typed query definitions, freshness, subscription polling, retries, and timeouts |
 | [Query filters](docs/query-filters.en-US.md) | Reusable key and predicate selection for invalidation, awaited refresh, cancellation, and removal |
 | [Query tags](docs/query-tags.en-US.md) | Declare related query groups, select by label, and manage registration and retention |

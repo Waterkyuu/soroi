@@ -37,6 +37,7 @@ soroi 在单个进程中维护查询状态和本地结果。需要跨进程复�
 
 - **类型安全的共享查询**：跨消费者复用缓存结果、合并相同 key 的并发请求，并支持 context 取消。
 - **可订阅的查询状态**：读取快照或订阅加载、后台刷新和错误状态，刷新失败后保留仍然可用的数据。
+- **多查询聚合订阅**：通过 `Queries` 组合独立的类型化定义，按输入顺序保留部分结果，通过一个通道观察整体数据可用性、加载和错误状态。
 - **订阅轮询**：通过固定 `RefetchInterval` 刷新已启用的查询，同 key 共享调度，最后一个已启用的轮询订阅离开后停止调度。
 - **可复用的查询定义与加载策略**：共享类型化查询定义，按消费者覆盖新鲜期、重试条件、退避和超时，通过 `Disable` 与 `SetEnabled` 控制自动加载。
 - **显式读取与预取**：通过 `Fetch` 等待新鲜结果，通过 `Prefetch` 预热缓存，或通过 `FetchWithExpiry` 保留绝对新鲜期截止时间。
@@ -177,7 +178,7 @@ go test -run '^$' -bench '^BenchmarkCacheBenefit$' -benchmem -count=3 -cpu=1
 | --- | --- |
 | [HTTP、gRPC 与遥测接入](docs/service-integrations.zh-CN.md) | 可运行的 HTTP 到 gRPC 查询、注入 OpenTelemetry、Prometheus 指标与 HTTP 错误映射 |
 | [业务场景基准](docs/business-benchmarks.zh-CN.md) | 可复现的故障与批量场景、实际回源、延迟总体、成功率和资源测量 |
-| [查询与条件请求](docs/queries.zh-CN.md) | `Query`、状态、更新通知、条件开关、刷新、`Fetch` 和 HTTP 加载函数 |
+| [查询与条件请求](docs/queries.zh-CN.md) | `Query`、`Queries`、状态、聚合更新、条件开关、刷新、`Fetch` 和 HTTP 加载函数 |
 | [查询配置](docs/query-options.zh-CN.md) | 共享加载配置、可复用的类型化查询定义、新鲜期、订阅轮询、重试和超时 |
 | [统一查询筛选](docs/query-filters.zh-CN.md) | 为失效、等待刷新、取消和删除复用精确键与条件筛选 |
 | [查询标签](docs/query-tags.zh-CN.md) | 声明关联查询分组，按标签筛选，管理登记和保留规则 |

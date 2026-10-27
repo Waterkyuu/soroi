@@ -2,7 +2,7 @@
 
 [English](queries.en-US.md) · [缓存与生命周期](cache.zh-CN.md) · [缓存失效](invalidation.zh-CN.md)
 
-一个 `Client` 可以管理不同类型的数据。`Query` 订阅缓存状态并在后台加载；`Fetch` 等待新鲜数据，不保留订阅。两者均从加载函数推断结果类型，并共享同键的数据及正在进行的请求。
+一个 `Client` 可以管理不同类型的数据。`Query` 订阅缓存状态并在后台加载；`Fetch` 等待新鲜数据，不保留订阅。两者均从加载函数推断结果类型，并共享同键的数据及正在进行的请求。`Queries` 将多个独立订阅汇入一个更新通道，例如 TUI 面板同时展示用户和应用设置。
 
 ## 快速开始：多种结果类型
 
@@ -83,7 +83,7 @@ Alice
 
 ## API 片段前提
 
-以下局部片段使用快速开始中的 `client`、`getUser`、`getUsers`，以及非 nil 的 `ctx`。包含 `return err` 的片段放在返回 `error` 的函数中。各片段独立使用，需补充片段所用的导入。
+以下局部片段使用快速开始中的 `client`、`getUser`、`getUsers`、`getSettings`，以及非 nil 的 `ctx`。包含 `return err` 的片段放在返回 `error` 的函数中。各片段独立使用，需补充片段所用的导入。
 
 ## `Query`：读取状态与后台加载
 
@@ -114,6 +114,63 @@ for state := range users.Updates() {
 ```
 
 通道提供初始状态和后续最新状态。后台请求开始、结束、缓存更新和失效都可能产生通知。读取慢时允许跳过中间状态，因此这不是必须逐条处理的事件日志。`Close()` 会关闭通道；实际应用由界面或事件循环在独立的退出路径中释放查询，不能等待 `range` 自己结束再执行 `defer`。
+
+## `Queries`：聚合多个独立查询的订阅
+
+### 从类型化定义创建集合
+
+`Queries(client, definitions...)` 返回 `*QueriesHandle`，不等待加载完成。`QuerySpec` 输入直接使用已有 `Definition[V]` 值，各项可以具有不同结果类型。每项保留独立的 `QueryOptions`、标签、共享缓存和静态结果类型绑定。加载、同 key 请求共享、重试与轮询均遵循 `Query` 的规则。
+
+将以下两个片段追加到快速开始的 `main` 末尾，置于 `_ = settingsState` 之后。`QueryDefinition` 从已有加载函数推断 `User` 与 `Settings` 类型，不执行 I/O；传入多份配置时返回错误。集合与前面创建的订阅共享数据及执行中的请求。
+
+```go
+userDefinition, err := soroi.QueryDefinition("user:42", getUser)
+if err != nil {
+	panic(err)
+}
+settingsDefinition, err := soroi.QueryDefinition("settings", getSettings)
+if err != nil {
+	panic(err)
+}
+group := soroi.Queries(client, userDefinition, settingsDefinition)
+defer group.Close()
+```
+
+### 读取聚合更新
+
+`group.Snapshot()` 读取当前 `QueriesSnapshot`；`group.Updates()` 接收初始及后续最新状态。`Results` 按输入顺序保存 `Snapshot[any]`。断言各项数据的动态类型前，应先检查 `HasData`。示例在首次加载全部完成后输出一次；TUI 可以在界面存续期间持续接收更新。
+
+```go
+for state := range group.Updates() {
+	if state.Err != nil {
+		panic(state.Err)
+	}
+	if state.HasData && !state.Fetching {
+		user := state.Results[0].Data.(User)
+		settings := state.Results[1].Data.(Settings)
+		fmt.Println(user.Name, settings.Theme)
+		break
+	}
+}
+```
+
+使用 `go run .` 运行扩展后的完整程序。预期输出：
+
+```text
+Alice
+Alice dark
+```
+
+| 字段 | 含义 |
+| --- | --- |
+| `Results` | 每个输入对应一项结果，保留失败项和重复 key；返回的切片归调用者所有 |
+| `HasData` | 所有项均有可用数据；空集合为 true |
+| `Fetching` | 至少一项正在首次加载、排队、重试或后台刷新 |
+| `Err` | 按输入顺序合并所有项的错误；可检查单项结果，或使用 `errors.Is` / `errors.As` |
+
+某一项失败不会终止其他查询，已经返回的部分结果仍然可用。刷新失败可以保留旧数据，因此 `HasData` 与 `Err` 可以同时存在。无效 key、结果类型冲突、缺少加载函数和 nil 定义均在对应位置报告；nil 定义报告 `ErrNoFetcher`。空集合或全部构造失败的集合发布一次初始状态后立即关闭 `Updates`。
+
+集合成员在创建时固定。刷新和取消继续使用 Client 已有的 key 操作；释放并重新创建集合可以更换成员或复制的配置。`Close` 幂等，仅释放本集合的订阅和轮询所有权，不取消执行中的工作，也不关闭其他消费者。`Client.Close` 同样会关闭更新通道。与单查询更新一致，慢消费者可能跳过中间状态；持续接收的循环应由独立的关闭路径结束。各查询保持独立，集合不提供跨 key 事务，也不将后端调用合并为批次。`Batcher` 与 `LoadMany` 见[自动批量加载](batching.zh-CN.md)。
 
 ## `SetEnabled`：自动加载控制
 

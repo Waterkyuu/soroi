@@ -25,9 +25,9 @@ export const chapters: Chapter[] = [
 		zh: "查询与条件请求",
 		en: "Queries & conditions",
 		description: {
-			en: "Use typed queries in Go with soroi. Share requests across consumers, observe snapshots and updates, control conditional loading, and fetch or refetch data.",
+			en: "Use typed queries in Go with soroi. Combine independent subscriptions with Queries, share requests, observe snapshots and updates, and control loading and refreshes.",
 			"zh-CN":
-				"使用 soroi 在 Go 中创建类型安全查询，共享请求，通过 Snapshot 和 Updates 读取状态，并控制条件加载、同步获取与手动刷新。",
+				"使用 soroi 在 Go 中创建类型安全查询，通过 Queries 聚合独立订阅，共享请求，通过 Snapshot 和 Updates 读取状态，并控制加载与刷新。",
 		},
 	},
 	{

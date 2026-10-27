@@ -2,7 +2,7 @@
 
 [简体中文](queries.zh-CN.md) · [Cache and lifecycle](cache.en-US.md) · [Invalidation](invalidation.en-US.md)
 
-One `Client` manages different result types. `Query` subscribes to cached state and background loading; `Fetch` waits for fresh data without retaining a subscription. Both infer their result type from the loader and share data and active requests for the same key.
+One `Client` manages different result types. `Query` subscribes to cached state and background loading; `Fetch` waits for fresh data without retaining a subscription. Both infer their result type from the loader and share data and active requests for the same key. `Queries` combines independent subscriptions into one update stream, for example when a TUI dashboard displays a user and application settings together.
 
 ## Quick start: multiple result types
 
@@ -83,7 +83,7 @@ Each key has one static result type: `"user:42"` stores `User`; `"users"` stores
 
 ## API snippet prerequisites
 
-The following partial snippets use `client`, `getUser`, and `getUsers` from the quick start and a non-nil `ctx`. Place snippets containing `return err` inside a function returning `error`. Each snippet is independent; add the imports it uses.
+The following partial snippets use `client`, `getUser`, `getUsers`, and `getSettings` from the quick start and a non-nil `ctx`. Place snippets containing `return err` inside a function returning `error`. Each snippet is independent; add the imports it uses.
 
 ## `Query`: current data and background loading
 
@@ -112,6 +112,63 @@ for state := range users.Updates() {
 ```
 
 The channel provides initial and subsequent latest states. Request transitions, writes, and invalidation can publish updates. Slow consumers may skip intermediate states, so this is not an event log. The application must release the handle from an independent shutdown path: a `defer` after a blocking `range` cannot itself end that range.
+
+## `Queries`: observe multiple independent queries
+
+### Create a group from typed definitions
+
+`Queries(client, definitions...)` returns a `*QueriesHandle` without waiting for loads. Its `QuerySpec` inputs are existing `Definition[V]` values and may have different result types. Each member keeps its own `QueryOptions`, tags, shared cache, and static result-type binding. Loading, same-key request sharing, retries, and polling follow `Query` rules.
+
+Append the following two snippets at the end of `main` in the quick start, after `_ = settingsState`. `QueryDefinition` infers `User` and `Settings` from the existing loaders; it performs no I/O and returns an error if extra configuration values are supplied. The group shares data and in-flight work with the subscriptions already created there.
+
+```go
+userDefinition, err := soroi.QueryDefinition("user:42", getUser)
+if err != nil {
+	panic(err)
+}
+settingsDefinition, err := soroi.QueryDefinition("settings", getSettings)
+if err != nil {
+	panic(err)
+}
+group := soroi.Queries(client, userDefinition, settingsDefinition)
+defer group.Close()
+```
+
+### Read combined updates
+
+`group.Snapshot()` reads the current `QueriesSnapshot`; `group.Updates()` streams initial and subsequent latest states. `Results` contains `Snapshot[any]` values in input order. Check `HasData` before asserting each result's dynamic type. This example prints once both initial loads finish; a TUI can continue receiving updates for the view's lifetime.
+
+```go
+for state := range group.Updates() {
+	if state.Err != nil {
+		panic(state.Err)
+	}
+	if state.HasData && !state.Fetching {
+		user := state.Results[0].Data.(User)
+		settings := state.Results[1].Data.(Settings)
+		fmt.Println(user.Name, settings.Theme)
+		break
+	}
+}
+```
+
+Run the extended complete program with `go run .`. Expected output:
+
+```text
+Alice
+Alice dark
+```
+
+| Field | Meaning |
+| --- | --- |
+| `Results` | One result per input, including failures and duplicate keys; the returned slice belongs to the caller |
+| `HasData` | Every member has usable data; true for an empty group |
+| `Fetching` | At least one member has an initial load, queued request, retry, or background refresh in progress |
+| `Err` | All member errors joined in input order; inspect individual results or use `errors.Is` / `errors.As` |
+
+One failure leaves sibling queries running and preserves their partial results. A failed refresh may retain data, so `HasData` and `Err` can both be set. Invalid keys, result-type conflicts, missing fetchers, and nil definitions appear in their result positions; nil definitions report `ErrNoFetcher`. Empty groups and groups containing only construction failures publish an initial state and close `Updates` immediately.
+
+The group is fixed at construction. Use existing Client invalidation and cancellation APIs for its keys; releasing and recreating a group changes its members or copied options. `Close` is idempotent and releases only this group's subscriptions and polling ownership. It neither cancels in-flight work nor closes other consumers. `Client.Close` also closes the stream. As with single-query updates, slow readers may skip intermediate states, and an external shutdown path must end a long-running receive loop. Members remain independent; the group provides no transaction across keys and does not merge backend calls into a batch. See [automatic batch loading](batching.en-US.md) for `Batcher` and `LoadMany`.
 
 ## `SetEnabled`: load only when a condition permits
 
