@@ -141,16 +141,6 @@ export const chapters: Chapter[] = [
 		},
 	},
 	{
-		id: "polling",
-		zh: "订阅轮询",
-		en: "Subscription polling",
-		description: {
-			en: "Configure soroi subscription polling in Go with RefetchInterval. Reuse query updates, pause or resume loading, and manage shared schedules and subscription lifetimes.",
-			"zh-CN":
-				"在 Go 中使用 soroi RefetchInterval 配置订阅轮询，复用查询更新，暂停或恢复自动加载，管理共享调度与订阅生命周期。",
-		},
-	},
-	{
 		id: "batching",
 		zh: "自动批量加载",
 		en: "Automatic batch loading",

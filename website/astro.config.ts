@@ -59,11 +59,6 @@ export default defineConfig({
 					translations: { "zh-CN": "查询配置" },
 				},
 				{
-					slug: "docs/polling",
-					label: "Subscription polling",
-					translations: { "zh-CN": "订阅轮询" },
-				},
-				{
 					slug: "docs/cache",
 					label: "Cache & lifecycle",
 					translations: { "zh-CN": "缓存与生命周期" },
