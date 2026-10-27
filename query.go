@@ -79,11 +79,16 @@ func query[V any](client *Client, definition Definition[V], constructorErr error
 	client.registerTagsLocked(key, request.tags)
 	client.registerSharedLocked(key, request)
 	observer := &subscription{
-		enabled: enabled, refetchInterval: definition.Options.RefetchInterval,
-		request: request,
-		order:   client.nextObserver,
-		publish: func(state Snapshot[any]) { publishLatest(handle.updates, typedSnapshot[V](state)) },
-		close:   func() { close(handle.updates) },
+		enabled:         enabled,
+		refetchInterval: definition.Options.RefetchInterval,
+		request:         request,
+		order:           client.nextObserver,
+		publish: func(state Snapshot[any]) {
+			publishLatest(handle.updates, typedSnapshot[V](state))
+		},
+		close: func() {
+			close(handle.updates)
+		},
 	}
 	client.nextObserver++
 	handle.observer = observer
