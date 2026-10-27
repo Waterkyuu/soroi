@@ -183,6 +183,11 @@ See the [shared cache guide](docs/shared-cache.en-US.md) and [shared invalidatio
 
 ## Reproducible benchmarks
 
+The [business workload guide](docs/business-benchmarks.en-US.md) measures hot-key
+expiration, Redis outages, downstream deadlines, and batch reads. It includes
+source calls, P95/P99 latency, success and rejection counts, allocation metrics,
+and recorded results with workload conditions.
+
 Compare **no cache, first load, and cache hits** for **100 sequential reads** of the same data in the [benchmark guide](benchmarks/benchmarks.en-US.md). The main table reports total time and actual loader calls; internal cost and concurrency diagnostics are documented separately.
 
 ```sh
@@ -197,6 +202,8 @@ Read the [documentation website](https://waterkyuu.github.io/soroi/) in English 
 
 | Guide | Coverage |
 | --- | --- |
+| [HTTP, gRPC, and telemetry](docs/service-integrations.en-US.md) | Runnable HTTP-to-gRPC queries, injected OpenTelemetry tracing, Prometheus metrics, and HTTP error mapping |
+| [Business workload benchmarks](docs/business-benchmarks.en-US.md) | Reproducible failure and batch scenarios, physical source work, latency populations, success rates, and resource measurements |
 | [Queries and conditions](docs/queries.en-US.md) | `Query`, snapshots, updates, enablement, refresh, `Fetch`, and HTTP loaders |
 | [Query options](docs/query-options.en-US.md) | Shared loading options, reusable typed query definitions, freshness, retries, and timeouts |
 | [Query filters](docs/query-filters.en-US.md) | Reusable key and predicate selection for invalidation, awaited refresh, cancellation, and removal |
