@@ -179,7 +179,7 @@ Fresh cached results return immediately; stale or missing results wait for a loa
 
 `Pending` means an initial request is running without old data. A disabled missing query is `Idle`. Result status and request activity are separate: background refresh can be `Success` with `Fetching: true`. Becoming stale does not itself start a request or publish a timed update; this is not polling.
 
-For periodic refreshes, set a positive `QueryOptions.RefetchInterval`. Polling runs while an enabled polling subscriber remains and reuses this state channel. See [subscription polling](polling.en-US.md) for interval configuration and subscription lifecycle rules.
+For periodic refreshes, set a positive `QueryOptions.RefetchInterval`. Polling runs while an enabled polling subscriber remains and reuses this state channel. See [subscription polling](query-options.en-US.md#subscription-polling) for interval configuration and subscription lifecycle rules.
 
 ## HTTP cancellation
 

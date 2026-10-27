@@ -151,9 +151,28 @@ refreshed calls: 2
 
 ## 订阅轮询
 
-`RefetchInterval` 是仅用于订阅的 `time.Duration` 字段。正数为 `Query` 和 `Definition.Query` 启用固定间隔刷新；零值或负数禁用轮询。`Fetch`、`Prefetch` 忽略此字段。句柄在创建时复制间隔，使用已有的 `SetEnabled` 和 `Close` 管理轮询生命周期。
+`RefetchInterval` 是仅用于订阅的 `time.Duration` 字段。正数为 `Query` 或 `Definition.Query` 启用定期刷新，零值或负数禁用轮询。`Fetch`、`Prefetch` 忽略此字段。句柄创建时复制间隔。
 
-同 key 的已启用订阅共享最短的正间隔，由采用该间隔且最早创建的句柄提供加载策略。已有加载时跳过本轮，不排队补刷。API 用法与生命周期规则见[订阅轮询](polling.zh-CN.md)。
+沿用快速开始中的 `client` 和 `load`，将查询创建与清理代码替换为：
+
+```go
+query := soroi.Query(
+	client,
+	"greeting",
+	load,
+	soroi.QueryOptions{RefetchInterval: 3 * time.Second},
+)
+defer query.Close()
+```
+
+例如，TUI 可以每三秒刷新任务 42，通过 `Updates()` 接收从 20% 到 50% 的进度变化，离开界面时关闭订阅。
+
+- 间隔刷新不受本地新鲜期限制；单独设置 `StaleTime` 不会调度请求。已配置的共享缓存仍可提供结果。
+- 同 key 的已启用订阅共享最短正间隔，由采用该间隔且最早创建的句柄提供加载函数和加载策略；所选句柄改变时重新开始完整间隔。
+- 同 key 已有加载时跳过本轮，包括排队与重试期间，不积压补刷工作。
+- `SetEnabled(false)` 暂停此句柄的自动加载，`SetEnabled(true)` 恢复，`Close()` 释放句柄；均不取消已经启动的共享加载。其他已启用的轮询订阅可以继续刷新该 key；`Client.Close()` 停止全部调度并取消 Client 持有的加载。
+
+结果和失败继续通过已有的 `Snapshot()`、`Updates()` 提供。重试、超时、Executor 和数据保留策略保持不变；刷新失败保留仍可用的数据，后续间隔继续调度。`Cancel`、`Remove`、`Clear` 不释放订阅，停止后续轮询应禁用或关闭句柄。更换间隔需要创建替代句柄。
 
 ## 共有字段
 

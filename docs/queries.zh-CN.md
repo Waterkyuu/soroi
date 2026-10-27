@@ -185,7 +185,7 @@ _ = users // []User
 
 `Pending` 表示没有旧数据的首次请求正在进行；禁用且没数据时为 `Idle`。`Fetching` 与结果状态分开，所以后台刷新时可以同时是 `Success` 和 `Fetching: true`。数据变旧不会自行启动请求；也不是轮询，时间经过不会自动产生更新通知。
 
-需要定期刷新时，配置正数 `QueryOptions.RefetchInterval`。存在已启用的轮询订阅时持续调度，并复用此状态通道。[订阅轮询](polling.zh-CN.md)介绍间隔配置与订阅生命周期规则。
+需要定期刷新时，配置正数 `QueryOptions.RefetchInterval`。存在已启用的轮询订阅时持续调度，并复用此状态通道。[订阅轮询](query-options.zh-CN.md#订阅轮询)介绍间隔配置与订阅生命周期规则。
 
 ## HTTP 加载与取消
 
