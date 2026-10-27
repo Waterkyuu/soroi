@@ -141,6 +141,16 @@ export const chapters: Chapter[] = [
 		},
 	},
 	{
+		id: "polling",
+		zh: "订阅轮询与任务进度",
+		en: "Subscription polling & task progress",
+		description: {
+			en: "Track task progress with soroi subscription polling in Go. Configure RefetchInterval, share same-key schedules, receive Updates, and stop polling when a view closes.",
+			"zh-CN":
+				"通过 soroi 订阅轮询追踪 Go 任务进度，配置 RefetchInterval，共享同 key 调度，通过 Updates 更新界面，并在关闭界面时停止轮询。",
+		},
+	},
+	{
 		id: "batching",
 		zh: "自动批量加载",
 		en: "Automatic batch loading",
