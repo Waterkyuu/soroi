@@ -10,6 +10,8 @@ import (
 type subscription struct {
 	// enabled permits this handle to initiate automatic requests.
 	enabled bool
+	// refetchInterval is this consumer's copied polling cadence; non-positive values disable polling.
+	refetchInterval time.Duration
 	// request retains this consumer's loader and copied policy without exposing untyped results to callers.
 	request queryRequest
 	// order identifies this consumer's place in automatic refresh selection.
@@ -77,7 +79,7 @@ func query[V any](client *Client, definition Definition[V], constructorErr error
 	client.registerTagsLocked(key, request.tags)
 	client.registerSharedLocked(key, request)
 	observer := &subscription{
-		enabled: enabled,
+		enabled: enabled, refetchInterval: definition.Options.RefetchInterval,
 		request: request,
 		order:   client.nextObserver,
 		publish: func(state Snapshot[any]) { publishLatest(handle.updates, typedSnapshot[V](state)) },
@@ -97,6 +99,7 @@ func query[V any](client *Client, definition Definition[V], constructorErr error
 	if enabled {
 		client.loadObservedLocked(key, observer.request)
 	}
+	client.schedulePollingLocked(key)
 	observer.publish(client.withFreshnessLocked(key, client.snapshotLocked(key), policy))
 	return handle
 }
@@ -131,6 +134,7 @@ func (h *QueryHandle[V]) SetEnabled(enabled bool) error {
 		request.trigger = TriggerEnable
 		c.loadObservedLocked(h.key, request)
 	}
+	c.schedulePollingLocked(h.key)
 	return nil
 }
 
@@ -170,6 +174,7 @@ func (h *QueryHandle[V]) Close() {
 		delete(c.observers, h.key)
 	}
 	h.observer.close()
+	c.schedulePollingLocked(h.key)
 	c.touchGCLocked(h.key)
 }
 

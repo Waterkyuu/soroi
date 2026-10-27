@@ -87,6 +87,8 @@ const (
 	TriggerInvalidate
 	// TriggerPrefetch identifies an imperative Prefetch call.
 	TriggerPrefetch
+	// TriggerPoll identifies a refresh scheduled by an enabled subscription's interval.
+	TriggerPoll
 )
 
 // String returns a stable log label for the initiating API decision.
@@ -104,6 +106,8 @@ func (t EventTrigger) String() string {
 		return "invalidate"
 	case TriggerPrefetch:
 		return "prefetch"
+	case TriggerPoll:
+		return "poll"
 	default:
 		return "none"
 	}

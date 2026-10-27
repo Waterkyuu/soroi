@@ -79,6 +79,10 @@ type QueryOptions struct {
 	// Disable prevents Query's automatic loading when true; its zero value permits loading.
 	// The value is copied during construction; later permission changes use SetEnabled.
 	Disable bool
+	// RefetchInterval refreshes an enabled subscription regardless of local freshness.
+	// Non-positive values disable polling. Same-key subscriptions share the shortest positive interval;
+	// its oldest subscriber supplies the loading policy. Fetch and Prefetch ignore this field.
+	RefetchInterval time.Duration
 	// StaleTime overrides this consumer's freshness for ordinary data; nil inherits Client defaults.
 	// Explicit deadlines from FetchWithExpiry remain authoritative.
 	StaleTime *time.Duration

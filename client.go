@@ -44,6 +44,10 @@ type Client struct {
 	gcTasks map[any]*gcTask
 	// gcAfterFunc schedules cleanup and returns a stop function; tests can replace the timer source.
 	gcAfterFunc func(time.Duration, func()) func()
+	// pollTasks owns one interval timer per key with enabled polling subscriptions.
+	pollTasks map[any]*pollTask
+	// pollAfterFunc schedules interval callbacks and returns their stop functions; tests replace the timer source.
+	pollAfterFunc func(time.Duration, func()) func()
 	// options supplies freshness and request policies.
 	options Options
 	// ctx owns background loads until Close is called.
@@ -155,6 +159,7 @@ func NewClient(options Options) *Client {
 		recencyEntries: make(map[any]*list.Element),
 		observers:      make(map[any]map[*subscription]struct{}),
 		gcTasks:        make(map[any]*gcTask), gcAfterFunc: scheduleGC,
+		pollTasks: make(map[any]*pollTask), pollAfterFunc: schedulePoll,
 		options: options, ctx: ctx, cancel: cancel,
 		loadNow: time.Now,
 	}
@@ -269,6 +274,9 @@ func (c *Client) Close() {
 	}
 	c.closed = true
 	c.cancel()
+	for key := range c.pollTasks {
+		c.stopPollingLocked(key)
+	}
 	for key := range c.pending {
 		c.cancelLocked(key, ReasonClientClosed)
 	}
@@ -311,6 +319,9 @@ func (c *Client) startLocked(ctx context.Context, key any, request queryRequest)
 		owner:     owner,
 		startedAt: c.loadNow(),
 		request:   request,
+	}
+	if request.trigger == TriggerPoll {
+		pending.reason = ReasonRefetch
 	}
 	c.pending[key] = pending
 	c.stats.Loads++
