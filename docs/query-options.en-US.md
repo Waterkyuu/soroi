@@ -153,7 +153,7 @@ Definitions do not infer keys from a loader, add authorization checks, or serial
 
 `RefetchInterval` is a subscription-only `time.Duration`. Positive values enable fixed-interval refreshes for `Query` and `Definition.Query`; zero or negative values disable polling. `Fetch` and `Prefetch` ignore it. Handles copy the interval at construction. Use the existing `SetEnabled` and `Close` methods to manage polling ownership.
 
-Same-key subscribers share the shortest positive interval among enabled handles; the oldest handle with that interval supplies its loading policy. Active loads cause intervals to be skipped without queuing work. See [subscription polling](polling.en-US.md) for the runnable task-progress example and lifecycle rules.
+Same-key subscribers share the shortest positive interval among enabled handles; the oldest handle with that interval supplies its loading policy. Active loads cause intervals to be skipped without queuing work. See [subscription polling](polling.en-US.md) for API usage and lifecycle rules.
 
 ## Shared fields
 

@@ -153,7 +153,7 @@ refreshed calls: 2
 
 `RefetchInterval` 是仅用于订阅的 `time.Duration` 字段。正数为 `Query` 和 `Definition.Query` 启用固定间隔刷新；零值或负数禁用轮询。`Fetch`、`Prefetch` 忽略此字段。句柄在创建时复制间隔，使用已有的 `SetEnabled` 和 `Close` 管理轮询生命周期。
 
-同 key 的已启用订阅共享最短的正间隔，由采用该间隔且最早创建的句柄提供加载策略。已有加载时跳过本轮，不排队补刷。可运行的任务进度示例与生命周期规则见[订阅轮询](polling.zh-CN.md)。
+同 key 的已启用订阅共享最短的正间隔，由采用该间隔且最早创建的句柄提供加载策略。已有加载时跳过本轮，不排队补刷。API 用法与生命周期规则见[订阅轮询](polling.zh-CN.md)。
 
 ## 共有字段
 
