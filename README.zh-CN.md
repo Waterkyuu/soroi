@@ -35,13 +35,20 @@ soroi 在单个进程中维护查询状态和本地结果。需要跨进程复�
 
 ## 功能
 
-- 类型安全的共享查询与缓存。
-- 缓存策略与生命周期管理。
-- 可选 Redis 共享结果缓存与按 key 失效。
-- 缓存更新、数据写入与失效管理。
-- 自动批量加载。
-- 共享执行预算。
-- 查询可观测性。
+- **[类型安全的共享查询](docs/queries.zh-CN.md)**：跨消费者复用缓存结果、合并相同 key 的并发请求，并支持 context 取消。
+- **[可订阅的查询状态](docs/queries.zh-CN.md)**：读取快照或订阅加载、后台刷新和错误状态，刷新失败后保留仍然可用的数据。
+- **[可复用的查询定义与加载策略](docs/query-options.zh-CN.md)**：共享类型化查询定义，按消费者覆盖新鲜期、重试条件、退避和超时，通过 `Disable` 与 `SetEnabled` 控制自动加载。
+- **[显式读取与预取](docs/cache.zh-CN.md)**：通过 `Fetch` 等待新鲜结果，通过 `Prefetch` 预热缓存，或通过 `FetchWithExpiry` 保留绝对新鲜期截止时间。
+- **[缓存策略与生命周期](docs/cache.zh-CN.md)**：配置新鲜期、不活跃状态回收、LRU 容量和最大数据年龄，取消加载、移除结果并关闭所属资源。
+- **[原子缓存更新](docs/updates.zh-CN.md)**：通过 `Set` 写入类型化数据，或通过 `Update` 转换已有数据，检测并拒绝并发冲突，避免覆盖其他修改。
+- **[写入与缓存同步](docs/mutations.zh-CN.md)**：订阅写入状态，成功后同步缓存并按需等待关联刷新，分别报告业务写入失败与同步错误。
+- **[失效与可等待刷新](docs/invalidation.zh-CN.md)**：使关联查询过期，刷新具有已启用订阅的查询，通过 `InvalidateAndWait` 等待逐 key 结果，并将加载期间的失效合并为有界补刷。
+- **[查询筛选](docs/query-filters.zh-CN.md)与[标签](docs/query-tags.zh-CN.md)**：按精确 key、标签和条件选择关联查询，统一用于失效、等待刷新、取消和移除。
+- **[可选共享结果缓存](docs/shared-cache.zh-CN.md)**：通过独立 Redis 适配器跨进程复用序列化结果，支持 Codec、条件缓存写入和缓存故障回源。
+- **[跨实例失效](docs/shared-invalidation.zh-CN.md)**：使远端 key 或标签失效，通过 `WatchShared` 接收通知，使关联本地查询过期或刷新。
+- **[自动批量加载](docs/batching.zh-CN.md)**：将不同 key 的并发读取合并为批量调用，或通过 `LoadMany` 提交已知 key，支持逐 key 结果与取消。
+- **[共享执行预算](docs/execution.zh-CN.md)**：跨查询、写入和批次限制回调并发数与 FIFO 队列容量，显式报告过载错误。
+- **[查询可观测性](docs/observability.zh-CN.md)与[诊断事件](docs/events.zh-CN.md)**：查看缓存命中、请求合并、重试、耗时和清理统计，按 key 订阅加载原因、来源与结果丢弃事件。
 
 ## 安装
 
