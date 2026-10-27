@@ -42,13 +42,39 @@ For simple local values that only need expiration, a TTL cache may be sufficient
 
 ## Features
 
-- Type-safe shared queries and caching.
-- Cache policies and lifecycle management.
-- Optional shared result caching with Redis and per-key invalidation.
-- Cache updates, mutations, and invalidation.
-- Automatic batch loading.
-- Shared execution budgets.
-- Query observability.
+- **Type-safe shared queries.** Reuse cached results and merge concurrent
+  same-key requests across consumers, with context cancellation.
+- **Observable query state.** Read snapshots or subscribe to updates for
+  loading, background refreshes, and errors while retaining available data after a failed refresh.
+- **Reusable definitions and loading policies.** Share typed query
+  definitions; override freshness, retry filters, backoff, and timeouts per consumer; control automatic
+  loading with `Disable` and `SetEnabled`.
+- **Explicit reads and prefetching.** Wait for fresh data with `Fetch`, warm
+  the cache with `Prefetch`, or preserve an absolute freshness deadline with `FetchWithExpiry`.
+- **Cache policies and lifecycle.** Configure freshness, inactive-state GC,
+  LRU capacity, and maximum data age; cancel loads, remove results, and close owned resources.
+- **Atomic cache updates.** Install typed data with `Set` or transform
+  existing data with `Update`, rejecting concurrent changes instead of overwriting them.
+- **Mutations and synchronization.** Observe write state, synchronize
+  cached data after success, and optionally wait for related refreshes; report synchronization errors
+  separately from business write failures.
+- **Invalidation and awaited refresh.** Mark related queries stale,
+  refresh enabled observed queries, and wait for per-key outcomes with `InvalidateAndWait`;
+  coalesce in-flight invalidations into a bounded follow-up load.
+- **Query filters and tags.** Select
+  related queries by exact keys, labels, and predicates for invalidation, awaited refresh,
+  cancellation, and removal.
+- **Optional shared result caching.** Reuse serialized results across
+  processes through a separate Redis adapter, with codecs, conditional cache writes, and failure fallback.
+- **Cross-instance invalidation.** Invalidate remote keys or
+  tags and use `WatchShared` to receive notifications and mark related local queries stale or refresh them.
+- **Automatic batch loading.** Combine concurrent different-key reads
+  into bulk calls, or submit known keys with `LoadMany`, with per-key results and cancellation.
+- **Shared execution budgets.** Bound callback concurrency and FIFO
+  queue capacity across queries, mutations, and batches, with explicit overload errors.
+- **Query observability and diagnostic events.**
+  Inspect cache hits, merged requests, retries, durations, and cleanup; subscribe to per-key load
+  causes, sources, and discarded results.
 
 ## Install
 
