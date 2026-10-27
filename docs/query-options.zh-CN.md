@@ -149,6 +149,12 @@ refreshed calls: 2
 
 定义不会从加载函数推断查询键，不增加授权检查，也不串行业务操作。可以用普通业务函数构造带参数的定义，使键和加载函数捕获一致的参数。结果类型绑定、取消、错误及正在执行的请求共享遵循已有[查询契约](queries.zh-CN.md)。显式失效使用 `client.Invalidate(definition.Key)` 或 `client.InvalidateAndWait(ctx, definition.Key)`。
 
+## 订阅轮询
+
+`RefetchInterval` 是仅用于订阅的 `time.Duration` 字段。正数为 `Query` 和 `Definition.Query` 启用固定间隔刷新；零值或负数禁用轮询。`Fetch`、`Prefetch` 忽略此字段。句柄在创建时复制间隔，使用已有的 `SetEnabled` 和 `Close` 管理轮询生命周期。
+
+同 key 的已启用订阅共享最短的正间隔，由采用该间隔且最早创建的句柄提供加载策略。已有加载时跳过本轮，不排队补刷。可运行的任务进度示例与生命周期规则见[订阅轮询](polling.zh-CN.md)。
+
 ## 共有字段
 
 以下加载策略字段同时适用于 `Query`、`Fetch` 和 `Prefetch`。
@@ -211,7 +217,7 @@ options := soroi.QueryOptions{
 
 ## 缓存策略限制
 
-`StaleTime` 只调整普通缓存的新鲜度判断，不触发轮询。时间经过不会自动发送通知或启动请求；`Snapshot()` 在读取时重新判断状态。`Get` 和省略配置或传入空配置的 `Fetch`、`Prefetch` 使用 Client 默认新鲜期。
+`StaleTime` 只调整普通缓存的新鲜度判断，不触发轮询。未配置正数 `RefetchInterval` 时，时间经过不会自动发送通知或启动请求；`Snapshot()` 在读取时重新判断状态。`Get` 和省略配置或传入空配置的 `Fetch`、`Prefetch` 使用 Client 默认新鲜期。
 
 显式失效和未写入新数据的刷新失败，会使普通缓存对所有查询变旧。`FetchWithExpiry` 返回的绝对截止时间不受 `StaleTime` 覆盖影响，包括显式缓存的兜底数据和错误。
 

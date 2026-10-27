@@ -148,6 +148,7 @@ Call `subscription.Close()` when the consumer leaves. This closes only diagnosti
 | `TriggerRefetch` | `QueryHandle.Refetch` |
 | `TriggerInvalidate` | Explicit invalidation and its automatic refresh |
 | `TriggerPrefetch` | `Prefetch` |
+| `TriggerPoll` | Fixed-interval refresh scheduled by an enabled subscription |
 | `TriggerNone` | Local writes, cache removals, Client closure, and other non-query transitions |
 
 Retries and completions retain the original load initiator. Joins record the joining consumer's source. An invalidation event uses `TriggerInvalidate` without implying that a refresh started.
@@ -161,7 +162,7 @@ Retries and completions retain the original load initiator. Joins record the joi
 | `ReasonExpired` | `expired` | This consumer's freshness deadline was reached |
 | `ReasonInvalidated` | `invalidated` | Explicit invalidation requires fresh data |
 | `ReasonPreviousFailure` | `previous_failure` | An earlier failed load left the outcome stale |
-| `ReasonRefetch` | `refetch` | Explicit `Refetch` requires another load |
+| `ReasonRefetch` | `refetch` | `Refetch` or subscription polling requires another load |
 | `ReasonCapacity` | `capacity` | LRU eviction enforced `MaxEntries` |
 | `ReasonInactive` | `inactive` | Idle collection reached `GCTime` |
 | `ReasonMaxAge` | `max_age` | Data reached its maximum available age |

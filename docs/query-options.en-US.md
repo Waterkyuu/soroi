@@ -149,6 +149,12 @@ The methods use the definition's key, fetcher, and options directly. To customiz
 
 Definitions do not infer keys from a loader, add authorization checks, or serialize business operations. Build parameterized definitions in ordinary business functions so the key and loader capture matching parameters. Result-type binding, cancellation, errors, and in-flight request sharing follow the existing [query contracts](queries.en-US.md). Use `client.Invalidate(definition.Key)` or `client.InvalidateAndWait(ctx, definition.Key)` for explicit invalidation.
 
+## Subscription polling
+
+`RefetchInterval` is a subscription-only `time.Duration`. Positive values enable fixed-interval refreshes for `Query` and `Definition.Query`; zero or negative values disable polling. `Fetch` and `Prefetch` ignore it. Handles copy the interval at construction. Use the existing `SetEnabled` and `Close` methods to manage polling ownership.
+
+Same-key subscribers share the shortest positive interval among enabled handles; the oldest handle with that interval supplies its loading policy. Active loads cause intervals to be skipped without queuing work. See [subscription polling](polling.en-US.md) for the runnable task-progress example and lifecycle rules.
+
 ## Shared fields
 
 These loading-policy fields apply to `Query`, `Fetch`, and `Prefetch`.
@@ -211,7 +217,7 @@ Automatic refresh after invalidation uses the oldest still-enabled handle's conf
 
 ## Cache policy limits
 
-`StaleTime` changes ordinary cache freshness decisions without enabling polling. Passing time does not automatically publish notifications or start requests; `Snapshot()` reevaluates state when read. `Get` and calls to `Fetch` or `Prefetch` with omitted or empty options use Client freshness defaults.
+`StaleTime` changes ordinary cache freshness decisions without enabling polling. Without a positive `RefetchInterval`, passing time does not automatically publish notifications or start requests; `Snapshot()` reevaluates state when read. `Get` and calls to `Fetch` or `Prefetch` with omitted or empty options use Client freshness defaults.
 
 Explicit invalidation and failed refreshes that install no new data make ordinary cached data stale for all queries. Absolute deadlines returned through `FetchWithExpiry` are unaffected by `StaleTime` overrides, including explicitly cached fallback data and errors.
 
