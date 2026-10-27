@@ -188,6 +188,26 @@ export const chapters: Chapter[] = [
 			"zh-CN": "通过 soroi 可共享的执行预算限制查询、写入和批次并发，管理 FIFO 排队、过载与取消。",
 		},
 	},
+	{
+		id: "service-integrations",
+		zh: "HTTP、gRPC 与遥测接入",
+		en: "HTTP, gRPC & telemetry",
+		description: {
+			en: "Integrate soroi into HTTP and gRPC services with injected OpenTelemetry tracing and Prometheus query metrics, without adding dependencies to the core library.",
+			"zh-CN":
+				"将 soroi 接入 HTTP 与 gRPC 服务，注入 OpenTelemetry 链路追踪并暴露 Prometheus 查询指标，保持核心库零依赖。",
+		},
+	},
+	{
+		id: "business-benchmarks",
+		zh: "业务场景基准",
+		en: "Business workload benchmarks",
+		description: {
+			en: "Measure soroi hot-key expiration, Redis outages, downstream deadlines and batch reads with source counts, latency populations, success rates and resource metrics.",
+			"zh-CN":
+				"测量 soroi 热点过期、Redis 故障、下游超时和批量读取场景中的回源次数、延迟、成功率与资源占用。",
+		},
+	},
 ];
 
 // Adapt repository documentation without creating another maintained copy.
@@ -218,7 +238,10 @@ export function prepareMarkdown(
 			const route = name === "getting-started" ? "" : `${name}/`;
 			return `](${prefix}${route}${anchor ?? ""})`;
 		})
-		.replace(/\]\(\.\.\/([^)]*\.go)\)/g, `](https://github.com/Waterkyuu/soroi/blob/${branch}/$1)`)
+		.replace(
+			/\]\(\.\.\/([^)]*\.(?:go|jsonl))\)/g,
+			`](https://github.com/Waterkyuu/soroi/blob/${branch}/$1)`,
+		)
 		.replace(
 			/\]\(\.\.\/(examples\/[^)]*\/)\)/g,
 			`](https://github.com/Waterkyuu/soroi/tree/${branch}/$1)`,

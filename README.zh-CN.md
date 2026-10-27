@@ -157,6 +157,9 @@ go run .
 
 ## 可复现的 benchmark
 
+[业务场景基准](docs/business-benchmarks.zh-CN.md) 测量热点过期、Redis 故障、下游超时和批量读取，
+包含回源次数、P95/P99 延迟、成功与拒绝数量、内存分配，以及附带负载条件的实测记录。
+
 对同一份数据**串行读取 100 次**，比较**无缓存、首次加载和缓存命中**，见 [benchmark 文档](benchmarks/benchmarks.zh-CN.md)。主表展示总耗时和实际加载次数，内部开销与并发诊断单独说明。
 
 ```sh
@@ -171,6 +174,8 @@ go test -run '^$' -bench '^BenchmarkCacheBenefit$' -benchmem -count=3 -cpu=1
 
 | 文档 | 说明 |
 | --- | --- |
+| [HTTP、gRPC 与遥测接入](docs/service-integrations.zh-CN.md) | 可运行的 HTTP 到 gRPC 查询、注入 OpenTelemetry、Prometheus 指标与 HTTP 错误映射 |
+| [业务场景基准](docs/business-benchmarks.zh-CN.md) | 可复现的故障与批量场景、实际回源、延迟总体、成功率和资源测量 |
 | [查询与条件请求](docs/queries.zh-CN.md) | `Query`、状态、更新通知、条件开关、刷新、`Fetch` 和 HTTP 加载函数 |
 | [查询配置](docs/query-options.zh-CN.md) | 共享加载配置、可复用的类型化查询定义、新鲜期、重试和超时 |
 | [统一查询筛选](docs/query-filters.zh-CN.md) | 为失效、等待刷新、取消和删除复用精确键与条件筛选 |

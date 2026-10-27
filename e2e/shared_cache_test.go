@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -166,5 +167,66 @@ func TestHTTPSharedCacheDiagnostics(t *testing.T) {
 	}
 	if !errors.Is(shared.Stats().LastError, cause) || shared.Stats().ReadErrors != 2 {
 		t.Fatalf("cache failure lost after source failure: %+v", shared.Stats())
+	}
+}
+
+// TestSharedCacheOutageBudget bounds different-key fallback across clients and never retries overload.
+func TestSharedCacheOutageBudget(t *testing.T) {
+	budget, err := soroi.NewExecutor(soroi.ExecutionOptions{MaxConcurrent: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	options := soroi.Options{Executor: budget, StaleTime: time.Minute, Retry: 3}
+	a, b := soroi.NewClient(options), soroi.NewClient(options)
+	t.Cleanup(a.Close)
+	t.Cleanup(b.Close)
+	if err := soroi.Set(b, "cached", 7); err != nil {
+		t.Fatal(err)
+	}
+	store := unavailableHTTPSharedStore{SharedStore: &httpSharedStore{}, err: errors.New("Redis unavailable")}
+	started, release := make(chan struct{}), make(chan struct{})
+	// Unblock source work before cleanup waits for the clients, including on failed assertions.
+	defer close(release)
+	var calls atomic.Int32
+	loader := func(ctx context.Context) (int, error) {
+		calls.Add(1)
+		close(started)
+		select {
+		case <-release:
+			return 42, nil
+		case <-ctx.Done():
+			return 0, ctx.Err()
+		}
+	}
+	first, err := soroi.QueryDefinition("first", loader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := soroi.QueryDefinition("second", loader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, definition := range []*soroi.Definition[int]{&first, &second} {
+		definition.Shared, err = soroi.NewSharedCache(store, soroi.SharedCacheOptions[int]{
+			Key: definition.Key.(string), Format: "int.v1", TTL: time.Minute,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	handle := first.Query(a)
+	t.Cleanup(handle.Close)
+	<-started
+	if _, err := second.Fetch(context.Background(), b); !errors.Is(err, soroi.ErrQueueFull) {
+		t.Fatalf("overload = %v", err)
+	}
+	if value, err := soroi.Fetch[int](context.Background(), b, "cached", nil); err != nil || value != 7 {
+		t.Fatalf("local hit = %d, %v", value, err)
+	}
+	if calls.Load() != 1 || b.Stats().Retries != 0 || budget.Stats().Rejected != 1 {
+		t.Fatalf("calls=%d, retries=%d, budget=%+v", calls.Load(), b.Stats().Retries, budget.Stats())
+	}
+	if second.Shared.Stats().ReadErrors != 0 {
+		t.Fatal("rejected load accessed shared storage")
 	}
 }

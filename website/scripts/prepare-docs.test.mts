@@ -36,3 +36,22 @@ test("edit links point to maintained documentation rather than generated content
 		prepareMarkdown("# Cache", chapters[2], "zh-CN", 3, "main").includes("docs/cache.zh-CN.md"),
 	);
 });
+
+test("benchmark artifacts resolve to source files for both locales", () => {
+	const chapter = chapters.find((chapter) => chapter.id === "business-benchmarks");
+	assert.ok(chapter);
+	for (const locale of ["en", "zh-CN"]) {
+		const output = prepareMarkdown(
+			"# Benchmark\n\n[Raw records](../benchmarks/business-darwin-arm64.jsonl)",
+			chapter,
+			locale,
+			1,
+			"main",
+		);
+		assert.ok(
+			output.includes(
+				"https://github.com/Waterkyuu/soroi/blob/main/benchmarks/business-darwin-arm64.jsonl",
+			),
+		);
+	}
+});

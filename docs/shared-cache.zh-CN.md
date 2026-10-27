@@ -332,6 +332,73 @@ last_error=<nil>
 
 记录缺失、过期、新鲜期为零和条件写入冲突不会设置 LastError。数据源失败仍作为查询错误返回，不替换共享缓存诊断。允许继续回源的存储超时会被保留；调用方取消仍按原有规则终止查询。存储调用前被拒绝的操作，以及在错误计数前因查询取消而终止的读取，不产生诊断。显式共享 key 失效失败会保留诊断，同时继续向调用方返回错误。直接存储操作、Client 标签失效和 watcher 失败不属于该 SharedCache 对象的统计范围；watcher 失败仍通过 SharedWatchStats.LastError 查看。
 
+## 缓存故障期间保护数据源
+
+Redis 不可用时，使用现有 `Executor` 限制回源。按后端容量池创建预算，并在访问该后端的
+Client 或查询策略之间复用。同一请求单独创建预算无法共享容量。
+
+以下配置片段放在应用启动阶段、返回 `error` 的函数中，需要导入 `time` 和 `soroi`。
+前面的共享缓存配置提供 `definition.Shared` 及其 `SharedCacheOptions.Timeout`。
+
+```go
+budget, err := soroi.NewExecutor(soroi.ExecutionOptions{
+    MaxConcurrent: 16,
+    MaxQueued:     0,
+})
+if err != nil {
+    return err
+}
+client := soroi.NewClient(soroi.Options{
+    Executor:  budget,
+    StaleTime: time.Minute,
+    Timeout:   500 * time.Millisecond,
+})
+defer client.Close()
+```
+
+这些数值用于说明配置方式，不是容量建议。共享缓存的单次操作超时应小于整次加载超时，
+并按前文配置借用的 Redis 客户端的 context、socket 和重试限制。
+业务回调必须遵守传入的 context；超时无法强制停止回调。
+
+| 场景 | 可观察行为 |
+| --- | --- |
+| 本地数据新鲜 | 直接返回，不申请名额或访问 Redis |
+| 加载已获准执行，Redis 读取失败 | 使用已取得的名额回源；Redis 错误保留在 `Shared.Stats()` |
+| 执行和排队容量已满 | 在访问 Redis 或数据源前返回 `ErrQueueFull`；Client 不重试此错误 |
+| Redis 读取失败后回源成功 | 安装本地数据；未取得有效版本，因此跳过远端写入 |
+| 回源成功后 Redis 写入失败 | 保持回源成功结果，单独记录写入错误 |
+| 显式共享失效失败 | 返回错误；不得视为失效成功或重试业务写入 |
+
+Executor 包住整个加载尝试，包括共享读取、Redis 命中、回源和共享写入。
+Redis 缓慢时同样占用容量，即使数据源健康也可能拒绝请求。这种保守的放置方式可以限制
+回源并发，无需再增加一套准入 API。它不提供 Redis 熔断、每秒请求数限制或集群容量限制。
+重试等待不占用名额，但获准执行的回源重试仍然消耗后端资源；故障期间应限制重试次数。
+
+批量加载使用 `BatchOptions.Executor` 和 `QueryOptions.DisableExecutor`，详见
+[执行并发预算](execution.zh-CN.md)。批次预算限制实际批量回调，而不是单个 key。
+不要在两层重复取得同一个预算。
+
+从仓库根目录运行无需 Redis 服务的[完整故障保护示例](../examples/redis/failure_protection/)：
+
+```sh
+cd examples/redis
+go run ./failure_protection
+```
+
+预期输出：
+
+```text
+local hit: cached
+second rejected: true
+first: loaded
+source calls: 1
+rejected: 1
+shared read errors: 1
+```
+
+程序在加载前关闭自身的 Redis 客户端，不停止 Redis 服务。
+channel 保持第一个回调运行，再由另一个 Client 请求不同 key，验证一次回源和一次过载拒绝。
+
 ## 行为与限制
 
 - 读取顺序为本地新鲜结果、Redis 新鲜记录、数据源。新启动的强制刷新或失效刷新跳过 Redis 数据，但仍读取版本以约束后续写入。如果同 key 已经在加载，刷新仍加入现有加载，不会重启或升级它。刷新失败后的新加载继续绕过共享数据，直到成功加载或本地写入替换失效状态。
