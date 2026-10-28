@@ -2,7 +2,7 @@
 
 [简体中文](queries.zh-CN.md) · [Cache and lifecycle](cache.en-US.md) · [Invalidation](invalidation.en-US.md)
 
-One `Client` manages different result types. `Query` subscribes to cached state and background loading; `Fetch` waits for fresh data without retaining a subscription. Both infer their result type from the loader and share data and active requests for the same key. `Queries` combines independent subscriptions into one update stream, for example when a TUI dashboard displays a user and application settings together.
+One `Client` manages different result types. `Query` subscribes to cached state and background loading; `Fetch` waits for fresh data without retaining a subscription. Both infer their result type from the loader and share data and active requests for the same key. `Queries` observes independent subscriptions through one ordered stream; `QueriesWithCombine` optionally projects their states, for example to a TUI dashboard's loading indicator.
 
 ## Quick start: multiple result types
 
@@ -117,7 +117,7 @@ The channel provides initial and subsequent latest states. Request transitions, 
 
 ### Create a group from typed definitions
 
-`Queries(client, definitions...)` returns a `*QueriesHandle` without waiting for loads. Its `QuerySpec` inputs are existing `Definition[V]` values and may have different result types. Each member keeps its own `QueryOptions`, tags, shared cache, and static result-type binding. Loading, same-key request sharing, retries, and polling follow `Query` rules.
+`Queries(client, definitions...)` returns `*QueriesHandle[[]Snapshot[any]]` without waiting for loads. Its `QuerySpec` inputs are existing `Definition[V]` values and may have different result types. Each member keeps its own `QueryOptions`, tags, shared cache, and static result-type binding. Loading, same-key request sharing, retries, and polling follow `Query` rules.
 
 Append the following two snippets at the end of `main` in the quick start, after `_ = settingsState`. `QueryDefinition` infers `User` and `Settings` from the existing loaders; it performs no I/O and returns an error if extra configuration values are supplied. The group shares data and in-flight work with the subscriptions already created there.
 
@@ -134,18 +134,22 @@ group := soroi.Queries(client, userDefinition, settingsDefinition)
 defer group.Close()
 ```
 
-### Read combined updates
+### Read ordered query states
 
-`group.Snapshot()` reads the current `QueriesSnapshot`; `group.Updates()` streams initial and subsequent latest states. `Results` contains `Snapshot[any]` values in input order. Check `HasData` before asserting each result's dynamic type. This example prints once both initial loads finish; a TUI can continue receiving updates for the view's lifetime.
+`group.Snapshot()` returns the current `[]Snapshot[any]`; `group.Updates()` streams initial and subsequent latest slices. Each input keeps one position, including duplicate keys and construction failures. The library does not choose aggregate readiness, loading, or error rules. Check each result's `HasData` before asserting its dynamic data type. This example prints once both initial loads finish; a TUI can continue receiving states for the view's lifetime.
 
 ```go
-for state := range group.Updates() {
-	if state.Err != nil {
-		panic(state.Err)
+for results := range group.Updates() {
+	for _, result := range results {
+		if result.Err != nil {
+			panic(result.Err)
+		}
 	}
-	if state.HasData && !state.Fetching {
-		user := state.Results[0].Data.(User)
-		settings := state.Results[1].Data.(Settings)
+	ready := results[0].HasData && results[1].HasData
+	fetching := results[0].Fetching || results[1].Fetching
+	if ready && !fetching {
+		user := results[0].Data.(User)
+		settings := results[1].Data.(Settings)
 		fmt.Println(user.Name, settings.Theme)
 		break
 	}
@@ -159,16 +163,39 @@ Alice
 Alice dark
 ```
 
-| Field | Meaning |
-| --- | --- |
-| `Results` | One result per input, including failures and duplicate keys; the returned slice belongs to the caller |
-| `HasData` | Every member has usable data; true for an empty group |
-| `Fetching` | At least one member has an initial load, queued request, retry, or background refresh in progress |
-| `Err` | All member errors joined in input order; inspect individual results or use `errors.Is` / `errors.As` |
+### Define an optional combined result
 
-One failure leaves sibling queries running and preserves their partial results. A failed refresh may retain data, so `HasData` and `Err` can both be set. Invalid keys, result-type conflicts, missing fetchers, and nil definitions appear in their result positions; nil definitions report `ErrNoFetcher`. Empty groups and groups containing only construction failures publish an initial state and close `Updates` immediately.
+`QueriesWithCombine(client, combine, definitions...)` uses the same subscriptions and returns `*QueriesHandle[R]`, where the callback's return type determines `R`. `Snapshot()` and `Updates()` expose that type. Append this snippet after the previous loop to project the two queries to a `bool` indicating whether any request is active:
 
-The group is fixed at construction. Use existing Client invalidation and cancellation APIs for its keys; releasing and recreating a group changes its members or copied options. `Close` is idempotent and releases only this group's subscriptions and polling ownership. It neither cancels in-flight work nor closes other consumers. `Client.Close` also closes the stream. As with single-query updates, slow readers may skip intermediate states, and an external shutdown path must end a long-running receive loop. Members remain independent; the group provides no transaction across keys and does not merge backend calls into a batch. See [automatic batch loading](batching.en-US.md) for `Batcher` and `LoadMany`.
+```go
+busy := soroi.QueriesWithCombine(
+	client,
+	func(results []soroi.Snapshot[any]) bool {
+		for _, result := range results {
+			if result.Fetching {
+				return true
+			}
+		}
+		return false
+	},
+	userDefinition,
+	settingsDefinition,
+)
+defer busy.Close()
+fmt.Println("fetching:", busy.Snapshot()) // bool
+```
+
+The additional output is `fetching: false`. The callback can instead return an application-defined struct, data projection, or error collection. This separate entry point preserves the output type without requiring type assertions on the combined value.
+
+Update projections run serially on one worker outside the Client lock; default `Queries` uses no projection worker. `Snapshot()` calls the callback synchronously and may overlap update projection or other reads. Callbacks must return promptly and synchronize any captured mutable state. Slow callbacks and consumers can skip intermediate states. `Close` releases subscriptions immediately and returns without waiting; the combined update channel closes after already-captured projections finish. A nil callback panics before creating subscriptions.
+
+### Behavior and ownership
+
+One failure leaves sibling queries running and preserves their partial results. Each result retains its own error and any still-usable old data. Invalid keys, result-type conflicts, missing fetchers, and nil definitions appear in their result positions; nil definitions report `ErrNoFetcher`. Empty groups and groups containing only construction failures publish one slice and close the raw stream; a combined handle projects that slice before closing its output.
+
+Returned slices belong to the caller; query data inside them remains shared and immutable. Reads and newly built updates apply each member's freshness and `MaxAge` rules. Merely passing time does not publish an update. Members remain independent; the group provides no transaction across keys and does not merge backend calls into a batch. See [automatic batch loading](batching.en-US.md) for `Batcher` and `LoadMany`.
+
+The group is fixed at construction. Use existing Client invalidation and cancellation APIs for its keys; releasing and recreating a group changes its members or copied options. `Close` is idempotent and releases only this group's subscriptions and polling ownership. In-flight work and other consumers continue. `Client.Close` also releases the group. An external shutdown path must end a long-running receive loop.
 
 ## `SetEnabled`: load only when a condition permits
 
