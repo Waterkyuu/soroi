@@ -2,7 +2,7 @@
 
 [English](queries.en-US.md) · [缓存与生命周期](cache.zh-CN.md) · [缓存失效](invalidation.zh-CN.md)
 
-一个 `Client` 可以管理不同类型的数据。`Query` 订阅缓存状态并在后台加载；`Fetch` 等待新鲜数据，不保留订阅。两者均从加载函数推断结果类型，并共享同键的数据及正在进行的请求。`Queries` 通过一个有序通道观察独立订阅；`QueriesWithCombine` 可选地转换这些状态，例如生成 TUI 面板的加载指示。
+一个 `Client` 可以管理不同类型的数据。`Query` 订阅缓存状态并在后台加载；`Fetch` 等待新鲜数据，不保留订阅。两者均从加载函数推断结果类型，并共享同键的数据及正在进行的请求。`Queries` 通过一个有序通道观察独立订阅；`QueriesWithCombine` 可选地转换这些状态，例如生成 TUI 面板的数据、加载状态和错误。
 
 ## 快速开始：多种结果类型
 
@@ -167,27 +167,59 @@ Alice dark
 
 ### 定义可选的组合结果
 
-`QueriesWithCombine(client, combine, definitions...)` 使用相同的订阅逻辑，返回 `*QueriesHandle[R]`，其中 `R` 由回调返回类型推断。`Snapshot()` 与 `Updates()` 均暴露该类型。将以下片段追加到前面的循环之后，把两个查询转换为表示是否有请求正在执行的 `bool`：
+`QueriesWithCombine(client, combine, definitions...)` 使用相同的订阅逻辑，返回 `*QueriesHandle[R]`，其中 `R` 由回调返回类型推断。`Snapshot()` 与 `Updates()` 均暴露该类型。将以下片段追加到前面的循环之后，把两个查询组合为 `Combined`，保留数据并汇总加载状态和错误：
 
 ```go
-busy := soroi.QueriesWithCombine(
+// Combined keeps query data alongside the view's loading state and errors.
+type Combined struct {
+	// Data preserves the input order of the queries.
+	Data []any
+	// Pending reports an initial load without previous data.
+	Pending bool
+	// Fetching includes initial loads and background refreshes.
+	Fetching bool
+	// Errors contains every non-nil query error.
+	Errors []error
+}
+
+combined := soroi.QueriesWithCombine(
 	client,
-	func(results []soroi.Snapshot[any]) bool {
-		for _, result := range results {
-			if result.Fetching {
-				return true
+	func(results []soroi.Snapshot[any]) Combined {
+		state := Combined{
+			Data:   make([]any, len(results)),
+			Errors: []error{},
+		}
+		for i, result := range results {
+			state.Data[i] = result.Data
+			state.Pending = state.Pending || result.Status == soroi.Pending
+			state.Fetching = state.Fetching || result.Fetching
+			if result.Err != nil {
+				state.Errors = append(state.Errors, result.Err)
 			}
 		}
-		return false
+		return state
 	},
 	userDefinition,
 	settingsDefinition,
 )
-defer busy.Close()
-fmt.Println("fetching:", busy.Snapshot()) // bool
+defer combined.Close()
+state := combined.Snapshot()
+fmt.Println("data:", state.Data)
+fmt.Println("pending:", state.Pending)
+fmt.Println("fetching:", state.Fetching)
+fmt.Println("errors:", state.Errors)
 ```
 
-新增输出为 `fetching: false`。回调也可以返回应用定义的结构体、数据投影或错误集合。单独的入口保留组合结果的静态类型，读取组合值时无需类型断言。
+新增输出：
+
+```text
+data: [{Alice} {dark}]
+pending: false
+fetching: false
+errors: []
+```
+
+`Data` 为每个查询保留一个位置。`Pending` 表示至少一项正在没有旧数据的情况下首次加载；`Fetching` 还包含后台刷新。`Errors` 收集非 nil 错误。`Snapshot()` 和 `Updates()` 接收到的值均以 `Combined` 暴露这些字段。
 
 更新转换由一个 worker 在 Client 锁外串行执行；默认的 `Queries` 不创建转换 worker。`Snapshot()` 在调用方同步执行回调，可能与更新转换或其他读取并发。回调应及时返回，并同步保护捕获的可变状态。慢回调和慢消费者可能跳过中间状态。`Close` 立即释放订阅并返回，不等待回调；已经捕获的状态完成转换后，组合更新通道才会关闭。nil 回调会在创建订阅前引发 panic。
 

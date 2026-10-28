@@ -2,7 +2,7 @@
 
 [简体中文](queries.zh-CN.md) · [Cache and lifecycle](cache.en-US.md) · [Invalidation](invalidation.en-US.md)
 
-One `Client` manages different result types. `Query` subscribes to cached state and background loading; `Fetch` waits for fresh data without retaining a subscription. Both infer their result type from the loader and share data and active requests for the same key. `Queries` observes independent subscriptions through one ordered stream; `QueriesWithCombine` optionally projects their states, for example to a TUI dashboard's loading indicator.
+One `Client` manages different result types. `Query` subscribes to cached state and background loading; `Fetch` waits for fresh data without retaining a subscription. Both infer their result type from the loader and share data and active requests for the same key. `Queries` observes independent subscriptions through one ordered stream; `QueriesWithCombine` optionally projects their states, for example to a TUI dashboard's data, loading state, and errors.
 
 ## Quick start: multiple result types
 
@@ -165,27 +165,59 @@ Alice dark
 
 ### Define an optional combined result
 
-`QueriesWithCombine(client, combine, definitions...)` uses the same subscriptions and returns `*QueriesHandle[R]`, where the callback's return type determines `R`. `Snapshot()` and `Updates()` expose that type. Append this snippet after the previous loop to project the two queries to a `bool` indicating whether any request is active:
+`QueriesWithCombine(client, combine, definitions...)` uses the same subscriptions and returns `*QueriesHandle[R]`, where the callback's return type determines `R`. `Snapshot()` and `Updates()` expose that type. Append this snippet after the previous loop to combine the two queries into `Combined`, preserving their data and collecting loading states and errors:
 
 ```go
-busy := soroi.QueriesWithCombine(
+// Combined keeps query data alongside the view's loading state and errors.
+type Combined struct {
+	// Data preserves the input order of the queries.
+	Data []any
+	// Pending reports an initial load without previous data.
+	Pending bool
+	// Fetching includes initial loads and background refreshes.
+	Fetching bool
+	// Errors contains every non-nil query error.
+	Errors []error
+}
+
+combined := soroi.QueriesWithCombine(
 	client,
-	func(results []soroi.Snapshot[any]) bool {
-		for _, result := range results {
-			if result.Fetching {
-				return true
+	func(results []soroi.Snapshot[any]) Combined {
+		state := Combined{
+			Data:   make([]any, len(results)),
+			Errors: []error{},
+		}
+		for i, result := range results {
+			state.Data[i] = result.Data
+			state.Pending = state.Pending || result.Status == soroi.Pending
+			state.Fetching = state.Fetching || result.Fetching
+			if result.Err != nil {
+				state.Errors = append(state.Errors, result.Err)
 			}
 		}
-		return false
+		return state
 	},
 	userDefinition,
 	settingsDefinition,
 )
-defer busy.Close()
-fmt.Println("fetching:", busy.Snapshot()) // bool
+defer combined.Close()
+state := combined.Snapshot()
+fmt.Println("data:", state.Data)
+fmt.Println("pending:", state.Pending)
+fmt.Println("fetching:", state.Fetching)
+fmt.Println("errors:", state.Errors)
 ```
 
-The additional output is `fetching: false`. The callback can instead return an application-defined struct, data projection, or error collection. This separate entry point preserves the output type without requiring type assertions on the combined value.
+Additional output:
+
+```text
+data: [{Alice} {dark}]
+pending: false
+fetching: false
+errors: []
+```
+
+`Data` retains one position per query. `Pending` reports any initial load without previous data; `Fetching` also includes background refreshes. `Errors` collects non-nil errors. Both `Snapshot()` and values received from `Updates()` expose these fields as `Combined`.
 
 Update projections run serially on one worker outside the Client lock; default `Queries` uses no projection worker. `Snapshot()` calls the callback synchronously and may overlap update projection or other reads. Callbacks must return promptly and synchronize any captured mutable state. Slow callbacks and consumers can skip intermediate states. `Close` releases subscriptions immediately and returns without waiting; the combined update channel closes after already-captured projections finish. A nil callback panics before creating subscriptions.
 
