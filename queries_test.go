@@ -10,7 +10,7 @@ import (
 )
 
 // awaitQueries waits for a combined state with a deadline used only as a deadlock guard.
-func awaitQueries(t *testing.T, group *QueriesHandle, matches func(QueriesSnapshot) bool) QueriesSnapshot {
+func awaitQueries[V any](t *testing.T, group *QueriesHandle[V], matches func(V) bool) V {
 	t.Helper()
 	timer := time.NewTimer(3 * time.Second)
 	defer timer.Stop()
@@ -27,6 +27,16 @@ func awaitQueries(t *testing.T, group *QueriesHandle, matches func(QueriesSnapsh
 			t.Fatal("queries did not publish the expected state")
 		}
 	}
+}
+
+// queryResultsSettled reports request completion without imposing data or error aggregation.
+func queryResultsSettled(results []Snapshot[any]) bool {
+	for _, result := range results {
+		if result.Fetching {
+			return false
+		}
+	}
+	return true
 }
 
 // TestQueriesIndependentResults preserves input order, partial results, and errors without stopping siblings.
@@ -58,24 +68,31 @@ func TestQueriesIndependentResults(t *testing.T) {
 	<-firstStarted
 	<-secondStarted
 	state := group.Snapshot()
-	if state.HasData || !state.Fetching || state.Err != nil || len(state.Results) != 2 {
+	if len(state) != 2 {
+		t.Fatalf("result count = %d", len(state))
+	}
+	missing := !state[0].HasData && !state[1].HasData
+	loading := state[0].Fetching && state[1].Fetching
+	if !missing || !loading {
 		t.Fatalf("initial aggregate = %+v", state)
 	}
 	close(secondRelease)
-	state = awaitQueries(t, group, func(s QueriesSnapshot) bool { return s.Results[1].Err != nil })
-	if !errors.Is(state.Err, failure) || !state.Fetching || state.Results[0].Status != Pending {
+	state = awaitQueries(t, group, func(s []Snapshot[any]) bool { return s[1].Err != nil })
+	if !errors.Is(state[1].Err, failure) || !state[0].Fetching || state[0].Status != Pending {
 		t.Fatalf("partial failure = %+v", state)
 	}
 	close(firstRelease)
-	state = awaitQueries(t, group, func(s QueriesSnapshot) bool { return !s.Fetching })
-	if state.HasData || !errors.Is(state.Err, failure) || state.Results[0].Data != "Alice" {
+	state = awaitQueries(t, group, queryResultsSettled)
+	if state[1].HasData || !errors.Is(state[1].Err, failure) || state[0].Data != "Alice" {
 		t.Fatalf("completed aggregate = %+v", state)
 	}
 	if err := Set(client, second.Key, 42); err != nil {
 		t.Fatal(err)
 	}
 	state = <-group.Updates()
-	if !state.HasData || state.Err != nil || state.Results[1].Data != 42 {
+	available := state[0].HasData && state[1].HasData
+	succeeded := state[0].Err == nil && state[1].Err == nil
+	if !available || !succeeded || state[1].Data != 42 {
 		t.Fatalf("recovered aggregate = %+v", state)
 	}
 }
@@ -109,13 +126,13 @@ func TestQueriesReusePolicy(t *testing.T) {
 	definition.Options.Disable = false
 	definition.Tags[0] = "changed"
 	state := <-group.Updates()
-	if !state.HasData || state.Fetching || calls.Load() != 0 {
+	if !state[0].HasData || state[0].Fetching || calls.Load() != 0 {
 		t.Fatalf("disabled cached aggregate = %+v", state)
 	}
 	if err := client.Invalidate(QueryFilter{Tags: []string{"dashboard"}}); err != nil {
 		t.Fatal(err)
 	}
-	if state = group.Snapshot(); !state.Results[0].Stale || state.Fetching || calls.Load() != 0 {
+	if state = group.Snapshot(); !state[0].Stale || state[0].Fetching || calls.Load() != 0 {
 		t.Fatalf("disabled invalidation = %+v", state)
 	}
 	if _, err := Fetch(context.Background(), client, "count", func(context.Context) (int, error) {
@@ -123,8 +140,8 @@ func TestQueriesReusePolicy(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	state = awaitQueries(t, group, func(s QueriesSnapshot) bool { return s.Results[0].Data == 9 })
-	if !state.HasData || state.Results[0].Stale {
+	state = awaitQueries(t, group, func(s []Snapshot[any]) bool { return s[0].Data == 9 })
+	if !state[0].HasData || state[0].Stale {
 		t.Fatalf("external load = %+v", state)
 	}
 	active := Queries(client, definition)
@@ -132,8 +149,8 @@ func TestQueriesReusePolicy(t *testing.T) {
 	if err := client.Invalidate("count"); err != nil {
 		t.Fatal(err)
 	}
-	state = awaitQueries(t, active, func(s QueriesSnapshot) bool { return s.Results[0].Data == 8 && !s.Fetching })
-	if state.Err != nil || !state.HasData || calls.Load() != 2 {
+	state = awaitQueries(t, active, func(s []Snapshot[any]) bool { return s[0].Data == 8 && !s[0].Fetching })
+	if state[0].Err != nil || !state[0].HasData || calls.Load() != 2 {
 		t.Fatalf("retried aggregate = %+v; calls=%d", state, calls.Load())
 	}
 	if err := Set(client, "count", "wrong type"); !errors.Is(err, ErrTypeMismatch) {
@@ -164,19 +181,19 @@ func TestQueriesDuplicateKeys(t *testing.T) {
 	ordinary := definition.Query(client)
 	t.Cleanup(ordinary.Close)
 	close(release)
-	state := awaitQueries(t, group, func(s QueriesSnapshot) bool { return s.HasData && !s.Fetching })
-	if calls.Load() != 1 || state.Results[0].Data != 42 || state.Results[1].Data != 42 {
+	state := awaitQueries(t, group, func(s []Snapshot[any]) bool { return s[0].HasData && queryResultsSettled(s) })
+	if calls.Load() != 1 || state[0].Data != 42 || state[1].Data != 42 {
 		t.Fatalf("shared results = %+v; calls=%d", state, calls.Load())
 	}
-	state.Results[0].Data = "caller-owned slice"
-	if current := group.Snapshot(); current.Results[0].Data != 42 {
+	state[0].Data = "caller-owned slice"
+	if current := group.Snapshot(); current[0].Data != 42 {
 		t.Fatal("changing a returned result slice changed the group")
 	}
 	group.Close()
 	if err := Set(client, "shared", 43); err != nil {
 		t.Fatal(err)
 	}
-	if ordinary.Snapshot().Data != 43 || group.Snapshot().Results[0].Data != 43 {
+	if ordinary.Snapshot().Data != 43 || group.Snapshot()[0].Data != 43 {
 		t.Fatal("group closure changed ordinary subscription or cached reads")
 	}
 }
@@ -198,13 +215,14 @@ func TestQueriesLatestUpdates(t *testing.T) {
 		Set(client, "first", value)
 	}
 	state := <-group.Updates()
-	if state.Results[0].Data != 99 || initial.Results[0].HasData {
+	if state[0].Data != 99 || initial[0].HasData {
 		t.Fatalf("latest aggregate = %+v; initial = %+v", state, initial)
 	}
-	state.Results[0].Data = "changed by caller"
+	state[0].Data = "changed by caller"
 	Set(client, "second", 42)
 	state = <-group.Updates()
-	if state.Results[0].Data != 99 || state.Results[1].Data != 42 || !state.HasData {
+	available := state[0].HasData && state[1].HasData
+	if state[0].Data != 99 || state[1].Data != 42 || !available {
 		t.Fatalf("returned slice changed later publications: %+v", state)
 	}
 }
@@ -224,19 +242,16 @@ func TestQueriesValidation(t *testing.T) {
 		(*Definition[int])(nil),
 	)
 	t.Cleanup(group.Close)
-	state := awaitQueries(t, group, func(s QueriesSnapshot) bool { return !s.Fetching })
+	state := awaitQueries(t, group, queryResultsSettled)
 	wants := []error{
 		ErrInvalidKey, ErrNoFetcher, nil, ErrTypeMismatch, firstFailure, secondFailure, ErrNoFetcher, ErrNoFetcher,
 	}
 	for index, want := range wants {
-		if !errors.Is(state.Results[index].Err, want) {
-			t.Fatalf("result %d = %+v, want %v", index, state.Results[index], want)
-		}
-		if want != nil && !errors.Is(state.Err, want) {
-			t.Fatalf("aggregate error %v does not contain %v", state.Err, want)
+		if !errors.Is(state[index].Err, want) {
+			t.Fatalf("result %d = %+v, want %v", index, state[index], want)
 		}
 	}
-	if state.Results[2].Data != 42 || state.HasData {
+	if state[2].Data != 42 || !state[2].HasData {
 		t.Fatalf("valid sibling = %+v", state)
 	}
 }
@@ -252,7 +267,7 @@ func TestQueriesEmptyAndFailedLifecycle(t *testing.T) {
 			}
 			group := Queries(client, definitions...)
 			state, open := <-group.Updates()
-			if !open || state.Results == nil || len(state.Results) != count || state.HasData != (count == 0) {
+			if !open || state == nil || len(state) != count {
 				t.Fatalf("initial terminal group = %+v; open=%v", state, open)
 			}
 			if _, open := <-group.Updates(); open {
@@ -275,12 +290,12 @@ func TestQueriesPollingAndClose(t *testing.T) {
 	}
 	group := Queries(client, definition)
 	t.Cleanup(group.Close)
-	awaitQueries(t, group, func(s QueriesSnapshot) bool { return s.HasData && !s.Fetching })
+	awaitQueries(t, group, func(s []Snapshot[any]) bool { return s[0].HasData && queryResultsSettled(s) })
 	first := nextPollingTimer(t, timers)
 	definition.Options.RefetchInterval = time.Hour
 	first.fire()
-	state := awaitQueries(t, group, func(s QueriesSnapshot) bool { return s.Results[0].Data == 2 && !s.Fetching })
-	if state.Err != nil || !state.HasData {
+	state := awaitQueries(t, group, func(s []Snapshot[any]) bool { return s[0].Data == 2 && !s[0].Fetching })
+	if state[0].Err != nil || !state[0].HasData {
 		t.Fatalf("polled aggregate = %+v", state)
 	}
 	next := nextPollingTimer(t, timers)
@@ -315,20 +330,20 @@ func TestQueriesRetainedDataAndCancellation(t *testing.T) {
 	if err := client.Invalidate("cached"); err != nil {
 		t.Fatal(err)
 	}
-	state := awaitQueries(t, group, func(s QueriesSnapshot) bool { return errors.Is(s.Err, failure) })
-	if !state.Results[0].HasData || state.Results[0].Data != 7 || !state.Fetching {
+	state := awaitQueries(t, group, func(s []Snapshot[any]) bool { return errors.Is(s[0].Err, failure) })
+	if !state[0].HasData || state[0].Data != 7 || !state[1].Fetching {
 		t.Fatalf("retained refresh failure = %+v", state)
 	}
 	if err := client.Cancel("pending"); err != nil {
 		t.Fatal(err)
 	}
-	state = awaitQueries(t, group, func(s QueriesSnapshot) bool { return !s.Fetching })
-	if state.Results[1].Status != Idle || state.Results[1].Err != nil || !errors.Is(state.Err, failure) {
+	state = awaitQueries(t, group, queryResultsSettled)
+	if state[1].Status != Idle || state[1].Err != nil || !errors.Is(state[0].Err, failure) {
 		t.Fatalf("canceled aggregate = %+v", state)
 	}
 	Set(client, "pending", "ready")
 	state = <-group.Updates()
-	if !state.HasData || !errors.Is(state.Err, failure) {
+	if !state[0].HasData || !state[1].HasData || !errors.Is(state[0].Err, failure) {
 		t.Fatalf("available data with a refresh error = %+v", state)
 	}
 }
@@ -375,12 +390,14 @@ func TestQueriesClientClose(t *testing.T) {
 	client.Close()
 	for range group.Updates() {
 	}
-	if state := group.Snapshot(); !errors.Is(state.Err, ErrClosed) || state.Fetching {
+	state := group.Snapshot()
+	bothClosed := errors.Is(state[0].Err, ErrClosed) && errors.Is(state[1].Err, ErrClosed)
+	if !bothClosed || !queryResultsSettled(state) {
 		t.Fatalf("closed client aggregate = %+v", state)
 	}
 	group.Close()
 	failed := Queries(client, definition)
-	if state := <-failed.Updates(); !errors.Is(state.Err, ErrClosed) {
+	if state := <-failed.Updates(); !errors.Is(state[0].Err, ErrClosed) {
 		t.Fatalf("construction on closed client = %+v", state)
 	}
 	if _, open := <-failed.Updates(); open {
@@ -408,17 +425,95 @@ func TestQueriesMemberFreshness(t *testing.T) {
 	short = 0
 	now = now.Add(time.Minute)
 	state := group.Snapshot()
-	if !state.HasData || !state.Results[0].Stale || state.Results[1].Stale {
+	available := state[0].HasData && state[1].HasData
+	if !available || !state[0].Stale || state[1].Stale {
 		t.Fatalf("independent freshness = %+v", state)
 	}
 	now = now.Add(time.Hour)
 	state = group.Snapshot()
-	if state.HasData || state.Results[0].HasData || state.Results[1].HasData {
+	if state[0].HasData || state[1].HasData {
 		t.Fatalf("maximum age was ignored: %+v", state)
 	}
 	state = <-group.Updates()
-	if state.HasData || state.Results[0].HasData || state.Results[1].HasData {
+	if state[0].HasData || state[1].HasData {
 		t.Fatalf("maximum age was not published: %+v", state)
+	}
+}
+
+// queryScopeStore observes lock ownership while returning an immutable store identity without I/O.
+type queryScopeStore struct {
+	// SharedInvalidationStore supplies unused remote operations for a disabled subscription.
+	SharedInvalidationStore
+	// client is reentered for diagnostics only after verifying that its mutex is available.
+	client *Client
+	// locked records a regression without hanging the test on a non-reentrant mutex.
+	locked bool
+}
+
+// InvalidationScope verifies that definition resolution permits Client diagnostics without holding Client.mu.
+func (s *queryScopeStore) InvalidationScope() string {
+	if !s.client.mu.TryLock() {
+		s.locked = true
+		return "query-scope-test"
+	}
+	s.client.mu.Unlock()
+	_ = s.client.Stats()
+	return "query-scope-test"
+}
+
+// TestQueriesDefinitionResolution keeps application-owned store callbacks outside the admission lock.
+func TestQueriesDefinitionResolution(t *testing.T) {
+	client := newInvalidationClient(t)
+	store := &queryScopeStore{client: client}
+	shared, err := NewSharedCache[int](store, SharedCacheOptions[int]{
+		Key: "remote", Format: "number/v1", TTL: time.Hour,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	group := Queries(client, Definition[int]{
+		Key:     "number",
+		Fetcher: func(context.Context) (int, error) { return 42, nil },
+		Shared:  shared,
+		Options: QueryOptions{Disable: true},
+	})
+	t.Cleanup(group.Close)
+	if store.locked {
+		t.Fatal("store callback ran while holding Client.mu")
+	}
+}
+
+// TestQueriesPublicationMaxAge drops expired sibling data when another key causes a group publication.
+func TestQueriesPublicationMaxAge(t *testing.T) {
+	now := time.Unix(0, 0)
+	client := NewClient(Options{StaleTime: time.Hour, MaxAge: time.Minute, Clock: func() time.Time { return now }})
+	t.Cleanup(client.Close)
+	Set(client, "first", 1)
+	Set(client, "second", 2)
+	definition := Definition[int]{
+		Key:     "first",
+		Fetcher: func(context.Context) (int, error) { return 0, nil },
+		Options: QueryOptions{Disable: true},
+	}
+	second := definition
+	second.Key = "second"
+	group := Queries(client, definition, second)
+	t.Cleanup(group.Close)
+	ordinary := definition.Query(client)
+	t.Cleanup(ordinary.Close)
+	<-ordinary.Updates()
+	<-group.Updates()
+	now = now.Add(time.Minute)
+	Set(client, "second", 3)
+	state := <-group.Updates()
+	if state[0].HasData || state[0].Data != nil || !state[0].Stale || state[1].Data != 3 {
+		t.Fatalf("publication did not enforce MaxAge: %+v", state)
+	}
+	if previous := <-ordinary.Updates(); previous.HasData {
+		t.Fatalf("age expiration was not shared with ordinary observers: %+v", previous)
+	}
+	if current := group.Snapshot(); current[0].HasData || current[1].Data != 3 {
+		t.Fatalf("read and publication disagree: %+v", current)
 	}
 }
 
@@ -455,7 +550,7 @@ func TestQueriesConcurrentClosure(t *testing.T) {
 		workers.Wait()
 		for range group.Updates() {
 		}
-		if closeClient && !errors.Is(group.Snapshot().Err, ErrClosed) {
+		if closeClient && !errors.Is(group.Snapshot()[0].Err, ErrClosed) {
 			t.Fatal("closed client was not reported by group snapshots")
 		}
 	}

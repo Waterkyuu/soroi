@@ -59,20 +59,24 @@ func TestHTTPQueries(t *testing.T) {
 		}
 	}
 	close(settingsRelease)
-	state := awaitHTTPQueries(t, ctx, group, func(s soroi.QueriesSnapshot) bool { return s.Results[1].HasData })
-	if state.HasData || !state.Fetching || state.Results[1].Data.(settings).Theme != "dark" {
+	state := awaitHTTPQueries(t, ctx, group, func(s []soroi.Snapshot[any]) bool { return s[1].HasData })
+	if state[0].HasData || !state[0].Fetching || state[1].Data.(settings).Theme != "dark" {
 		t.Fatalf("partial HTTP result = %+v", state)
 	}
 	close(userRelease)
-	state = awaitHTTPQueries(t, ctx, group, func(s soroi.QueriesSnapshot) bool { return s.HasData && !s.Fetching })
-	if state.Err != nil || state.Results[0].Data.(user).Name != "Alice" {
+	state = awaitHTTPQueries(t, ctx, group, func(s []soroi.Snapshot[any]) bool {
+		ready := s[0].HasData && s[1].HasData
+		fetching := s[0].Fetching || s[1].Fetching
+		return ready && !fetching
+	})
+	if state[0].Err != nil || state[1].Err != nil || state[0].Data.(user).Name != "Alice" {
 		t.Fatalf("complete HTTP result = %+v", state)
 	}
 	if err := soroi.Set(client, detail.Key, user{Name: "Bob"}); err != nil {
 		t.Fatal(err)
 	}
 	state = <-group.Updates()
-	if state.Results[0].Data.(user).Name != "Bob" || state.Results[1].Data.(settings).Theme != "dark" {
+	if state[0].Data.(user).Name != "Bob" || state[1].Data.(settings).Theme != "dark" {
 		t.Fatalf("later shared update = %+v", state)
 	}
 	group.Close()
@@ -81,13 +85,55 @@ func TestHTTPQueries(t *testing.T) {
 	}
 }
 
+// TestHTTPQueriesWithCombine applies a typed view projection to initial HTTP results and later invalidation.
+func TestHTTPQueriesWithCombine(t *testing.T) {
+	api := newUserAPI(t)
+	client := soroi.NewClient(soroi.Options{StaleTime: time.Hour})
+	t.Cleanup(client.Close)
+	detail := soroi.Definition[user]{
+		Key:     "user",
+		Fetcher: readJSON[user](api.server.Client(), api.server.URL+"/users/42"),
+	}
+	config := soroi.Definition[settings]{
+		Key:     "settings",
+		Fetcher: readJSON[settings](api.server.Client(), api.server.URL+"/settings"),
+	}
+	group := soroi.QueriesWithCombine(
+		client,
+		func(results []soroi.Snapshot[any]) string {
+			_ = client.Stats()
+			if !results[0].HasData || !results[1].HasData {
+				return "loading"
+			}
+			return results[0].Data.(user).Name + ":" + results[1].Data.(settings).Theme
+		},
+		detail,
+		config,
+	)
+	t.Cleanup(group.Close)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	awaitHTTPQueries(t, ctx, group, func(value string) bool { return value == "Alice:dark" })
+	api.update(t, user{Name: "Bob"})
+	if err := client.Invalidate("user"); err != nil {
+		t.Fatal(err)
+	}
+	awaitHTTPQueries(t, ctx, group, func(value string) bool { return value == "Bob:dark" })
+	if group.Snapshot() != "Bob:dark" || api.count("/users/42") != 2 || api.count("/settings") != 1 {
+		t.Fatal("custom projection lost independent query execution or snapshot state")
+	}
+	group.Close()
+	for range group.Updates() {
+	}
+}
+
 // awaitHTTPQueries bounds public update waits without depending on HTTP response timing.
-func awaitHTTPQueries(
+func awaitHTTPQueries[V any](
 	t *testing.T,
 	ctx context.Context,
-	group *soroi.QueriesHandle,
-	matches func(soroi.QueriesSnapshot) bool,
-) soroi.QueriesSnapshot {
+	group *soroi.QueriesHandle[V],
+	matches func(V) bool,
+) V {
 	t.Helper()
 	for {
 		select {
