@@ -40,7 +40,7 @@ type infinitePagination[Page, Param any] struct {
 	// fetch loads one page under the ordinary query retry and execution policy.
 	fetch func(context.Context, Param) (Page, error)
 	// next extracts a continuation without performing I/O or modifying cached values.
-	next func(Page) (Param, bool)
+	next func(Page, []Page, Param, []Param) (Param, bool)
 }
 
 // InfiniteQueryHandle owns a subscription to shared pages and their pagination state.
@@ -59,6 +59,9 @@ type InfiniteQueryHandle[Page, Param any] struct {
 // Omitted query options inherit Client defaults; extra options fail through Snapshot and Updates.
 // Page size and all other result-affecting parameters belong in the key and fetchPage closure.
 // getNextPageParam must be a prompt, pure function; it runs outside Client.mu and may run concurrently.
+// The callback receives the last page, all pages, the last parameter, and all parameters in matching order.
+// During refresh, its history contains only the successfully reloaded prefix, including the latest page.
+// All callback inputs are shared, read-only data, including their slices and nested values.
 // A false continuation ends pagination, independently of page length or the parameter's zero value.
 // Nil getNextPageParam panics before admission; nil fetchPage reports ErrNoFetcher.
 func InfiniteQuery[Page, Param any](
@@ -66,7 +69,7 @@ func InfiniteQuery[Page, Param any](
 	key any,
 	initialPageParam Param,
 	fetchPage func(context.Context, Param) (Page, error),
-	getNextPageParam func(lastPage Page) (Param, bool),
+	getNextPageParam func(lastPage Page, allPages []Page, lastPageParam Param, allPageParams []Param) (Param, bool),
 	options ...QueryOptions,
 ) *InfiniteQueryHandle[Page, Param] {
 	if getNextPageParam == nil {
@@ -142,7 +145,7 @@ func (h *InfiniteQueryHandle[Page, Param]) snapshotLocked(state Snapshot[any]) I
 // project derives continuation from captured data, preserving the publication's operation state.
 func (h *InfiniteQueryHandle[Page, Param]) project(state InfiniteSnapshot[Page, Param]) InfiniteSnapshot[Page, Param] {
 	if state.HasData && len(state.Data.Pages) > 0 {
-		_, state.HasNextPage = h.pagination.next(state.Data.Pages[len(state.Data.Pages)-1])
+		_, state.HasNextPage = h.pagination.nextParam(state.Data)
 	}
 	return state
 }
@@ -212,6 +215,17 @@ func (p *infinitePagination[Page, Param]) loader(param Param) Loader[any] {
 	}
 }
 
+// nextParam supplies matching page and parameter history from a non-empty, valid sequence.
+func (p *infinitePagination[Page, Param]) nextParam(data InfiniteData[Page, Param]) (Param, bool) {
+	last := len(data.Pages) - 1
+	return p.next(
+		data.Pages[last],
+		data.Pages,
+		data.PageParams[last],
+		data.PageParams,
+	)
+}
+
 // load builds an immutable append or replacement using individually retried page callbacks.
 func (p *infinitePagination[Page, Param]) load(
 	ctx context.Context,
@@ -230,7 +244,7 @@ func (p *infinitePagination[Page, Param]) load(
 		limit = 1
 		if len(data.Pages) > 0 {
 			var more bool
-			param, more = p.next(data.Pages[len(data.Pages)-1])
+			param, more = p.nextParam(data)
 			if !more {
 				return data, nil
 			}
@@ -250,7 +264,8 @@ func (p *infinitePagination[Page, Param]) load(
 		result.PageParams = append(result.PageParams, param)
 		if i+1 < limit {
 			var more bool
-			param, more = p.next(page)
+			// Refresh continuation must use the rebuilt prefix so changed offsets never reuse old parameters.
+			param, more = p.nextParam(result)
 			if !more {
 				break
 			}

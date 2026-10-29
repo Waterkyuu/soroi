@@ -41,7 +41,7 @@ tasks := soroi.InfiniteQuery(
 	"tasks",
 	"",
 	fetchPage,
-	func(last TaskPage) (string, bool) {
+	func(last TaskPage, _ []TaskPage, _ string, _ []string) (string, bool) {
 		return last.NextCursor, last.NextCursor != ""
 	},
 	soroi.QueryOptions{Disable: true},
@@ -57,10 +57,56 @@ defer tasks.Close()
 | `key` | 标识完整列表；筛选条件、每页条数和身份范围影响结果时，应包含在 key 中 |
 | `initialPageParam` | 第一次请求的参数；这里用 `""` 表示第一页 |
 | `fetchPage` | `func(context.Context, Param) (Page, error)`，使用传入参数获取一页 |
-| `getNextPageParam` | `func(Page) (Param, bool)`，从最后一页取下一次参数；false 表示分页结束 |
+| `getNextPageParam` | `func(Page, []Page, Param, []Param) (Param, bool)`，根据页和请求参数计算下一次参数；false 表示分页结束 |
 | `options` | 零个或一个现有 `QueryOptions`，省略的配置继承 Client 策略 |
 
 变化的游标由分页序列管理，不放入列表 key。每页条数在后端请求中配置，并包含在 key 中，不需要单独的分页配置项。继续加载标记为 true 时，零值也可以作为有效分页参数。
+
+### 计算下一页参数
+
+继续加载回调按以下顺序接收四个参数：
+
+| 参数 | 含义 |
+| --- | --- |
+| `lastPage` | 最后一个成功加载的响应 |
+| `allPages` | 按请求顺序排列的所有成功加载的响应，包含 `lastPage` |
+| `lastPageParam` | 加载 `lastPage` 时使用的请求参数 |
+| `allPageParams` | 与 `allPages` 一一对应、顺序一致的参数，包含 `lastPageParam` |
+
+追加或读取状态时，这些参数描述保留的序列。刷新时，它们只描述本次已成功重新加载的前缀，不包含旧页及其参数。所有参数均应只读，包括切片及其嵌套值。回调必须为纯函数，可能被并发调用。
+
+后端只返回数组、不返回游标时，可以根据 `lastPageParam` 计算下一次 offset。以下片段复用创建步骤中的 `client` 和 `ctx`，模拟响应不足 `pageSize` 条即结束分页的后端：
+
+```go
+pageSize := 2
+titles := []string{"Write docs", "Fix tests", "Publish release"}
+fetchItems := func(_ context.Context, offset int) ([]string, error) {
+	if offset >= len(titles) {
+		return []string{}, nil
+	}
+	return titles[offset:min(offset+pageSize, len(titles))], nil
+}
+offsetTasks := soroi.InfiniteQuery(
+	client,
+	"tasks-offset-size-2",
+	0,
+	fetchItems,
+	func(last []string, _ [][]string, lastOffset int, _ []int) (int, bool) {
+		return lastOffset + len(last), len(last) == pageSize
+	},
+	soroi.QueryOptions{Disable: true},
+)
+defer offsetTasks.Close()
+
+for range 2 {
+	if _, err := offsetTasks.FetchNextPage(ctx); err != nil {
+		panic(err)
+	}
+}
+fmt.Println(offsetTasks.Snapshot().Data.PageParams) // [0 2]
+```
+
+回调签名要求声明全部四个参数；不使用的参数可用 `_` 占位，与游标示例一致。返回值仍为 `(Param, bool)`，false 表示分页结束。
 
 ### 加载第一页或下一页
 
@@ -181,7 +227,7 @@ func main() {
 		"tasks",
 		"",
 		fetchPage,
-		func(last TaskPage) (string, bool) {
+		func(last TaskPage, _ []TaskPage, _ string, _ []string) (string, bool) {
 			return last.NextCursor, last.NextCursor != ""
 		},
 		soroi.QueryOptions{Disable: true},

@@ -18,16 +18,16 @@ type infiniteTestPage struct {
 }
 
 // nextInfiniteTestPage extracts continuation without treating an empty page as the end.
-func nextInfiniteTestPage(page infiniteTestPage) (int, bool) {
+func nextInfiniteTestPage(page infiniteTestPage, _ []infiniteTestPage, _ int, _ []int) (int, bool) {
 	return page.Next, page.Next != 0
 }
 
 // awaitInfiniteState waits for an observable state with a deadlock guard, not a scheduling delay.
-func awaitInfiniteState(
+func awaitInfiniteState[Page, Param any](
 	t *testing.T,
-	h *InfiniteQueryHandle[infiniteTestPage, int],
-	matches func(InfiniteSnapshot[infiniteTestPage, int]) bool,
-) InfiniteSnapshot[infiniteTestPage, int] {
+	h *InfiniteQueryHandle[Page, Param],
+	matches func(InfiniteSnapshot[Page, Param]) bool,
+) InfiniteSnapshot[Page, Param] {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -213,9 +213,9 @@ func TestInfiniteQueryRetryBudgetAndCallbacks(t *testing.T) {
 		}
 		return infiniteTestPage{Value: cursor, Next: 1 - cursor}, nil
 	}
-	next := func(page infiniteTestPage) (int, bool) {
+	next := func(page infiniteTestPage, pages []infiniteTestPage, param int, params []int) (int, bool) {
 		_ = client.Stats()
-		return nextInfiniteTestPage(page)
+		return nextInfiniteTestPage(page, pages, param, params)
 	}
 	h := InfiniteQuery(client, "tasks", 0, load, next, QueryOptions{Disable: true})
 	t.Cleanup(h.Close)
@@ -491,9 +491,16 @@ func TestInfiniteQueryValidation(t *testing.T) {
 func TestInfiniteQueryParameterTypes(t *testing.T) {
 	client := newInvalidationClient(t)
 	load := func(_ context.Context, cursor string) (string, error) { return cursor, nil }
-	h := InfiniteQuery(client, "tasks", "first", load, func(last string) (string, bool) {
-		return "", last == "first"
-	}, QueryOptions{Disable: true})
+	h := InfiniteQuery(
+		client,
+		"tasks",
+		"first",
+		load,
+		func(last string, _ []string, _ string, _ []string) (string, bool) {
+			return "", last == "first"
+		},
+		QueryOptions{Disable: true},
+	)
 	t.Cleanup(h.Close)
 	for range 2 {
 		if _, err := h.FetchNextPage(context.Background()); err != nil {
@@ -593,4 +600,82 @@ func TestInfiniteQueryNilContinuation(t *testing.T) {
 		}
 	}()
 	InfiniteQuery(client, "tasks", 0, func(context.Context, int) (int, error) { return 1, nil }, nil)
+}
+
+// TestInfiniteQueryContinuationHistory supplies matching history during append, projection, and sequential refresh.
+func TestInfiniteQueryContinuationHistory(t *testing.T) {
+	client := newInvalidationClient(t)
+	var generation atomic.Int32
+	var fail atomic.Bool
+	wantErr := errors.New("page unavailable")
+	load := func(_ context.Context, offset int) ([]int, error) {
+		if fail.Load() {
+			return nil, wantErr
+		}
+		version := int(generation.Load())
+		page := make([]int, 2+version)
+		for i := range page {
+			page[i] = version*100 + offset + i
+		}
+		return page, nil
+	}
+	next := func(last []int, pages [][]int, lastOffset int, offsets []int) (int, bool) {
+		if len(pages) == 0 || len(pages) != len(offsets) {
+			t.Errorf("continuation history = %v, %v", pages, offsets)
+			return 0, false
+		}
+		end := len(pages) - 1
+		if !reflect.DeepEqual(last, pages[end]) || lastOffset != offsets[end] {
+			t.Errorf("continuation tail = %v, %d; history = %v, %v", last, lastOffset, pages, offsets)
+		}
+		expectedOffset := 0
+		for i, page := range pages {
+			if offsets[i] != expectedOffset {
+				t.Errorf("page %d offset = %d; want %d", i, offsets[i], expectedOffset)
+			}
+			for j, item := range page {
+				if item != pages[0][0]+offsets[i]+j {
+					t.Errorf("page %d mixes old and refreshed history: %v", i, pages)
+				}
+			}
+			expectedOffset += len(page)
+		}
+		return lastOffset + len(last), lastOffset+len(last) < 6
+	}
+	h := InfiniteQuery(client, "tasks", 0, load, next, QueryOptions{Disable: true})
+	defer func() {
+		h.Close()
+		for range h.Updates() {
+		}
+	}()
+	for range 3 {
+		if _, err := h.FetchNextPage(context.Background()); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if state := h.Snapshot(); state.HasNextPage || !reflect.DeepEqual(state.Data.PageParams, []int{0, 2, 4}) {
+		t.Fatalf("offset sequence = %+v", state)
+	}
+	state := awaitInfiniteState(t, h, func(s InfiniteSnapshot[[]int, int]) bool {
+		return s.HasData && !s.Fetching && len(s.Data.Pages) == 3
+	})
+	if state.HasNextPage {
+		t.Error("exhausted update reports another page")
+	}
+	generation.Store(1)
+	fail.Store(true)
+	if _, err := h.Refetch(context.Background()); !errors.Is(err, wantErr) {
+		t.Fatalf("failed offset refresh = %v", err)
+	}
+	if state := h.Snapshot(); !reflect.DeepEqual(state.Data.PageParams, []int{0, 2, 4}) {
+		t.Fatalf("failed refresh replaced history = %+v", state)
+	}
+	fail.Store(false)
+	data, err := h.Refetch(context.Background())
+	if err != nil || !reflect.DeepEqual(data.PageParams, []int{0, 3}) {
+		t.Fatalf("refreshed offset sequence = %+v, %v", data, err)
+	}
+	if state := h.Snapshot(); state.HasNextPage || len(state.Data.Pages) != 2 {
+		t.Fatalf("refreshed offset state = %+v", state)
+	}
 }

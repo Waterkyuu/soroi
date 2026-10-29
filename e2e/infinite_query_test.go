@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"strconv"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -63,9 +65,16 @@ func TestHTTPInfiniteQuery(t *testing.T) {
 		err = json.NewDecoder(response.Body).Decode(&page)
 		return page, err
 	}
-	query := soroi.InfiniteQuery(client, key, "", load, func(last taskPage) (string, bool) {
-		return last.NextCursor, last.NextCursor != ""
-	}, soroi.QueryOptions{Disable: true})
+	query := soroi.InfiniteQuery(
+		client,
+		key,
+		"",
+		load,
+		func(last taskPage, _ []taskPage, _ string, _ []string) (string, bool) {
+			return last.NextCursor, last.NextCursor != ""
+		},
+		soroi.QueryOptions{Disable: true},
+	)
 	t.Cleanup(query.Close)
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -95,5 +104,78 @@ func TestHTTPInfiniteQuery(t *testing.T) {
 	}
 	query.Close()
 	for range query.Updates() {
+	}
+}
+
+// TestHTTPInfiniteQueryOffsets paginates a bare HTTP array using the last request parameter and page history.
+func TestHTTPInfiniteQueryOffsets(t *testing.T) {
+	var calls atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls.Add(1)
+		offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+		if err != nil || offset < 0 || offset > 4 {
+			http.Error(w, "invalid offset", http.StatusBadRequest)
+			return
+		}
+		items := []int{offset, offset + 1}
+		if offset == 4 {
+			items = []int{offset}
+		}
+		json.NewEncoder(w).Encode(items)
+	}))
+	t.Cleanup(server.Close)
+	client := soroi.NewClient(soroi.Options{StaleTime: time.Hour})
+	t.Cleanup(client.Close)
+	load := func(ctx context.Context, offset int) ([]int, error) {
+		request, err := http.NewRequestWithContext(
+			ctx,
+			http.MethodGet,
+			server.URL+"?offset="+strconv.Itoa(offset),
+			nil,
+		)
+		if err != nil {
+			return nil, err
+		}
+		response, err := server.Client().Do(request)
+		if err != nil {
+			return nil, err
+		}
+		defer response.Body.Close()
+		if response.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("load tasks: HTTP %d", response.StatusCode)
+		}
+		var items []int
+		err = json.NewDecoder(response.Body).Decode(&items)
+		return items, err
+	}
+	next := func(last []int, pages [][]int, lastOffset int, offsets []int) (int, bool) {
+		if len(pages) != len(offsets) {
+			t.Errorf("HTTP continuation history = %v, %v", pages, offsets)
+		}
+		return lastOffset + len(last), len(last) == 2
+	}
+	query := soroi.InfiniteQuery(client, "tasks", 0, load, next, soroi.QueryOptions{Disable: true})
+	defer func() {
+		query.Close()
+		for range query.Updates() {
+		}
+	}()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	for range 3 {
+		if _, err := query.FetchNextPage(ctx); err != nil {
+			t.Fatal(err)
+		}
+	}
+	state := query.Snapshot()
+	if state.HasNextPage || !reflect.DeepEqual(state.Data.PageParams, []int{0, 2, 4}) ||
+		!reflect.DeepEqual(state.Data.Pages, [][]int{{0, 1}, {2, 3}, {4}}) {
+		t.Fatalf("HTTP offset sequence = %+v", state)
+	}
+	if _, err := query.FetchNextPage(ctx); err != nil || calls.Load() != 3 {
+		t.Fatalf("exhausted HTTP offset sequence = %v; calls = %d", err, calls.Load())
+	}
+	if data, err := query.Refetch(ctx); err != nil || !reflect.DeepEqual(data.PageParams, []int{0, 2, 4}) {
+		t.Fatalf("refreshed HTTP offset sequence = %+v, %v", data, err)
 	}
 }
