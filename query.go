@@ -389,6 +389,11 @@ func (c *Client) fetch(
 			return nil, ErrNoFetcher
 		}
 		pending := c.pending[key]
+		// Refreshes replace a sequence while appends extend it; the two operations cannot share a result.
+		if pending != nil && request.pages != nil && pending.request.nextPage != request.nextPage {
+			c.mu.Unlock()
+			return nil, ErrQueryBusy
+		}
 		if pending != nil && pending.request.options.Executor.heldBy(ctx) {
 			// Joining preserves the initiator's budget, even when this caller overrides or disables its own.
 			// Reject before registering or invalidating state so a caller-held slot cannot block its own wait.

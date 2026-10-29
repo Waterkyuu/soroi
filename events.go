@@ -89,6 +89,8 @@ const (
 	TriggerPrefetch
 	// TriggerPoll identifies a refresh scheduled by an enabled subscription's interval.
 	TriggerPoll
+	// TriggerFetchNextPage identifies an explicit InfiniteQueryHandle.FetchNextPage call.
+	TriggerFetchNextPage
 )
 
 // String returns a stable log label for the initiating API decision.
@@ -108,6 +110,8 @@ func (t EventTrigger) String() string {
 		return "prefetch"
 	case TriggerPoll:
 		return "poll"
+	case TriggerFetchNextPage:
+		return "fetch_next_page"
 	default:
 		return "none"
 	}
