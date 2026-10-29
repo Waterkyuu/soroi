@@ -52,8 +52,8 @@ test("every published page has server-rendered content and working internal link
 	const files = await htmlFiles(build);
 	assert.equal(
 		files.filter((file) => file.endsWith("index.html")).length,
-		42,
-		"Each language must publish one homepage and twenty guides without fallback duplicates",
+		44,
+		"Each language must publish one homepage and twenty-one guides without fallback duplicates",
 	);
 	for (const file of files) {
 		const html = await readFile(file, "utf8");
@@ -74,6 +74,7 @@ test("content pages publish distinct localized metadata and a usable sharing ima
 			"",
 			"docs/",
 			"docs/queries/",
+			"docs/infinite-queries/",
 			"docs/query-options/",
 			"docs/query-filters/",
 			"docs/query-tags/",
@@ -121,7 +122,7 @@ test("content pages publish distinct localized metadata and a usable sharing ima
 			}
 		}
 	}
-	assert.equal(descriptions.size, 42);
+	assert.equal(descriptions.size, 44);
 	assert.ok((await readFile(path.join(build, "soroi.png"))).length > 0);
 });
 
@@ -148,6 +149,11 @@ test("Go search results resolve to published sections and public source declarat
 	assert.ok(index.some((record) => record.title === "NewBatcher"));
 	assert.ok(index.some((record) => record.title === "Query"));
 	for (const declaration of [
+		"InfiniteQuery",
+		"InfiniteData",
+		"InfiniteSnapshot",
+		"InfiniteQueryHandle.FetchNextPage",
+		"ErrQueryBusy",
 		"Update",
 		"ErrUpdateConflict",
 		"Mutation",
@@ -182,6 +188,7 @@ test("Go search results resolve to published sections and public source declarat
 	for (const locale of ["en", "zh-CN"]) {
 		const prefix = locale === "en" ? "" : "zh-CN/";
 		for (const [slug, declaration] of [
+			["infinite-queries", "FetchNextPage"],
 			["queries", "QueriesWithCombine"],
 			["query-filters", "QueryFilter"],
 			["query-options", "RefetchInterval"],
@@ -244,6 +251,10 @@ test("feature guides are discoverable in the sidebar and render the maintained A
 		const prefix = locale === "en" ? "" : "zh-CN/";
 		const queries = await readFile(path.join(build, prefix, "docs/queries/index.html"), "utf8");
 		for (const [slug, declarations] of [
+			[
+				"infinite-queries",
+				["InfiniteQuery", "InfiniteSnapshot", "FetchNextPage", "PageParams", "ErrQueryBusy"],
+			],
 			[
 				"queries",
 				["Queries", "QueriesWithCombine", "QueriesHandle", "QuerySpec", "HasData", "Fetching"],

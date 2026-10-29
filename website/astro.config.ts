@@ -54,6 +54,11 @@ export default defineConfig({
 					translations: { "zh-CN": "查询与条件请求" },
 				},
 				{
+					slug: "docs/infinite-queries",
+					label: "Infinite queries",
+					translations: { "zh-CN": "分页追加查询" },
+				},
+				{
 					slug: "docs/query-options",
 					label: "Query options",
 					translations: { "zh-CN": "查询配置" },

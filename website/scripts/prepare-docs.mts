@@ -31,6 +31,16 @@ export const chapters: Chapter[] = [
 		},
 	},
 	{
+		id: "infinite-queries",
+		zh: "分页追加查询",
+		en: "Infinite queries",
+		description: {
+			en: "Load more task pages with soroi InfiniteQuery in Go. Share accumulated pages, manage cursors, retain data after failures, and refresh the loaded sequence.",
+			"zh-CN":
+				"使用 soroi InfiniteQuery 在 Go 中追加任务页，共享累积数据、管理游标，在失败时保留已有页，并刷新已加载序列。",
+		},
+	},
+	{
 		id: "cache",
 		zh: "缓存与生命周期",
 		en: "Cache & lifecycle",
