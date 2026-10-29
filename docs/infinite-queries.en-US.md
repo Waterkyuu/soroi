@@ -41,8 +41,8 @@ tasks := soroi.InfiniteQuery(
 	"tasks",
 	"",
 	fetchPage,
-	func(last TaskPage, _ []TaskPage, _ string, _ []string) (string, bool) {
-		return last.NextCursor, last.NextCursor != ""
+	func(page soroi.PageContext[TaskPage, string]) (string, bool) {
+		return page.LastPage.NextCursor, page.LastPage.NextCursor != ""
 	},
 	soroi.QueryOptions{Disable: true},
 )
@@ -57,25 +57,25 @@ The arguments have these roles:
 | `key` | Identify the complete list; include filters, page size, and identity scope when they affect the result |
 | `initialPageParam` | Parameter for the first request; here `""` means the first page |
 | `fetchPage` | `func(context.Context, Param) (Page, error)`; fetch one page using the supplied parameter |
-| `getNextPageParam` | `func(Page, []Page, Param, []Param) (Param, bool)`; derive the next parameter from pages and request parameters; false ends pagination |
+| `getNextPageParam` | `func(PageContext[Page, Param]) (Param, bool)`; derive the next parameter from pages and request parameters; false ends pagination |
 | `options` | Zero or one existing `QueryOptions`; omitted settings inherit the Client policy |
 
 The changing cursor belongs to the page sequence, rather than the list key. Set page size in the backend request and include it in the key; it is not a separate pagination option. A zero-valued page parameter remains valid when the continuation boolean is true.
 
 ### Calculate the next page parameter
 
-The continuation callback receives four arguments in this order:
+The continuation callback receives one `PageContext[Page, Param]` value. `Page` is the response type and `Param` is the request parameter type. Read only the fields needed by the pagination policy:
 
-| Argument | Meaning |
+| Field | Meaning |
 | --- | --- |
-| `lastPage` | The last successfully loaded response |
-| `allPages` | All successfully loaded responses, including `lastPage`, in request order |
-| `lastPageParam` | The request parameter used to load `lastPage` |
-| `allPageParams` | The corresponding parameters, including `lastPageParam`, in the same order as `allPages` |
+| `LastPage` | The last successfully loaded response |
+| `AllPages` | All successfully loaded responses, including `LastPage`, in request order |
+| `LastPageParam` | The request parameter used to load `LastPage` |
+| `AllPageParams` | The corresponding parameters, including `LastPageParam`, in the same order as `AllPages` |
 
-During an append or state read, these arguments describe the retained sequence. During a refresh, they describe only the successfully reloaded prefix; old pages and parameters are excluded. Treat every argument as read-only, including slices and nested values. The callback must be pure and may run concurrently.
+During an append or state read, the context describes the retained sequence. During a refresh, it describes only the successfully reloaded prefix; old pages and parameters are excluded. Treat every field as read-only, including slices and nested values. The callback must be pure and may run concurrently.
 
-For a backend that returns a bare array without a cursor, calculate the next offset from `lastPageParam`. This snippet reuses `client` and `ctx` from the setup and simulates a backend where a response shorter than `pageSize` ends pagination:
+For a backend that returns a bare array without a cursor, calculate the next offset from `LastPageParam`. This snippet reuses `client` and `ctx` from the setup and simulates a backend where a response shorter than `pageSize` ends pagination:
 
 ```go
 pageSize := 2
@@ -91,8 +91,8 @@ offsetTasks := soroi.InfiniteQuery(
 	"tasks-offset-size-2",
 	0,
 	fetchItems,
-	func(last []string, _ [][]string, lastOffset int, _ []int) (int, bool) {
-		return lastOffset + len(last), len(last) == pageSize
+	func(page soroi.PageContext[[]string, int]) (int, bool) {
+		return page.LastPageParam + len(page.LastPage), len(page.LastPage) == pageSize
 	},
 	soroi.QueryOptions{Disable: true},
 )
@@ -106,7 +106,7 @@ for range 2 {
 fmt.Println(offsetTasks.Snapshot().Data.PageParams) // [0 2]
 ```
 
-The callback signature requires all four arguments. Use `_` for unused arguments, as in the cursor example. The `(Param, bool)` return contract is unchanged; false ends pagination.
+A cursor-based callback can read only `page.LastPage`; an offset-based callback can also read `page.LastPageParam`. Unused fields require no placeholders. The callback returns `(Param, bool)`; false ends pagination.
 
 ### Load the first or next page
 
@@ -227,8 +227,8 @@ func main() {
 		"tasks",
 		"",
 		fetchPage,
-		func(last TaskPage, _ []TaskPage, _ string, _ []string) (string, bool) {
-			return last.NextCursor, last.NextCursor != ""
+		func(page soroi.PageContext[TaskPage, string]) (string, bool) {
+			return page.LastPage.NextCursor, page.LastPage.NextCursor != ""
 		},
 		soroi.QueryOptions{Disable: true},
 	)

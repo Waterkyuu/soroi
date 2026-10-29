@@ -151,6 +151,7 @@ test("Go search results resolve to published sections and public source declarat
 	for (const declaration of [
 		"InfiniteQuery",
 		"InfiniteData",
+		"PageContext",
 		"InfiniteSnapshot",
 		"InfiniteQueryHandle.FetchNextPage",
 		"ErrQueryBusy",

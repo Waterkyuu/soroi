@@ -18,8 +18,8 @@ type infiniteTestPage struct {
 }
 
 // nextInfiniteTestPage extracts continuation without treating an empty page as the end.
-func nextInfiniteTestPage(page infiniteTestPage, _ []infiniteTestPage, _ int, _ []int) (int, bool) {
-	return page.Next, page.Next != 0
+func nextInfiniteTestPage(page PageContext[infiniteTestPage, int]) (int, bool) {
+	return page.LastPage.Next, page.LastPage.Next != 0
 }
 
 // awaitInfiniteState waits for an observable state with a deadlock guard, not a scheduling delay.
@@ -213,9 +213,9 @@ func TestInfiniteQueryRetryBudgetAndCallbacks(t *testing.T) {
 		}
 		return infiniteTestPage{Value: cursor, Next: 1 - cursor}, nil
 	}
-	next := func(page infiniteTestPage, pages []infiniteTestPage, param int, params []int) (int, bool) {
+	next := func(page PageContext[infiniteTestPage, int]) (int, bool) {
 		_ = client.Stats()
-		return nextInfiniteTestPage(page, pages, param, params)
+		return nextInfiniteTestPage(page)
 	}
 	h := InfiniteQuery(client, "tasks", 0, load, next, QueryOptions{Disable: true})
 	t.Cleanup(h.Close)
@@ -496,8 +496,8 @@ func TestInfiniteQueryParameterTypes(t *testing.T) {
 		"tasks",
 		"first",
 		load,
-		func(last string, _ []string, _ string, _ []string) (string, bool) {
-			return "", last == "first"
+		func(page PageContext[string, string]) (string, bool) {
+			return "", page.LastPage == "first"
 		},
 		QueryOptions{Disable: true},
 	)
@@ -619,7 +619,9 @@ func TestInfiniteQueryContinuationHistory(t *testing.T) {
 		}
 		return page, nil
 	}
-	next := func(last []int, pages [][]int, lastOffset int, offsets []int) (int, bool) {
+	next := func(page PageContext[[]int, int]) (int, bool) {
+		last, pages := page.LastPage, page.AllPages
+		lastOffset, offsets := page.LastPageParam, page.AllPageParams
 		if len(pages) == 0 || len(pages) != len(offsets) {
 			t.Errorf("continuation history = %v, %v", pages, offsets)
 			return 0, false

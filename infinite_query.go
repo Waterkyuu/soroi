@@ -20,6 +20,20 @@ type InfiniteData[Page, Param any] struct {
 	PageParams []Param
 }
 
+// PageContext supplies a continuation callback with matching page and request parameter history.
+// Page is one response type; Param is its request parameter type. All values are shared and read-only.
+// History includes the last page; during refresh, it contains only the successfully reloaded prefix.
+type PageContext[Page, Param any] struct {
+	// LastPage is the last successfully loaded response in AllPages.
+	LastPage Page
+	// AllPages contains successfully loaded responses in request order, including LastPage.
+	AllPages []Page
+	// LastPageParam is the request parameter used to load LastPage.
+	LastPageParam Param
+	// AllPageParams corresponds one-to-one with AllPages, including LastPageParam.
+	AllPageParams []Param
+}
+
 // InfiniteSnapshot adds forward pagination state to an ordinary query snapshot.
 type InfiniteSnapshot[Page, Param any] struct {
 	// Snapshot provides data, errors, freshness, and shared request activity.
@@ -40,7 +54,7 @@ type infinitePagination[Page, Param any] struct {
 	// fetch loads one page under the ordinary query retry and execution policy.
 	fetch func(context.Context, Param) (Page, error)
 	// next extracts a continuation without performing I/O or modifying cached values.
-	next func(Page, []Page, Param, []Param) (Param, bool)
+	next func(PageContext[Page, Param]) (Param, bool)
 }
 
 // InfiniteQueryHandle owns a subscription to shared pages and their pagination state.
@@ -59,7 +73,7 @@ type InfiniteQueryHandle[Page, Param any] struct {
 // Omitted query options inherit Client defaults; extra options fail through Snapshot and Updates.
 // Page size and all other result-affecting parameters belong in the key and fetchPage closure.
 // getNextPageParam must be a prompt, pure function; it runs outside Client.mu and may run concurrently.
-// The callback receives the last page, all pages, the last parameter, and all parameters in matching order.
+// The callback receives a PageContext containing the last page and parameter with their matching history.
 // During refresh, its history contains only the successfully reloaded prefix, including the latest page.
 // All callback inputs are shared, read-only data, including their slices and nested values.
 // A false continuation ends pagination, independently of page length or the parameter's zero value.
@@ -69,7 +83,7 @@ func InfiniteQuery[Page, Param any](
 	key any,
 	initialPageParam Param,
 	fetchPage func(context.Context, Param) (Page, error),
-	getNextPageParam func(lastPage Page, allPages []Page, lastPageParam Param, allPageParams []Param) (Param, bool),
+	getNextPageParam func(PageContext[Page, Param]) (Param, bool),
 	options ...QueryOptions,
 ) *InfiniteQueryHandle[Page, Param] {
 	if getNextPageParam == nil {
@@ -218,12 +232,12 @@ func (p *infinitePagination[Page, Param]) loader(param Param) Loader[any] {
 // nextParam supplies matching page and parameter history from a non-empty, valid sequence.
 func (p *infinitePagination[Page, Param]) nextParam(data InfiniteData[Page, Param]) (Param, bool) {
 	last := len(data.Pages) - 1
-	return p.next(
-		data.Pages[last],
-		data.Pages,
-		data.PageParams[last],
-		data.PageParams,
-	)
+	return p.next(PageContext[Page, Param]{
+		LastPage:      data.Pages[last],
+		AllPages:      data.Pages,
+		LastPageParam: data.PageParams[last],
+		AllPageParams: data.PageParams,
+	})
 }
 
 // load builds an immutable append or replacement using individually retried page callbacks.

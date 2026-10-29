@@ -70,8 +70,8 @@ func TestHTTPInfiniteQuery(t *testing.T) {
 		key,
 		"",
 		load,
-		func(last taskPage, _ []taskPage, _ string, _ []string) (string, bool) {
-			return last.NextCursor, last.NextCursor != ""
+		func(page soroi.PageContext[taskPage, string]) (string, bool) {
+			return page.LastPage.NextCursor, page.LastPage.NextCursor != ""
 		},
 		soroi.QueryOptions{Disable: true},
 	)
@@ -148,11 +148,11 @@ func TestHTTPInfiniteQueryOffsets(t *testing.T) {
 		err = json.NewDecoder(response.Body).Decode(&items)
 		return items, err
 	}
-	next := func(last []int, pages [][]int, lastOffset int, offsets []int) (int, bool) {
-		if len(pages) != len(offsets) {
-			t.Errorf("HTTP continuation history = %v, %v", pages, offsets)
+	next := func(page soroi.PageContext[[]int, int]) (int, bool) {
+		if len(page.AllPages) != len(page.AllPageParams) {
+			t.Errorf("HTTP continuation history = %+v", page)
 		}
-		return lastOffset + len(last), len(last) == 2
+		return page.LastPageParam + len(page.LastPage), len(page.LastPage) == 2
 	}
 	query := soroi.InfiniteQuery(client, "tasks", 0, load, next, soroi.QueryOptions{Disable: true})
 	defer func() {
