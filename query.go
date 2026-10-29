@@ -10,6 +10,8 @@ import (
 type subscription struct {
 	// enabled permits this handle to initiate automatic requests.
 	enabled bool
+	// refetchInterval is this consumer's copied polling cadence; non-positive values disable polling.
+	refetchInterval time.Duration
 	// request retains this consumer's loader and copied policy without exposing untyped results to callers.
 	request queryRequest
 	// order identifies this consumer's place in automatic refresh selection.
@@ -51,54 +53,65 @@ func Query[V any](client *Client, key any, fetch Fetcher[V], options ...QueryOpt
 // A constructor error produces a failed handle without registering the zero definition.
 func query[V any](client *Client, definition Definition[V], constructorErr error) *QueryHandle[V] {
 	key := definition.Key
-	enabled := !definition.Options.Disable
-	var request queryRequest
+	var spec querySpec
 	if constructorErr == nil {
-		request = definition.request(client.options, TriggerQuery)
+		spec = definition.querySpec(client.options)
 	}
-	policy := request.options
 	handle := &QueryHandle[V]{client: client, key: key, updates: make(chan Snapshot[V], 1)}
 	client.mu.Lock()
 	defer client.mu.Unlock()
 	handle.err = constructorErr
 	if handle.err == nil {
-		handle.err = client.checkLocked(key, reflect.TypeFor[V]())
-	}
-	if handle.err == nil && definition.Fetcher == nil {
-		handle.err = ErrNoFetcher
+		handle.observer = &subscription{
+			publish: func(state Snapshot[any]) {
+				publishLatest(handle.updates, typedSnapshot[V](state))
+			},
+			close: func() {
+				close(handle.updates)
+			},
+		}
+		handle.err = client.subscribeLocked(spec, handle.observer)
 	}
 	if handle.err != nil {
 		handle.updates <- Snapshot[V]{Status: Error, Stale: true, Err: handle.err}
 		close(handle.updates)
 		return handle
 	}
-	// Bind before registering a typed publisher so no concurrent writer can install another type.
-	_ = client.bindLocked(key, reflect.TypeFor[V]())
-	client.registerTagsLocked(key, request.tags)
-	client.registerSharedLocked(key, request)
-	observer := &subscription{
-		enabled: enabled,
-		request: request,
-		order:   client.nextObserver,
-		publish: func(state Snapshot[any]) { publishLatest(handle.updates, typedSnapshot[V](state)) },
-		close:   func() { close(handle.updates) },
-	}
-	client.nextObserver++
-	handle.observer = observer
-	if client.observers[key] == nil {
-		client.observers[key] = make(map[*subscription]struct{})
-	}
-	client.observers[key][observer] = struct{}{}
-	client.stopGCLocked(key)
-	if client.expireDataLocked(key) {
-		client.notifyLocked(key)
-	}
-	client.touchCapacityLocked(key)
-	if enabled {
-		client.loadObservedLocked(key, observer.request)
-	}
-	observer.publish(client.withFreshnessLocked(key, client.snapshotLocked(key), policy))
 	return handle
+}
+
+// subscribeLocked admits a typed consumer using the same policy and lifecycle for single and grouped queries.
+func (c *Client) subscribeLocked(spec querySpec, observer *subscription) error {
+	if err := c.checkLocked(spec.key, spec.typ); err != nil {
+		return err
+	}
+	if spec.request.load == nil {
+		return ErrNoFetcher
+	}
+	// Bind before publishing so concurrent consumers cannot install an incompatible result.
+	_ = c.bindLocked(spec.key, spec.typ)
+	c.registerTagsLocked(spec.key, spec.request.tags)
+	c.registerSharedLocked(spec.key, spec.request)
+	observer.enabled = !spec.disable
+	observer.refetchInterval = spec.refetchInterval
+	observer.request = spec.request
+	observer.order = c.nextObserver
+	c.nextObserver++
+	if c.observers[spec.key] == nil {
+		c.observers[spec.key] = make(map[*subscription]struct{})
+	}
+	c.observers[spec.key][observer] = struct{}{}
+	c.stopGCLocked(spec.key)
+	if c.expireDataLocked(spec.key) {
+		c.notifyLocked(spec.key)
+	}
+	c.touchCapacityLocked(spec.key)
+	if observer.enabled {
+		c.loadObservedLocked(spec.key, observer.request)
+	}
+	c.schedulePollingLocked(spec.key)
+	observer.publish(c.withFreshnessLocked(spec.key, c.snapshotLocked(spec.key), spec.request.options))
+	return nil
 }
 
 // Snapshot reads this handle's current data without starting a request.
@@ -131,6 +144,7 @@ func (h *QueryHandle[V]) SetEnabled(enabled bool) error {
 		request.trigger = TriggerEnable
 		c.loadObservedLocked(h.key, request)
 	}
+	c.schedulePollingLocked(h.key)
 	return nil
 }
 
@@ -162,15 +176,21 @@ func (h *QueryHandle[V]) Close() {
 	c := h.client
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if _, exists := c.observers[h.key][h.observer]; !exists {
+	c.unsubscribeLocked(h.key, h.observer)
+}
+
+// unsubscribeLocked releases one subscription and adjusts polling and inactive retention for its key.
+func (c *Client) unsubscribeLocked(key any, observer *subscription) {
+	if _, exists := c.observers[key][observer]; !exists {
 		return
 	}
-	delete(c.observers[h.key], h.observer)
-	if len(c.observers[h.key]) == 0 {
-		delete(c.observers, h.key)
+	delete(c.observers[key], observer)
+	if len(c.observers[key]) == 0 {
+		delete(c.observers, key)
 	}
-	h.observer.close()
-	c.touchGCLocked(h.key)
+	observer.close()
+	c.schedulePollingLocked(key)
+	c.touchGCLocked(key)
 }
 
 // activeLocked verifies handle ownership while the client's lock is held.
@@ -267,6 +287,11 @@ func Get[V any](client *Client, key any) Snapshot[V] {
 func (c *Client) getSnapshot(key any, typ reflect.Type, options Options) Snapshot[any] {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	return c.getSnapshotLocked(key, typ, options)
+}
+
+// getSnapshotLocked applies read validation, age, freshness, and retention rules under the client's lock.
+func (c *Client) getSnapshotLocked(key any, typ reflect.Type, options Options) Snapshot[any] {
 	if err := c.checkLocked(key, typ); err != nil {
 		return Snapshot[any]{Status: Error, Stale: true, Err: err}
 	}
@@ -364,6 +389,11 @@ func (c *Client) fetch(
 			return nil, ErrNoFetcher
 		}
 		pending := c.pending[key]
+		// Refreshes replace a sequence while appends extend it; the two operations cannot share a result.
+		if pending != nil && request.pages != nil && pending.request.nextPage != request.nextPage {
+			c.mu.Unlock()
+			return nil, ErrQueryBusy
+		}
 		if pending != nil && pending.request.options.Executor.heldBy(ctx) {
 			// Joining preserves the initiator's budget, even when this caller overrides or disables its own.
 			// Reject before registering or invalidating state so a caller-held slot cannot block its own wait.
@@ -465,8 +495,8 @@ func typedSnapshot[V any](state Snapshot[any]) Snapshot[V] {
 	}
 }
 
-// publishLatest replaces an unread snapshot so slow consumers cannot block shared query progress.
-func publishLatest[V any](updates chan Snapshot[V], state Snapshot[V]) {
+// publishLatest replaces an unread value so slow consumers cannot block shared query progress.
+func publishLatest[V any](updates chan V, state V) {
 	select {
 	case updates <- state:
 	default:

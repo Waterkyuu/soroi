@@ -25,9 +25,19 @@ export const chapters: Chapter[] = [
 		zh: "查询与条件请求",
 		en: "Queries & conditions",
 		description: {
-			en: "Use typed queries in Go with soroi. Share requests across consumers, observe snapshots and updates, control conditional loading, and fetch or refetch data.",
+			en: "Use typed queries in Go with soroi. Subscribe to ordered independent states with Queries, define typed projections with QueriesWithCombine, and control loading and refreshes.",
 			"zh-CN":
-				"使用 soroi 在 Go 中创建类型安全查询，共享请求，通过 Snapshot 和 Updates 读取状态，并控制条件加载、同步获取与手动刷新。",
+				"使用 soroi 在 Go 中创建类型安全查询，通过 Queries 按顺序订阅独立状态，通过 QueriesWithCombine 自定义类型化组合结果，并控制加载与刷新。",
+		},
+	},
+	{
+		id: "infinite-queries",
+		zh: "分页追加查询",
+		en: "Infinite queries",
+		description: {
+			en: "Load more task pages with soroi InfiniteQuery in Go. Share accumulated pages, manage cursors, retain data after failures, and refresh the loaded sequence.",
+			"zh-CN":
+				"使用 soroi InfiniteQuery 在 Go 中追加任务页，共享累积数据、管理游标，在失败时保留已有页，并刷新已加载序列。",
 		},
 	},
 	{
@@ -188,6 +198,26 @@ export const chapters: Chapter[] = [
 			"zh-CN": "通过 soroi 可共享的执行预算限制查询、写入和批次并发，管理 FIFO 排队、过载与取消。",
 		},
 	},
+	{
+		id: "service-integrations",
+		zh: "HTTP、gRPC 与遥测接入",
+		en: "HTTP, gRPC & telemetry",
+		description: {
+			en: "Integrate soroi into HTTP and gRPC services with injected OpenTelemetry tracing and Prometheus query metrics, without adding dependencies to the core library.",
+			"zh-CN":
+				"将 soroi 接入 HTTP 与 gRPC 服务，注入 OpenTelemetry 链路追踪并暴露 Prometheus 查询指标，保持核心库零依赖。",
+		},
+	},
+	{
+		id: "business-benchmarks",
+		zh: "业务场景基准",
+		en: "Business workload benchmarks",
+		description: {
+			en: "Measure soroi hot-key expiration, Redis outages, downstream deadlines and batch reads with source counts, latency populations, success rates and resource metrics.",
+			"zh-CN":
+				"测量 soroi 热点过期、Redis 故障、下游超时和批量读取场景中的回源次数、延迟、成功率与资源占用。",
+		},
+	},
 ];
 
 // Adapt repository documentation without creating another maintained copy.
@@ -218,7 +248,10 @@ export function prepareMarkdown(
 			const route = name === "getting-started" ? "" : `${name}/`;
 			return `](${prefix}${route}${anchor ?? ""})`;
 		})
-		.replace(/\]\(\.\.\/([^)]*\.go)\)/g, `](https://github.com/Waterkyuu/soroi/blob/${branch}/$1)`)
+		.replace(
+			/\]\(\.\.\/([^)]*\.(?:go|jsonl))\)/g,
+			`](https://github.com/Waterkyuu/soroi/blob/${branch}/$1)`,
+		)
 		.replace(
 			/\]\(\.\.\/(examples\/[^)]*\/)\)/g,
 			`](https://github.com/Waterkyuu/soroi/tree/${branch}/$1)`,

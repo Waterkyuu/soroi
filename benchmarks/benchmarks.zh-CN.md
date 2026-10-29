@@ -4,6 +4,10 @@
 
 [English](benchmarks.en-US.md)
 
+热点过期、Redis 故障、下游超时和批量读取见[业务场景基准](../docs/business-benchmarks.zh-CN.md)。
+该指南记录回源工作量、P95/P99 延迟、成功率与资源，并保留[原始测量记录](business-darwin-arm64.jsonl)，
+不根据缓存查找吞吐量推导业务收益。
+
 主对照回答一个实际问题：应用重复读取同一份数据时，soroi 能节省多少时间和实际加载？
 
 ## 主表：串行读取同一份数据 100 次

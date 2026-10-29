@@ -46,6 +46,12 @@ For simple local values that only need expiration, a TTL cache may be sufficient
   same-key requests across consumers, with context cancellation.
 - **Observable query state.** Read snapshots or subscribe to updates for
   loading, background refreshes, and errors while retaining available data after a failed refresh.
+- **Multiple query subscriptions.** Combine independent typed definitions with `Queries`, preserve
+  ordered per-query states, and optionally project them to a typed result with `QueriesWithCombine`.
+- **Subscription polling.** Refresh enabled queries at a fixed `RefetchInterval`, share same-key
+  scheduling, and stop scheduling when the last enabled polling subscriber leaves.
+- **Infinite queries.** Append cursor-based pages with inferred types, share accumulated data,
+  and refresh the loaded sequence while retaining pages after failed requests.
 - **Reusable definitions and loading policies.** Share typed query
   definitions; override freshness, retry filters, backoff, and timeouts per consumer; control automatic
   loading with `Disable` and `SetEnabled`.
@@ -183,6 +189,11 @@ See the [shared cache guide](docs/shared-cache.en-US.md) and [shared invalidatio
 
 ## Reproducible benchmarks
 
+The [business workload guide](docs/business-benchmarks.en-US.md) measures hot-key
+expiration, Redis outages, downstream deadlines, and batch reads. It includes
+source calls, P95/P99 latency, success and rejection counts, allocation metrics,
+and recorded results with workload conditions.
+
 Compare **no cache, first load, and cache hits** for **100 sequential reads** of the same data in the [benchmark guide](benchmarks/benchmarks.en-US.md). The main table reports total time and actual loader calls; internal cost and concurrency diagnostics are documented separately.
 
 ```sh
@@ -197,8 +208,11 @@ Read the [documentation website](https://waterkyuu.github.io/soroi/) in English 
 
 | Guide | Coverage |
 | --- | --- |
-| [Queries and conditions](docs/queries.en-US.md) | `Query`, snapshots, updates, enablement, refresh, `Fetch`, and HTTP loaders |
-| [Query options](docs/query-options.en-US.md) | Shared loading options, reusable typed query definitions, freshness, retries, and timeouts |
+| [HTTP, gRPC, and telemetry](docs/service-integrations.en-US.md) | Runnable HTTP-to-gRPC queries, injected OpenTelemetry tracing, Prometheus metrics, and HTTP error mapping |
+| [Business workload benchmarks](docs/business-benchmarks.en-US.md) | Reproducible failure and batch scenarios, physical source work, latency populations, success rates, and resource measurements |
+| [Queries and conditions](docs/queries.en-US.md) | `Query`, `Queries`, ordered states, optional combination, enablement, refresh, `Fetch`, and HTTP loaders |
+| [Infinite queries](docs/infinite-queries.en-US.md) | `InfiniteQuery`, accumulated pages, cursors, loading more, and refreshing the loaded sequence |
+| [Query options](docs/query-options.en-US.md) | Shared loading options, reusable typed query definitions, freshness, subscription polling, retries, and timeouts |
 | [Query filters](docs/query-filters.en-US.md) | Reusable key and predicate selection for invalidation, awaited refresh, cancellation, and removal |
 | [Query tags](docs/query-tags.en-US.md) | Declare related query groups, select by label, and manage registration and retention |
 | [Automatic batch loading](docs/batching.en-US.md) | Concurrent-key batching, LoadMany for known keys, query API integration, per-key results, and cancellation |

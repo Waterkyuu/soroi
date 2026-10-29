@@ -52,8 +52,8 @@ test("every published page has server-rendered content and working internal link
 	const files = await htmlFiles(build);
 	assert.equal(
 		files.filter((file) => file.endsWith("index.html")).length,
-		38,
-		"Each language must publish one homepage and eighteen guides without fallback duplicates",
+		44,
+		"Each language must publish one homepage and twenty-one guides without fallback duplicates",
 	);
 	for (const file of files) {
 		const html = await readFile(file, "utf8");
@@ -74,12 +74,15 @@ test("content pages publish distinct localized metadata and a usable sharing ima
 			"",
 			"docs/",
 			"docs/queries/",
+			"docs/infinite-queries/",
 			"docs/query-options/",
 			"docs/query-filters/",
 			"docs/query-tags/",
 			"docs/cache/",
 			"docs/shared-cache/",
 			"docs/shared-invalidation/",
+			"docs/service-integrations/",
+			"docs/business-benchmarks/",
 			"docs/invalidation/",
 			"docs/observability/",
 			"docs/events/",
@@ -119,7 +122,7 @@ test("content pages publish distinct localized metadata and a usable sharing ima
 			}
 		}
 	}
-	assert.equal(descriptions.size, 38);
+	assert.equal(descriptions.size, 44);
 	assert.ok((await readFile(path.join(build, "soroi.png"))).length > 0);
 });
 
@@ -146,6 +149,12 @@ test("Go search results resolve to published sections and public source declarat
 	assert.ok(index.some((record) => record.title === "NewBatcher"));
 	assert.ok(index.some((record) => record.title === "Query"));
 	for (const declaration of [
+		"InfiniteQuery",
+		"InfiniteData",
+		"PageContext",
+		"InfiniteSnapshot",
+		"InfiniteQueryHandle.FetchNextPage",
+		"ErrQueryBusy",
 		"Update",
 		"ErrUpdateConflict",
 		"Mutation",
@@ -180,10 +189,15 @@ test("Go search results resolve to published sections and public source declarat
 	for (const locale of ["en", "zh-CN"]) {
 		const prefix = locale === "en" ? "" : "zh-CN/";
 		for (const [slug, declaration] of [
+			["infinite-queries", "FetchNextPage"],
+			["queries", "QueriesWithCombine"],
 			["query-filters", "QueryFilter"],
+			["query-options", "RefetchInterval"],
 			["query-tags", "Definition.Tags"],
 			["shared-cache", "InvalidateShared"],
 			["shared-invalidation", "WatchShared"],
+			["service-integrations", "Prometheus"],
+			["business-benchmarks", "source_calls"],
 			["updates", "ErrUpdateConflict"],
 			["invalidation", "InvalidateAndWait"],
 			["mutations", "SyncErr"],
@@ -239,8 +253,23 @@ test("feature guides are discoverable in the sidebar and render the maintained A
 		const queries = await readFile(path.join(build, prefix, "docs/queries/index.html"), "utf8");
 		for (const [slug, declarations] of [
 			[
+				"infinite-queries",
+				["InfiniteQuery", "InfiniteSnapshot", "FetchNextPage", "PageParams", "ErrQueryBusy"],
+			],
+			[
+				"queries",
+				["Queries", "QueriesWithCombine", "QueriesHandle", "QuerySpec", "HasData", "Fetching"],
+			],
+			[
 				"query-options",
-				["QueryOptions", "QueryDefinition", "Disable", "Prefetch", "ErrTooManyOptions"],
+				[
+					"QueryOptions",
+					"QueryDefinition",
+					"RefetchInterval",
+					"Disable",
+					"Prefetch",
+					"ErrTooManyOptions",
+				],
 			],
 			["shared-cache", ["SharedCacheOptions", "SharedStore", "InvalidateShared", "WriteConflicts"]],
 			[
@@ -258,6 +287,8 @@ test("feature guides are discoverable in the sidebar and render the maintained A
 			["invalidation", ["InvalidateAndWait", "RefetchAfterLoad", "ErrRefreshInvalidated"]],
 			["execution", ["NewExecutor", "MaxConcurrent", "ErrQueueFull"]],
 			["batching", ["NewBatcher", "LoadMany", "MaxBatchSize", "ErrBatchResultMissing"]],
+			["service-integrations", ["OpenTelemetry", "Prometheus", "otelgrpc", "ErrQueueFull"]],
+			["business-benchmarks", ["all_p99_ms", "success_rate", "allocated_bytes", "source_calls"]],
 			["bubbletea", ["Bubble Tea", "examples/bubbletea", "QueryHandle"]],
 		] as const) {
 			const route = `/soroi/${prefix}docs/${slug}/`;

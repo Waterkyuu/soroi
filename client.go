@@ -44,6 +44,10 @@ type Client struct {
 	gcTasks map[any]*gcTask
 	// gcAfterFunc schedules cleanup and returns a stop function; tests can replace the timer source.
 	gcAfterFunc func(time.Duration, func()) func()
+	// pollTasks owns one interval timer per key with enabled polling subscriptions.
+	pollTasks map[any]*pollTask
+	// pollAfterFunc schedules interval callbacks and returns their stop functions; tests replace the timer source.
+	pollAfterFunc func(time.Duration, func()) func()
 	// options supplies freshness and request policies.
 	options Options
 	// ctx owns background loads until Close is called.
@@ -88,6 +92,10 @@ type entry struct {
 
 // queryRequest owns an erased loader and the initiating consumer's copied request policy.
 type queryRequest struct {
+	// pages optionally composes page loads through the existing retry and execution pipeline.
+	pages pageSequence
+	// nextPage selects an append instead of refreshing an entire page sequence.
+	nextPage bool
 	// tags owns copied labels supplied by a definition; admission merges them into the shared entry.
 	tags []string
 	// load produces data and an optional explicit expiration outside the client lock.
@@ -104,6 +112,8 @@ type queryRequest struct {
 
 // flight shares one loader's completion with all waiting callers.
 type flight struct {
+	// previous captures immutable data before a page sequence starts loading.
+	previous any
 	// id identifies this shared operation within its Client.
 	id uint64
 	// reason describes the initiating consumer's stale decision or forced refresh.
@@ -155,6 +165,7 @@ func NewClient(options Options) *Client {
 		recencyEntries: make(map[any]*list.Element),
 		observers:      make(map[any]map[*subscription]struct{}),
 		gcTasks:        make(map[any]*gcTask), gcAfterFunc: scheduleGC,
+		pollTasks: make(map[any]*pollTask), pollAfterFunc: schedulePoll,
 		options: options, ctx: ctx, cancel: cancel,
 		loadNow: time.Now,
 	}
@@ -269,6 +280,9 @@ func (c *Client) Close() {
 	}
 	c.closed = true
 	c.cancel()
+	for key := range c.pollTasks {
+		c.stopPollingLocked(key)
+	}
 	for key := range c.pending {
 		c.cancelLocked(key, ReasonClientClosed)
 	}
@@ -294,6 +308,15 @@ func (c *Client) Close() {
 // startLocked publishes pending state before starting one asynchronous load.
 func (c *Client) startLocked(ctx context.Context, key any, request queryRequest) *flight {
 	c.stopGCLocked(key)
+	var previous any
+	if request.pages != nil {
+		c.expireDataLocked(key)
+		previous = c.entries[key].value
+		// Missing or expired pages make FetchNextPage an initial load, rather than an append.
+		if !c.entries[key].hasData {
+			request.nextPage = false
+		}
+	}
 	owner := ctx
 	ctx, cancel := context.WithCancel(ctx)
 	if request.options.Timeout > 0 {
@@ -304,6 +327,7 @@ func (c *Client) startLocked(ctx context.Context, key any, request queryRequest)
 	}
 	c.nextLoadID++
 	pending := &flight{
+		previous:  previous,
 		id:        c.nextLoadID,
 		reason:    loadReason(c.entries[key]),
 		done:      make(chan struct{}),
@@ -311,6 +335,9 @@ func (c *Client) startLocked(ctx context.Context, key any, request queryRequest)
 		owner:     owner,
 		startedAt: c.loadNow(),
 		request:   request,
+	}
+	if request.trigger == TriggerPoll {
+		pending.reason = ReasonRefetch
 	}
 	c.pending[key] = pending
 	c.stats.Loads++
@@ -401,15 +428,32 @@ func (c *Client) execute(ctx context.Context, key any, pending *flight) {
 	close(pending.done)
 }
 
-// run applies bounded retries and stops for cancellation, deadline errors, closure, or overload.
+// run executes an ordinary loader or a page sequence through the same per-loader retry pipeline.
 func (c *Client) run(ctx context.Context, key any, pending *flight) (any, time.Time, error) {
+	if pending.request.pages != nil {
+		value, err := pending.request.pages(
+			ctx,
+			pending.previous,
+			pending.request.nextPage,
+			func(load Loader[any]) (any, error) {
+				value, _, err := c.runLoader(ctx, key, pending, load)
+				return value, err
+			},
+		)
+		return value, time.Time{}, err
+	}
+	return c.runLoader(ctx, key, pending, pending.request.load)
+}
+
+// runLoader applies the same retry policy to a single query loader or an individual page.
+func (c *Client) runLoader(ctx context.Context, key any, pending *flight, load Loader[any]) (any, time.Time, error) {
 	options := pending.request.options
 	var previousErr error
 	for attempt := 0; ; attempt++ {
 		if ctx.Err() != nil {
 			return nil, time.Time{}, ctx.Err()
 		}
-		value, expiresAt, err := c.attempt(ctx, key, pending, previousErr)
+		value, expiresAt, err := c.attempt(ctx, key, pending, load, previousErr)
 		previousErr = err
 		// Closed schedulers, overload, and recursive budgets cannot recover through retries.
 		unavailable := errors.Is(err, ErrBatcherClosed) || errors.Is(err, ErrQueueFull)
@@ -442,6 +486,7 @@ func (c *Client) attempt(
 	ctx context.Context,
 	key any,
 	pending *flight,
+	load Loader[any],
 	previousErr error,
 ) (any, time.Time, error) {
 	// The initiating query owns budget selection; batch fetchers can skip this outer acquisition.
@@ -452,7 +497,8 @@ func (c *Client) attempt(
 	defer release()
 	c.mu.Lock()
 	pending.attempts++
-	if pending.attempts > 1 {
+	// A later page is a new initial attempt, not a retry of an earlier page.
+	if previousErr != nil {
 		c.stats.Retries++
 		event := pending.event(key, EventRetryStarted)
 		event.Err = previousErr
@@ -482,7 +528,7 @@ func (c *Client) attempt(
 		}
 		return returnValue, time.Time{}, nil
 	}
-	return pending.request.load(ctx)
+	return load(ctx)
 }
 
 // snapshotLocked removes data beyond MaxAge and derives state without scheduling a request.

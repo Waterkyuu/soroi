@@ -149,6 +149,31 @@ The methods use the definition's key, fetcher, and options directly. To customiz
 
 Definitions do not infer keys from a loader, add authorization checks, or serialize business operations. Build parameterized definitions in ordinary business functions so the key and loader capture matching parameters. Result-type binding, cancellation, errors, and in-flight request sharing follow the existing [query contracts](queries.en-US.md). Use `client.Invalidate(definition.Key)` or `client.InvalidateAndWait(ctx, definition.Key)` for explicit invalidation.
 
+## Subscription polling
+
+`RefetchInterval` is a subscription-only `time.Duration`. A positive value periodically refreshes `Query` or `Definition.Query`; zero or negative values disable polling. `Fetch` and `Prefetch` ignore it. The interval is copied when creating a handle.
+
+Using `client` and `load` from the quick start, replace the query construction and cleanup with:
+
+```go
+query := soroi.Query(
+	client,
+	"greeting",
+	load,
+	soroi.QueryOptions{RefetchInterval: 3 * time.Second},
+)
+defer query.Close()
+```
+
+For example, a TUI can refresh task 42 every three seconds, receive progress from 20% to 50% through `Updates()`, and close the subscription when leaving the view.
+
+- Intervals refresh even fresh local data; `StaleTime` alone does not schedule requests. An attached shared cache can still satisfy the load.
+- Same-key subscribers share the shortest positive interval among enabled handles. The oldest handle with that interval supplies the loader and loading policy; changing that handle restarts a full interval.
+- A same-key load already running, including queuing and retries, causes the interval to be skipped without accumulating follow-up work.
+- `SetEnabled(false)` pauses this handle's automatic loading, `SetEnabled(true)` resumes it, and `Close()` releases it. These operations do not cancel an already-started shared load. Other enabled polling subscribers can keep the key polling; `Client.Close()` stops all schedules and cancels Client-owned loads.
+
+Results and failures use the existing `Snapshot()` and `Updates()` APIs. Retry, timeout, Executor, and data-retention policies are unchanged; failed refreshes retain available data and later intervals continue. `Cancel`, `Remove`, and `Clear` do not release subscriptions, so disable or close a handle to stop its future polling. Construct a replacement handle to change its interval.
+
 ## Shared fields
 
 These loading-policy fields apply to `Query`, `Fetch`, and `Prefetch`.
@@ -211,7 +236,7 @@ Automatic refresh after invalidation uses the oldest still-enabled handle's conf
 
 ## Cache policy limits
 
-`StaleTime` changes ordinary cache freshness decisions without enabling polling. Passing time does not automatically publish notifications or start requests; `Snapshot()` reevaluates state when read. `Get` and calls to `Fetch` or `Prefetch` with omitted or empty options use Client freshness defaults.
+`StaleTime` changes ordinary cache freshness decisions without enabling polling. Without a positive `RefetchInterval`, passing time does not automatically publish notifications or start requests; `Snapshot()` reevaluates state when read. `Get` and calls to `Fetch` or `Prefetch` with omitted or empty options use Client freshness defaults.
 
 Explicit invalidation and failed refreshes that install no new data make ordinary cached data stale for all queries. Absolute deadlines returned through `FetchWithExpiry` are unaffected by `StaleTime` overrides, including explicitly cached fallback data and errors.
 

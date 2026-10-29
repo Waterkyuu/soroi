@@ -332,6 +332,81 @@ The diagnostic and its existing error counter are recorded together under synchr
 
 Missing or expired records, zero freshness, and conditional-write conflicts do not set LastError. Source failures remain query errors and do not replace the shared-cache diagnostic. A shared-store timeout that permits source fallback is retained; caller cancellation still terminates the query under the existing rules. Operations rejected before storage, and reads abandoned by query cancellation before error accounting, do not create a diagnostic. Explicit shared-key invalidation retains its failure and still returns it to the caller. Direct store operations, client tag invalidation, and watcher failures are outside this SharedCache object's counters; watcher failures remain available through SharedWatchStats.LastError.
 
+## Protect the source during cache failures
+
+Use the existing `Executor` to bound fallback when Redis is unavailable. Create one
+budget per backend capacity pool and reuse it across the Clients or query policies
+that access that backend. Creating a budget for each request does not share capacity.
+
+This configuration fragment belongs at application startup, inside a function
+returning `error`; it requires `time` and `soroi` imports. The existing shared-cache
+setup supplies `definition.Shared` and its `SharedCacheOptions.Timeout`.
+
+```go
+budget, err := soroi.NewExecutor(soroi.ExecutionOptions{
+    MaxConcurrent: 16,
+    MaxQueued:     0,
+})
+if err != nil {
+    return err
+}
+client := soroi.NewClient(soroi.Options{
+    Executor:  budget,
+    StaleTime: time.Minute,
+    Timeout:   500 * time.Millisecond,
+})
+defer client.Close()
+```
+
+The values illustrate configuration, not a capacity recommendation. Set the shared
+cache's per-operation timeout below the whole-load timeout, and configure the
+borrowed Redis client's context, socket and retry limits as described above.
+The callback must honor its supplied context. Timeout does not forcibly stop a callback.
+
+| Situation | Observable behavior |
+| --- | --- |
+| Fresh local result | Return without acquiring a slot or contacting Redis |
+| Admitted load, Redis read fails | Execute the source using the acquired slot; preserve the Redis error in `Shared.Stats()` |
+| Running and queued capacity full | Return `ErrQueueFull` before Redis or the source is called; Client retries do not retry it |
+| Source succeeds after Redis read failure | Install local data; skip remote write because no valid generation was read |
+| Redis write fails after source success | Keep source success; record the write failure separately |
+| Explicit shared invalidation fails | Return the error; do not claim invalidation succeeded or retry the business write |
+
+The Executor surrounds the entire load attempt, including shared reads, cache hits
+at Redis, source calls, and shared writes. A slow Redis therefore occupies capacity
+and can cause rejection even when the source is healthy. This conservative placement
+bounds source concurrency without adding a second admission API. It is not a Redis
+circuit breaker, a requests-per-second limit, or a cluster-wide capacity limit.
+Retry waits do not retain slots, but admitted source retries still consume backend
+work; keep retry counts small during outages.
+
+For batched loaders, use `BatchOptions.Executor` and `QueryOptions.DisableExecutor`
+as described in [execution budgets](execution.en-US.md). A batch limit counts actual
+bulk callbacks rather than individual keys. Do not acquire the same budget at both layers.
+
+Run the complete, server-free [failure protection example](../examples/redis/failure_protection/)
+from the repository root:
+
+```sh
+cd examples/redis
+go run ./failure_protection
+```
+
+Expected output:
+
+```text
+local hit: cached
+second rejected: true
+first: loaded
+source calls: 1
+rejected: 1
+shared read errors: 1
+```
+
+The program closes its own Redis client before loading; it does not stop a Redis
+server. Channels hold the first callback open while another Client requests a
+different key, demonstrating one source call and one overload rejection.
+
 ## Behavior and limitations
 
 - Reads try fresh local data, then a fresh Redis record, then the source. Newly started forced or invalidation refreshes skip Redis data but still obtain a version for the subsequent conditional write. If the same key is already loading, refresh joins that load without restarting or upgrading it. After a failed refresh, new loads continue to bypass shared data until a successful load or local write replaces the invalidated state.

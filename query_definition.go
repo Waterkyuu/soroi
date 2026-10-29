@@ -21,7 +21,7 @@ type Definition[V any] struct {
 	// Tags declares exact string labels to merge into this key when an operation is admitted.
 	// Labels are copied, remain while the Client retains this query, and do not affect cache identity.
 	Tags []string
-	// Options supplies the shared loading policy; Disable only affects Query's automatic loading.
+	// Options supplies the shared loading policy; Disable only affects automatic subscription loading.
 	// Pointer values are read when an operation starts, not when the definition is constructed.
 	Options QueryOptions
 }
@@ -57,6 +57,17 @@ func (d Definition[V]) Fetch(ctx context.Context, client *Client) (V, error) {
 // The caller owns the returned handle's Close; Disable controls automatic loading.
 func (d Definition[V]) Query(client *Client) *QueryHandle[V] {
 	return query(client, d, nil)
+}
+
+// querySpec captures a definition's static result type and copied subscription policy for Queries.
+func (d Definition[V]) querySpec(defaults Options) querySpec {
+	return querySpec{
+		key:             d.Key,
+		typ:             reflect.TypeFor[V](),
+		request:         d.request(defaults, TriggerQuery),
+		disable:         d.Options.Disable,
+		refetchInterval: d.Options.RefetchInterval,
+	}
 }
 
 // Prefetch warms this definition's cached data and returns any loading error.

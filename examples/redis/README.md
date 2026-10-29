@@ -27,6 +27,28 @@ when finished. Use the reserved demonstration namespaces only for these examples
 | [shared_cache_minimal](shared_cache_minimal/main.go) | Three sequential reads show a source load, a Redis hit, and a local hit | [Minimal shared cache demo](../../docs/shared-cache.en-US.md#minimal-two-client-demo) · [简体中文](../../docs/shared-cache.zh-CN.md#两个-client-的最小示例) |
 | [shared_cache](shared_cache/main.go) | Two local Clients reuse Redis results; key invalidation refreshes data; Redis failures fall back to the source | [Shared result cache](../../docs/shared-cache.en-US.md) · [简体中文](../../docs/shared-cache.zh-CN.md) |
 | [shared_invalidation](shared_invalidation/main.go) | Two Clients reuse detail and list results; remote tag invalidation notifies the second Client and marks both results stale | [Shared invalidation](../../docs/shared-invalidation.en-US.md) · [简体中文](../../docs/shared-invalidation.zh-CN.md) |
+| [failure_protection](failure_protection/main.go) | A closed Redis client forces fallback; a shared Executor rejects another key while local hits remain available | [Failure protection](../../docs/shared-cache.en-US.md#protect-the-source-during-cache-failures) · [简体中文](../../docs/shared-cache.zh-CN.md#缓存故障期间保护数据源) |
+
+The failure protection example requires no Redis server. From `examples/redis`, run:
+
+```sh
+go run ./failure_protection
+```
+
+Expected output:
+
+```text
+local hit: cached
+second rejected: true
+first: loaded
+source calls: 1
+rejected: 1
+shared read errors: 1
+```
+
+The closed client models immediate transport failure, not a slow Redis server.
+The budget covers the entire load attempt, including Redis access and writeback.
+Its limit applies to this process; replicas need separately sized budgets.
 
 Start with `shared_cache_minimal` to follow the basic read path. It prints once
 when the simulated database is called and reports shared-cache hits after each

@@ -149,6 +149,31 @@ refreshed calls: 2
 
 定义不会从加载函数推断查询键，不增加授权检查，也不串行业务操作。可以用普通业务函数构造带参数的定义，使键和加载函数捕获一致的参数。结果类型绑定、取消、错误及正在执行的请求共享遵循已有[查询契约](queries.zh-CN.md)。显式失效使用 `client.Invalidate(definition.Key)` 或 `client.InvalidateAndWait(ctx, definition.Key)`。
 
+## 订阅轮询
+
+`RefetchInterval` 是仅用于订阅的 `time.Duration` 字段。正数为 `Query` 或 `Definition.Query` 启用定期刷新，零值或负数禁用轮询。`Fetch`、`Prefetch` 忽略此字段。句柄创建时复制间隔。
+
+沿用快速开始中的 `client` 和 `load`，将查询创建与清理代码替换为：
+
+```go
+query := soroi.Query(
+	client,
+	"greeting",
+	load,
+	soroi.QueryOptions{RefetchInterval: 3 * time.Second},
+)
+defer query.Close()
+```
+
+例如，TUI 可以每三秒刷新任务 42，通过 `Updates()` 接收从 20% 到 50% 的进度变化，离开界面时关闭订阅。
+
+- 间隔刷新不受本地新鲜期限制；单独设置 `StaleTime` 不会调度请求。已配置的共享缓存仍可提供结果。
+- 同 key 的已启用订阅共享最短正间隔，由采用该间隔且最早创建的句柄提供加载函数和加载策略；所选句柄改变时重新开始完整间隔。
+- 同 key 已有加载时跳过本轮，包括排队与重试期间，不积压补刷工作。
+- `SetEnabled(false)` 暂停此句柄的自动加载，`SetEnabled(true)` 恢复，`Close()` 释放句柄；均不取消已经启动的共享加载。其他已启用的轮询订阅可以继续刷新该 key；`Client.Close()` 停止全部调度并取消 Client 持有的加载。
+
+结果和失败继续通过已有的 `Snapshot()`、`Updates()` 提供。重试、超时、Executor 和数据保留策略保持不变；刷新失败保留仍可用的数据，后续间隔继续调度。`Cancel`、`Remove`、`Clear` 不释放订阅，停止后续轮询应禁用或关闭句柄。更换间隔需要创建替代句柄。
+
 ## 共有字段
 
 以下加载策略字段同时适用于 `Query`、`Fetch` 和 `Prefetch`。
@@ -211,7 +236,7 @@ options := soroi.QueryOptions{
 
 ## 缓存策略限制
 
-`StaleTime` 只调整普通缓存的新鲜度判断，不触发轮询。时间经过不会自动发送通知或启动请求；`Snapshot()` 在读取时重新判断状态。`Get` 和省略配置或传入空配置的 `Fetch`、`Prefetch` 使用 Client 默认新鲜期。
+`StaleTime` 只调整普通缓存的新鲜度判断，不触发轮询。未配置正数 `RefetchInterval` 时，时间经过不会自动发送通知或启动请求；`Snapshot()` 在读取时重新判断状态。`Get` 和省略配置或传入空配置的 `Fetch`、`Prefetch` 使用 Client 默认新鲜期。
 
 显式失效和未写入新数据的刷新失败，会使普通缓存对所有查询变旧。`FetchWithExpiry` 返回的绝对截止时间不受 `StaleTime` 覆盖影响，包括显式缓存的兜底数据和错误。
 

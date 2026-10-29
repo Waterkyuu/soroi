@@ -39,9 +39,24 @@ export default defineConfig({
 			sidebar: [
 				{ slug: "docs", label: "Getting started", translations: { "zh-CN": "开始使用" } },
 				{
+					slug: "docs/service-integrations",
+					label: "HTTP, gRPC & telemetry",
+					translations: { "zh-CN": "HTTP、gRPC 与遥测接入" },
+				},
+				{
+					slug: "docs/business-benchmarks",
+					label: "Business workload benchmarks",
+					translations: { "zh-CN": "业务场景基准" },
+				},
+				{
 					slug: "docs/queries",
 					label: "Queries & conditions",
 					translations: { "zh-CN": "查询与条件请求" },
+				},
+				{
+					slug: "docs/infinite-queries",
+					label: "Infinite queries",
+					translations: { "zh-CN": "分页追加查询" },
 				},
 				{
 					slug: "docs/query-options",

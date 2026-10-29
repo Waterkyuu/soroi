@@ -87,6 +87,45 @@ jobs:
       - run: go build -o "$RUNNER_TEMP/soroi-mcp" .
       - run: go run .
 
+  integrations:
+    name: Integration example (${{ matrix.module }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [examples/service, benchmarks/scenarios]
+    defaults:
+      run:
+        working-directory: ${{ matrix.module }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.26.x'
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+      - run: go mod verify
+      - name: Check module metadata
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+      - run: go vet ./...
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.12.2
+          working-directory: ${{ matrix.module }}
+          args: --config ../../.golangci.yml --timeout=5m
+      - run: go test -race ./... -count=1
+      - run: go build -o "$RUNNER_TEMP/soroi-integration" .
+      - name: Run HTTP and gRPC demonstration
+        if: matrix.module == 'examples/service'
+        run: go run .
+      - name: Run workload smoke check
+        if: matrix.module == 'benchmarks/scenarios'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y redis-server
+          go run . -requests 64 -workers 8 -max-concurrent 2 > "$RUNNER_TEMP/soroi-workloads.jsonl"
+
   redis:
     name: Redis shared store
     runs-on: ubuntu-latest
@@ -151,6 +190,7 @@ jobs:
           redis-cli -h 127.0.0.1 -p 16379 ping
           go run ./shared_cache
           go run ./shared_invalidation
+          go run ./failure_protection
 
   test:
     name: Test (${{ matrix.os }}, Go ${{ matrix.go }})
