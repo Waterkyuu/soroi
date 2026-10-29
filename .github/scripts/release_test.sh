@@ -2,6 +2,9 @@
 # Test release boundaries against disposable repositories and a fake GitHub CLI.
 set -eu
 
+# Disposable repositories test workflow refs explicitly, independently of the calling CI branch.
+unset GITHUB_REF
+
 script=$(cd "$(dirname "$0")" && pwd)/release.sh
 sandbox=$(mktemp -d)
 trap 'test -z "$sandbox" || rm -r -- "$sandbox"' EXIT HUP INT TERM
@@ -29,7 +32,15 @@ expect_failure() {
 
 sh "$script" validate v0.1.1
 sh "$script" validate v1.20.0
-for version in 0.1.1 v2.0.0 v01.1.1 v1.01.0 v1.0.0-beta 'v1.0.0;echo x'; do
+sh "$script" validate v0.3.2-alpha.0.1
+sh "$script" validate v1.20.0-rc.1
+GITHUB_REF=refs/heads/main sh "$script" validate v0.3.2-alpha.0.1
+GITHUB_REF=refs/heads/release/v0.3.2 sh "$script" validate v0.3.2-alpha.0.1
+GITHUB_REF=refs/heads/release/v0.3.2 sh "$script" validate v0.3.2
+(GITHUB_REF=refs/heads/release/v0.3.1 expect_failure validate v0.3.2)
+(GITHUB_REF=refs/heads/feature expect_failure validate v0.3.2)
+(GITHUB_REF=refs/tags/v0.3.2 expect_failure validate v0.3.2)
+for version in 0.1.1 v2.0.0 v01.1.1 v1.01.0 v1.0.0-alpha.01 v1.0.0-alpha..1 v1.0.0- v1.0.0+build 'v1.0.0;echo x'; do
   expect_failure validate "$version"
 done
 expect_failure validate v0.1.0
@@ -84,4 +95,10 @@ test "$(wc -l < "$RELEASE_TEST_CALLS" | tr -d ' ')" = 2
 git --git-dir="$sandbox/remote.git" tag v0.1.2 v0.1.0
 expect_failure publish v0.1.2
 test "$(wc -l < "$RELEASE_TEST_CALLS" | tr -d ' ')" = 2
+# Prerelease publication must not replace the latest stable release.
+printf '[]\n' > "$RELEASE_TEST_LIST"
+GITHUB_REF=refs/heads/release/v0.1.2 sh "$script" publish v0.1.2-alpha.0.1
+grep -q 'release create v0.1.2-alpha.0.1 .*--prerelease --latest=false' "$RELEASE_TEST_CALLS"
+grep -q 'release create v0.1.1 .*--latest' "$RELEASE_TEST_CALLS"
+test "$(git --git-dir="$sandbox/remote.git" rev-parse 'v0.1.2-alpha.0.1^{commit}')" = "$(git rev-parse HEAD)"
 printf '%s\n' 'Release automation tests passed.'

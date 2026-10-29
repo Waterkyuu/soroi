@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Stable version to publish (for example v0.1.1)'
+        description: 'Version to publish (for example v0.3.2 or v0.3.2-alpha.0.1)'
         required: true
         type: string
       dry_run:
@@ -34,7 +34,6 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
-          test "$GITHUB_REF" = refs/heads/main
           test -n "$DEEPSEEK_API_KEY"
           sh .github/scripts/release.sh validate "$RELEASE_VERSION"
 

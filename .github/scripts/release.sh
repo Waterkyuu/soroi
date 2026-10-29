@@ -9,10 +9,23 @@ fail() {
   exit 1
 }
 
-# validate accepts stable versions compatible with the unsuffixed Go module.
+# validate accepts stable and prerelease versions from main or their matching release branch.
 validate() {
-  printf '%s\n' "$version" | grep -Eq '^v[01]\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' ||
-    fail 'Use a stable v0.x.y or v1.x.y version; v2 needs a new module path.'
+  printf '%s\n' "$version" | grep -Eq '^v[01]\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$' ||
+    fail 'Use a v0.x.y or v1.x.y version with an optional prerelease suffix; v2 needs a new module path.'
+  case "$version" in
+    *-*)
+      # SemVer numeric prerelease identifiers cannot contain leading zeroes.
+      printf '%s\n' "${version#*-}" | awk -F. '{for (i = 1; i <= NF; i++) if ($i ~ /^0[0-9]+$/) exit 1}' ||
+        fail 'Numeric prerelease identifiers must not contain leading zeroes.'
+      ;;
+  esac
+  if test -n "${GITHUB_REF:-}"; then
+    case "$GITHUB_REF" in
+      refs/heads/main|"refs/heads/release/${version%%-*}") ;;
+      *) fail 'Release workflows must run from main or the matching release/version branch.' ;;
+    esac
+  fi
   if git show-ref --verify --quiet "refs/tags/$version"; then
     test "$(git rev-parse "$version^{commit}")" = "$(git rev-parse HEAD)" ||
       fail 'The requested tag already points to a different commit.'
@@ -70,7 +83,12 @@ publish() {
     printf '%s\n' 'Release already exists; keeping its published notes.'
     return
   fi
-  gh release create "$version" --verify-tag --title "$version" --notes-file release-notes.md
+  set -- --verify-tag --title "$version" --notes-file release-notes.md
+  case "$version" in
+    *-*) set -- "$@" --prerelease --latest=false ;;
+    *) set -- "$@" --latest ;;
+  esac
+  gh release create "$version" "$@"
 }
 
 test "$#" -eq 2 || fail 'Usage: release.sh validate|context|notes|publish v0.x.y'
