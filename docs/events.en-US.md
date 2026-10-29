@@ -143,12 +143,13 @@ Call `subscription.Close()` when the consumer leaves. This closes only diagnosti
 | `Trigger` | Operation |
 | --- | --- |
 | `TriggerFetch` | `Fetch`, `FetchWithExpiry` |
-| `TriggerQuery` | Automatic loading or cache reuse when constructing an enabled `Query` |
+| `TriggerQuery` | Automatic loading or cache reuse when constructing an enabled `Query` or `InfiniteQuery` |
 | `TriggerEnable` | `SetEnabled(true)` transitioning from disabled to enabled |
-| `TriggerRefetch` | `QueryHandle.Refetch` |
+| `TriggerRefetch` | `QueryHandle.Refetch` or `InfiniteQueryHandle.Refetch` |
 | `TriggerInvalidate` | Explicit invalidation and its automatic refresh |
 | `TriggerPrefetch` | `Prefetch` |
 | `TriggerPoll` | Fixed-interval refresh scheduled by an enabled subscription |
+| `TriggerFetchNextPage` | `InfiniteQueryHandle.FetchNextPage`, including an explicit first-page load |
 | `TriggerNone` | Local writes, cache removals, Client closure, and other non-query transitions |
 
 Retries and completions retain the original load initiator. Joins record the joining consumer's source. An invalidation event uses `TriggerInvalidate` without implying that a refresh started.

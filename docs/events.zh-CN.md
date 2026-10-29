@@ -143,12 +143,13 @@ go func() {
 | `Trigger` | 对应操作 |
 | --- | --- |
 | `TriggerFetch` | `Fetch`、`FetchWithExpiry` |
-| `TriggerQuery` | 创建启用的 `Query` 时自动加载或复用缓存 |
+| `TriggerQuery` | 创建启用的 `Query` 或 `InfiniteQuery` 时自动加载或复用缓存 |
 | `TriggerEnable` | `SetEnabled(true)` 从禁用切换为启用 |
-| `TriggerRefetch` | `QueryHandle.Refetch` |
+| `TriggerRefetch` | `QueryHandle.Refetch` 或 `InfiniteQueryHandle.Refetch` |
 | `TriggerInvalidate` | 主动失效，以及失效引起的自动刷新 |
 | `TriggerPrefetch` | `Prefetch` |
 | `TriggerPoll` | 已启用订阅按固定间隔调度的刷新 |
+| `TriggerFetchNextPage` | `InfiniteQueryHandle.FetchNextPage`，包括显式加载第一页 |
 | `TriggerNone` | 本地写入、缓存删除或 Client 关闭等操作 |
 
 重试和结束事件保留原加载发起者的来源；加入事件记录加入者的来源。失效事件使用 `TriggerInvalidate`，不表示一定启动了刷新。
