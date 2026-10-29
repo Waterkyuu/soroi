@@ -2,27 +2,148 @@
 
 [简体中文](infinite-queries.zh-CN.md)
 
-`InfiniteQuery` retains loaded task pages when a CLI or TUI requests more tasks. One subscription exposes the accumulated pages, whether another page exists, and loading or failure state.
-
-## Installation
-
-Requires Go 1.22 or later and no external service. To run against a checkout containing this API, create a separate example directory and run these commands there. Replace `/absolute/path/to/soroi` with the checkout root:
-
-```sh
-go mod init example.com/tasks
-go mod edit -replace=github.com/Waterkyuu/soroi=/absolute/path/to/soroi
-go get github.com/Waterkyuu/soroi
-```
+`InfiniteQuery` supports a task list's “load more” action: each request appends one page while retaining the pages already displayed. The handle provides the accumulated data, loading state, errors, and whether another page is available.
 
 ## Usage
 
-`InfiniteQuery(client, key, initialPageParam, fetchPage, getNextPageParam, options...)` creates a subscription and normally loads the first page automatically. Go infers the page and parameter types. `fetchPage` receives the context and current page parameter; return one backend response or an error. `getNextPageParam` returns the next parameter and a boolean indicating whether another page exists. Zero-valued parameters are valid when the boolean is true.
+### Create a paginated query
 
-Keep page size, filters, and identity scope in the comparable query key and the loader. The changing cursor is managed inside the sequence. Reuse one application-owned `Client` and close each handle when its consumer leaves.
+First define the response returned by one page request:
 
-### Complete example
+```go
+// TaskPage is one response from the task service.
+type TaskPage struct {
+	// Items contains this page's task titles.
+	Items []string
+	// NextCursor is empty when no more pages remain.
+	NextCursor string
+}
+```
 
-Save the following as `main.go` in the example module. The in-memory loader returns at most two task titles per page. `Disable: true` makes the first request explicit, keeping this example sequential; later calls append another page.
+The following snippets run inside `main` with `context`, `fmt`, and `soroi` imported. This setup creates a Client and defines `fetchPage` with two fixed responses; replace its body with the application's backend request.
+
+`InfiniteQuery` returns `*InfiniteQueryHandle[TaskPage, string]`, with both types inferred from the arguments. The example passes `Disable: true` so construction subscribes without loading. Call `FetchNextPage` to load the first page explicitly. Omitting this option starts missing or stale data loading in the background.
+
+```go
+client := soroi.NewClient(soroi.Options{})
+defer client.Close()
+ctx := context.Background()
+
+fetchPage := func(_ context.Context, cursor string) (TaskPage, error) {
+	if cursor == "" {
+		return TaskPage{Items: []string{"Write docs"}, NextCursor: "next"}, nil
+	}
+	return TaskPage{Items: []string{"Fix tests"}}, nil
+}
+
+tasks := soroi.InfiniteQuery(
+	client,
+	"tasks",
+	"",
+	fetchPage,
+	func(last TaskPage) (string, bool) {
+		return last.NextCursor, last.NextCursor != ""
+	},
+	soroi.QueryOptions{Disable: true},
+)
+defer tasks.Close()
+```
+
+The arguments have these roles:
+
+| Argument | Usage |
+| --- | --- |
+| `client` | Share cached pages and active requests across consumers; reuse an application-owned Client |
+| `key` | Identify the complete list; include filters, page size, and identity scope when they affect the result |
+| `initialPageParam` | Parameter for the first request; here `""` means the first page |
+| `fetchPage` | `func(context.Context, Param) (Page, error)`; fetch one page using the supplied parameter |
+| `getNextPageParam` | `func(Page) (Param, bool)`; read the next parameter from the last page; false ends pagination |
+| `options` | Zero or one existing `QueryOptions`; omitted settings inherit the Client policy |
+
+The changing cursor belongs to the page sequence, rather than the list key. Set page size in the backend request and include it in the key; it is not a separate pagination option. A zero-valued page parameter remains valid when the continuation boolean is true.
+
+### Load the first or next page
+
+`FetchNextPage(ctx)` waits for a page request and returns `(InfiniteData[TaskPage, string], error)`. Without data it loads the first page; subsequent calls append one page. This snippet reuses `tasks` and `ctx` from the setup:
+
+```go
+data, err := tasks.FetchNextPage(ctx)
+if err != nil {
+	fmt.Println("Load failed:", err)
+	return
+}
+fmt.Println("pages:", len(data.Pages))
+```
+
+`data.Pages` contains all loaded responses, and `data.PageParams` contains their corresponding request parameters. A request failure preserves prior cached pages. With no next page, the call returns current data and nil without requesting the backend. Run blocking calls in a TUI's asynchronous command.
+
+### Read current data and state
+
+`Snapshot()` returns `InfiniteSnapshot[TaskPage, string]` immediately, without starting or waiting for a request. After loading, render the accumulated pages:
+
+```go
+state := tasks.Snapshot()
+for _, page := range state.Data.Pages {
+	fmt.Println(page.Items)
+}
+fmt.Println("has next:", state.HasNextPage)
+```
+
+| Field | Usage |
+| --- | --- |
+| `Data.Pages` | Render the loaded pages in order |
+| `Data.PageParams` | Read the request parameter corresponding to each page |
+| `HasData` | Distinguish available data from an initial query without a result |
+| `HasNextPage` | Enable “load more”; false before data exists or after the last page |
+| `Fetching` | Detect any active load, including initial loading, appending, and refreshing |
+| `FetchingNextPage` | Show a loading indicator specifically for an append |
+| `Err` | Report the latest request failure while continuing to display available data |
+
+`InfiniteSnapshot` embeds the existing `Snapshot[InfiniteData[Page, Param]]`; `Status`, `Stale`, `UpdatedAt`, and `ExpiresAt` retain their ordinary query meanings. Cached data is shared and must be treated as immutable.
+
+### Subscribe to updates
+
+`Updates()` returns a channel of `InfiniteSnapshot` values. Use it in the UI's state consumer, separately from the actions that call `FetchNextPage` or `Refetch`:
+
+```go
+for state := range tasks.Updates() {
+	fmt.Println(state.Data.Pages, state.FetchingNextPage, state.Err)
+}
+```
+
+The channel delivers initial and latest states; slow consumers can skip intermediate changes. The loop waits for updates until the subscription closes. Use `Snapshot()` when only a single current value is needed.
+
+### Refresh loaded pages
+
+`Refetch(ctx)` waits for a refresh and returns the same `InfiniteData` type as `FetchNextPage`. It starts from the initial parameter and derives each subsequent cursor from the new response, rather than appending another page:
+
+```go
+if _, err := tasks.Refetch(ctx); err != nil {
+	fmt.Println("Refresh failed:", err)
+	return
+}
+```
+
+A refresh reloads at most the current page count; an earlier end shortens the list. Old pages remain visible until the complete replacement succeeds. A refresh failure retains the old list and reports the error.
+
+### Control automatic loading and release the subscription
+
+`SetEnabled(true)` enables automatic loading of missing or stale data and participation in polling. This resumes automatic behavior for the disabled handle from the setup:
+
+```go
+if err := tasks.SetEnabled(true); err != nil {
+	fmt.Println("Enable failed:", err)
+	return
+}
+```
+
+`SetEnabled(false)` disables only this consumer's automatic loading; it still receives shared updates, and explicit `FetchNextPage` and `Refetch` calls still execute. Existing work and other consumers are unaffected.
+
+Call `tasks.Close()` when the consumer leaves, normally with the `defer tasks.Close()` registered immediately after construction. It releases the subscription and its polling participation without canceling shared requests. The update channel closes after already-received states have been processed. Close the Client when the application shuts down.
+
+## Complete example
+
+Save this program as `main.go` in a module importing soroi and run `go run .` from that directory. It loads two pages and displays the retained task titles:
 
 ```go
 package main
@@ -34,48 +155,41 @@ import (
 	"github.com/Waterkyuu/soroi"
 )
 
-// TaskPage contains tasks and the next offset, or zero at the end.
+// TaskPage is one response from the task service.
 type TaskPage struct {
 	// Items contains this page's task titles.
 	Items []string
-	// Next is the offset for the next request.
-	Next int
+	// NextCursor is empty when no more pages remain.
+	NextCursor string
 }
 
-// TaskListKey separates lists requested with different page sizes.
-type TaskListKey struct {
-	// PageSize is the maximum number of tasks per page.
-	PageSize int
-}
-
-// main loads two pages while retaining the first page's tasks.
+// main loads two task pages and reads the accumulated result.
 func main() {
 	client := soroi.NewClient(soroi.Options{})
 	defer client.Close()
+	ctx := context.Background()
 
-	all := []string{"Write docs", "Fix tests", "Publish release"}
-	pageSize := 2
+	fetchPage := func(_ context.Context, cursor string) (TaskPage, error) {
+		if cursor == "" {
+			return TaskPage{Items: []string{"Write docs"}, NextCursor: "next"}, nil
+		}
+		return TaskPage{Items: []string{"Fix tests"}}, nil
+	}
+
 	tasks := soroi.InfiniteQuery(
 		client,
-		TaskListKey{PageSize: pageSize},
-		0,
-		func(_ context.Context, offset int) (TaskPage, error) {
-			end := min(offset+pageSize, len(all))
-			var next int
-			if end < len(all) {
-				next = end
-			}
-			return TaskPage{Items: all[offset:end], Next: next}, nil
-		},
-		func(last TaskPage) (int, bool) {
-			return last.Next, last.Next != 0
+		"tasks",
+		"",
+		fetchPage,
+		func(last TaskPage) (string, bool) {
+			return last.NextCursor, last.NextCursor != ""
 		},
 		soroi.QueryOptions{Disable: true},
 	)
 	defer tasks.Close()
 
 	for range 2 {
-		data, err := tasks.FetchNextPage(context.Background())
+		data, err := tasks.FetchNextPage(ctx)
 		if err != nil {
 			panic(err)
 		}
@@ -87,74 +201,46 @@ func main() {
 }
 ```
 
-Run `go run .` from the example directory. Expected output:
+Expected output:
 
 ```text
 pages: 1 more: true
 pages: 2 more: false
-[Write docs Fix tests]
-[Publish release]
+[Write docs]
+[Fix tests]
 ```
-
-The page count grows from one to two, and both pages remain available. The final continuation flag is false.
-
-### Observe the list
-
-In a UI consumer of the same `tasks` handle, use `Updates()` to receive state changes. The following snippet uses `fmt` from the complete example:
-
-```go
-for state := range tasks.Updates() {
-    fmt.Println(len(state.Data.Pages), state.FetchingNextPage, state.HasNextPage, state.Err)
-}
-```
-
-`InfiniteSnapshot` embeds `Snapshot[InfiniteData[Page, Param]]`: `Data.Pages` contains ordered responses, and `Data.PageParams` contains their matching request parameters. `HasData`, `Status`, `Err`, `Fetching`, `Stale`, `UpdatedAt`, and `ExpiresAt` retain their ordinary query meanings. `HasNextPage` is false before data is available. `FetchingNextPage` distinguishes appending from initial loading and refreshing. Slow readers can skip intermediate states.
-
-### Load more and refresh
-
-| Operation | Result |
-| --- | --- |
-| `tasks.FetchNextPage(ctx)` | Wait for one additional page, or the first page when no data exists; return the accumulated `InfiniteData` and an error |
-| `tasks.Refetch(ctx)` | Reload the current sequence from its initial parameter, following the newly returned cursors |
-| `tasks.Snapshot()` | Read current data and state without loading |
-| `tasks.SetEnabled(enabled)` | Control this consumer's automatic loading and polling |
-| `tasks.Close()` | Release this subscription without canceling shared work |
-
-Blocking operations belong in the TUI's asynchronous command, while its message loop consumes updates. Once no next page exists, `FetchNextPage` returns the current data and nil without a backend call. A failed operation leaves prior pages available through `Snapshot()` and `Updates()`; inspect `Err` and retry the operation when appropriate.
 
 ## Configuration
 
-Supply zero or one existing `QueryOptions`; omitted options inherit the Client policy. See [query options](query-options.en-US.md) for individual settings.
+Reuse [QueryOptions](query-options.en-US.md) for loading policy:
 
-| Setting | Pagination behavior |
+| Configuration | Effect |
 | --- | --- |
-| `Disable`, `SetEnabled` | Control automatic initial loading, stale refreshes, and polling; explicit calls still execute |
-| `RefetchInterval` | Refresh the loaded sequence using the existing shared timer; skip occupied intervals |
-| `Retry`, `RetryIf`, `RetryDelay` | Retry the failed page, without reloading earlier successful pages within that operation |
-| `Timeout`, `Executor` | Bound the entire operation, including queue and retry waits; acquire capacity separately for each page callback |
+| `Disable`, `SetEnabled` | Control automatic loading; the default permits loading |
+| `RefetchInterval` | Refresh loaded pages; non-positive values disable polling |
+| `Retry`, `RetryIf`, `RetryDelay` | Retry the failed page without repeating earlier successful pages within the operation |
+| `Timeout`, `Executor` | Bound the entire operation, including waits; acquire execution capacity for each page callback |
 
 ## Error handling and common problems
 
-| Symptom | Action |
+| Condition | Handling |
 | --- | --- |
-| `ErrQueryBusy` | An append conflicts with initial loading or refreshing, or a refresh conflicts with an append. Wait for completion and try again; conflicting operations are not queued. |
-| Page request fails | Continue displaying retained pages; report `Snapshot().Err` and retry the failed append or refresh. |
-| Canceled context or timeout | Handle the returned context error. Cancellation follows the existing shared-request ownership rules and does not discard prior pages. |
-| Invalid key, incompatible cached type, nil fetcher, or extra options | Inspect the failed handle's snapshot or initial update; no loading is admitted. Existing error values apply. |
-| Nil `getNextPageParam` | Supply a continuation function; construction panics before registration when it is nil. |
+| `ErrQueryBusy` | Appending conflicts with initial loading or refreshing, or refreshing conflicts with appending. Wait for the active operation and try again. |
+| Page request fails | Report the returned error or `Snapshot().Err`; continue displaying retained data and retry the operation as needed. |
+| Context canceled or timed out | Handle the context error; shared-request cancellation follows the ordinary query ownership rules. |
+| Invalid key, incompatible type, nil fetcher, or extra options | Inspect `Snapshot().Err` or the initial update; existing query errors apply and no load starts. |
+| Nil `getNextPageParam` | Supply a continuation callback; construction panics before subscribing when it is nil. |
 
 ## Behavior and limitations
 
-- Same-key handles share one cached sequence and one active request. Concurrent appends merge; concurrent refreshes merge. Callers must use consistent page types, parameter types, and pagination semantics for that key.
-- A refresh loads at most the current page count, starting from the initial parameter and deriving each next cursor from the new preceding response. An earlier end shortens the sequence. Old pages remain visible until the complete replacement succeeds.
-- `getNextPageParam` runs outside the Client lock during loading, snapshot reads, and update projection. It must be prompt and pure; concurrent invocations require synchronization for any captured mutable state. After `Close`, captured projections finish before `Updates()` closes.
-- The entire sequence is one cache value and one LRU entry. Freshness and maximum age apply to that value, rather than each page separately. Successful appends install a new aggregate and renew its ordinary freshness and age. The application controls the number of retained pages.
-- `Stats().Loads` counts shared operations, not individual pages. Diagnostic `Attempts` counts actual page callbacks, while `Stats().Retries` counts retries of failed pages.
-- Existing `Get`, `Set`, `Update`, `Invalidate`, `InvalidateAndWait`, `Cancel`, and `Remove` operate on the same key. Treat cached pages as immutable. Copy modified slices and keep `Pages` and `PageParams` equal in length and corresponding order.
-- This API loads pages forward. It does not infer termination from an empty page; only the continuation boolean ends the sequence.
+- Same-key handles share pages and in-flight requests. Concurrent appends merge, as do concurrent refreshes; conflicting operation kinds are not queued. Use consistent page types, parameter types, and pagination semantics for the same key.
+- The continuation callback must return promptly and be pure. It runs outside the Client lock during loading, snapshot reads, and update delivery, and can run concurrently.
+- The complete sequence is one cache value and one LRU entry. Freshness and maximum age apply to the aggregate; a successful append installs a new value and renews those times. The application controls the number of retained pages.
+- Existing `Get`, `Set`, `Update`, `Invalidate`, `InvalidateAndWait`, `Cancel`, and `Remove` operate on the list key. For manual updates, copy modified data and keep `Pages` and `PageParams` equal in length and corresponding order.
+- Pagination proceeds forward and ends according to the continuation boolean, independently of page length.
 
 ## Complete examples and related guides
 
-- [Queries](queries.en-US.md): ordinary subscriptions, enablement, and shared cancellation.
-- [Invalidation](invalidation.en-US.md): awaited refreshes and bounded follow-up loads.
-- [Atomic cache updates](updates.en-US.md): update cached values without overwriting concurrent changes.
+- [Queries](queries.en-US.md): ordinary subscriptions and shared cancellation rules.
+- [Invalidation](invalidation.en-US.md): refresh after writes and await the result.
+- [Atomic cache updates](updates.en-US.md): modify cached pages without overwriting concurrent changes.

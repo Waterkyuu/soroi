@@ -2,27 +2,148 @@
 
 [English](infinite-queries.en-US.md)
 
-`InfiniteQuery` 用于 CLI 或 TUI 的任务列表，在加载更多任务时保留已有页。一个订阅提供累积的分页数据、是否还有下一页，以及加载和错误状态。
-
-## 安装
-
-要求 Go 1.22 或更高版本，不需要外部服务。使用包含该 API 的仓库检出版本运行示例时，在单独的示例目录执行以下命令，将 `/absolute/path/to/soroi` 替换为仓库根目录的绝对路径：
-
-```sh
-go mod init example.com/tasks
-go mod edit -replace=github.com/Waterkyuu/soroi=/absolute/path/to/soroi
-go get github.com/Waterkyuu/soroi
-```
+`InfiniteQuery` 用于任务列表的“加载更多”：每次请求追加一页，保留已经展示的页。返回的 Handle 提供累积数据、加载状态、错误，以及是否还有下一页。
 
 ## 使用方式
 
-`InfiniteQuery(client, key, initialPageParam, fetchPage, getNextPageParam, options...)` 创建订阅，默认自动加载第一页。Go 从参数推断页类型和分页参数类型。`fetchPage` 接收上下文及当前分页参数，返回一份后端响应或错误。`getNextPageParam` 返回下一次请求的参数，以及是否还有下一页；布尔值为 true 时，零值也可以是有效分页参数。
+### 创建分页查询
 
-将每页条数、筛选条件和身份范围放入可比较的查询 key，并在加载函数中使用。变化的游标由分页序列内部管理。复用应用拥有的 `Client`，使用方离开时关闭对应 Handle。
+先定义一次取页请求返回的数据类型：
 
-### 完整示例
+```go
+// TaskPage is one response from the task service.
+type TaskPage struct {
+	// Items contains this page's task titles.
+	Items []string
+	// NextCursor is empty when no more pages remain.
+	NextCursor string
+}
+```
 
-将下面的程序保存为示例模块中的 `main.go`。内存加载函数每页最多返回两个任务标题。`Disable: true` 让首次加载显式执行，便于顺序演示；后续调用追加下一页。
+以下片段放在导入 `context`、`fmt` 和 `soroi` 的 `main` 函数内。这里创建 Client，并用两个固定响应定义 `fetchPage`；接入业务时，将函数体替换为实际后端请求。
+
+`InfiniteQuery` 返回 `*InfiniteQueryHandle[TaskPage, string]`，两个类型均从参数推断。示例传入 `Disable: true`，创建时只订阅、不加载，再通过 `FetchNextPage` 显式加载第一页。省略该配置时，会在后台加载缺失或过期的数据。
+
+```go
+client := soroi.NewClient(soroi.Options{})
+defer client.Close()
+ctx := context.Background()
+
+fetchPage := func(_ context.Context, cursor string) (TaskPage, error) {
+	if cursor == "" {
+		return TaskPage{Items: []string{"Write docs"}, NextCursor: "next"}, nil
+	}
+	return TaskPage{Items: []string{"Fix tests"}}, nil
+}
+
+tasks := soroi.InfiniteQuery(
+	client,
+	"tasks",
+	"",
+	fetchPage,
+	func(last TaskPage) (string, bool) {
+		return last.NextCursor, last.NextCursor != ""
+	},
+	soroi.QueryOptions{Disable: true},
+)
+defer tasks.Close()
+```
+
+各参数的用途如下：
+
+| 参数 | 使用方式 |
+| --- | --- |
+| `client` | 在使用方之间共享缓存页和进行中的请求；复用应用拥有的 Client |
+| `key` | 标识完整列表；筛选条件、每页条数和身份范围影响结果时，应包含在 key 中 |
+| `initialPageParam` | 第一次请求的参数；这里用 `""` 表示第一页 |
+| `fetchPage` | `func(context.Context, Param) (Page, error)`，使用传入参数获取一页 |
+| `getNextPageParam` | `func(Page) (Param, bool)`，从最后一页取下一次参数；false 表示分页结束 |
+| `options` | 零个或一个现有 `QueryOptions`，省略的配置继承 Client 策略 |
+
+变化的游标由分页序列管理，不放入列表 key。每页条数在后端请求中配置，并包含在 key 中，不需要单独的分页配置项。继续加载标记为 true 时，零值也可以作为有效分页参数。
+
+### 加载第一页或下一页
+
+`FetchNextPage(ctx)` 等待取页完成，返回 `(InfiniteData[TaskPage, string], error)`。尚无数据时加载第一页；后续调用每次追加一页。下面复用创建步骤中的 `tasks` 和 `ctx`：
+
+```go
+data, err := tasks.FetchNextPage(ctx)
+if err != nil {
+	fmt.Println("Load failed:", err)
+	return
+}
+fmt.Println("pages:", len(data.Pages))
+```
+
+`data.Pages` 保存所有已加载的响应，`data.PageParams` 保存一一对应的请求参数。请求失败时保留已有缓存页；没有下一页时，返回当前数据和 nil，不再请求后端。TUI 中应将这类阻塞调用放入异步命令执行。
+
+### 读取当前数据和状态
+
+`Snapshot()` 立即返回 `InfiniteSnapshot[TaskPage, string]`，不会发起或等待请求。加载完成后，可按顺序展示累积页：
+
+```go
+state := tasks.Snapshot()
+for _, page := range state.Data.Pages {
+	fmt.Println(page.Items)
+}
+fmt.Println("has next:", state.HasNextPage)
+```
+
+| 字段 | 使用方式 |
+| --- | --- |
+| `Data.Pages` | 按顺序展示已加载的页 |
+| `Data.PageParams` | 读取每一页对应的请求参数 |
+| `HasData` | 区分已有可用数据与尚无结果的初始查询 |
+| `HasNextPage` | 控制“加载更多”是否可用；尚无数据或已到最后一页时为 false |
+| `Fetching` | 判断是否正在执行首次加载、追加或刷新 |
+| `FetchingNextPage` | 单独展示“正在加载下一页”的提示 |
+| `Err` | 展示最近一次请求错误，同时继续展示仍可用的数据 |
+
+`InfiniteSnapshot` 嵌入现有 `Snapshot[InfiniteData[Page, Param]]`，`Status`、`Stale`、`UpdatedAt` 和 `ExpiresAt` 沿用普通查询的含义。缓存数据由使用方共享，必须只读。
+
+### 订阅状态更新
+
+`Updates()` 返回 `InfiniteSnapshot` 通道。界面通过该通道消费状态，加载按钮等操作另外调用 `FetchNextPage` 或 `Refetch`：
+
+```go
+for state := range tasks.Updates() {
+	fmt.Println(state.Data.Pages, state.FetchingNextPage, state.Err)
+}
+```
+
+通道提供初始和最新状态，慢速接收方可能跳过中间变化。循环会持续等待更新，直到订阅关闭；只需读取一次当前值时使用 `Snapshot()`。
+
+### 刷新已加载的页
+
+`Refetch(ctx)` 等待刷新完成，返回与 `FetchNextPage` 相同的 `InfiniteData` 类型。它从初始参数重新取页，并根据新响应计算后续游标，而不是再追加一页：
+
+```go
+if _, err := tasks.Refetch(ctx); err != nil {
+	fmt.Println("Refresh failed:", err)
+	return
+}
+```
+
+一次刷新最多重取当前页数；提前到达末页时缩短列表。完整替换成功前继续展示旧页；刷新失败时保留旧列表并报告错误。
+
+### 控制自动加载和释放订阅
+
+`SetEnabled(true)` 启用缺失或过期数据的自动加载，并参与轮询。下面让创建步骤中禁用的 Handle 恢复自动加载：
+
+```go
+if err := tasks.SetEnabled(true); err != nil {
+	fmt.Println("Enable failed:", err)
+	return
+}
+```
+
+`SetEnabled(false)` 只禁用当前使用方的自动加载，仍然接收共享更新，显式 `FetchNextPage` 和 `Refetch` 也仍会执行。已经开始的请求和其他使用方不受影响。
+
+使用方离开时调用 `tasks.Close()`，通常在创建后立即注册 `defer tasks.Close()`。它释放当前订阅及其轮询参与权，不取消共享请求；已接收的状态处理完后关闭更新通道。应用退出时关闭 Client。
+
+## 完整示例
+
+将程序保存为已引入 soroi 的 Go 模块中的 `main.go`，在该目录运行 `go run .`。程序加载两页，随后展示保留下来的任务标题：
 
 ```go
 package main
@@ -34,48 +155,41 @@ import (
 	"github.com/Waterkyuu/soroi"
 )
 
-// TaskPage contains tasks and the next offset, or zero at the end.
+// TaskPage is one response from the task service.
 type TaskPage struct {
 	// Items contains this page's task titles.
 	Items []string
-	// Next is the offset for the next request.
-	Next int
+	// NextCursor is empty when no more pages remain.
+	NextCursor string
 }
 
-// TaskListKey separates lists requested with different page sizes.
-type TaskListKey struct {
-	// PageSize is the maximum number of tasks per page.
-	PageSize int
-}
-
-// main loads two pages while retaining the first page's tasks.
+// main loads two task pages and reads the accumulated result.
 func main() {
 	client := soroi.NewClient(soroi.Options{})
 	defer client.Close()
+	ctx := context.Background()
 
-	all := []string{"Write docs", "Fix tests", "Publish release"}
-	pageSize := 2
+	fetchPage := func(_ context.Context, cursor string) (TaskPage, error) {
+		if cursor == "" {
+			return TaskPage{Items: []string{"Write docs"}, NextCursor: "next"}, nil
+		}
+		return TaskPage{Items: []string{"Fix tests"}}, nil
+	}
+
 	tasks := soroi.InfiniteQuery(
 		client,
-		TaskListKey{PageSize: pageSize},
-		0,
-		func(_ context.Context, offset int) (TaskPage, error) {
-			end := min(offset+pageSize, len(all))
-			var next int
-			if end < len(all) {
-				next = end
-			}
-			return TaskPage{Items: all[offset:end], Next: next}, nil
-		},
-		func(last TaskPage) (int, bool) {
-			return last.Next, last.Next != 0
+		"tasks",
+		"",
+		fetchPage,
+		func(last TaskPage) (string, bool) {
+			return last.NextCursor, last.NextCursor != ""
 		},
 		soroi.QueryOptions{Disable: true},
 	)
 	defer tasks.Close()
 
 	for range 2 {
-		data, err := tasks.FetchNextPage(context.Background())
+		data, err := tasks.FetchNextPage(ctx)
 		if err != nil {
 			panic(err)
 		}
@@ -87,74 +201,46 @@ func main() {
 }
 ```
 
-在示例目录运行 `go run .`，预期输出：
+预期输出：
 
 ```text
 pages: 1 more: true
 pages: 2 more: false
-[Write docs Fix tests]
-[Publish release]
+[Write docs]
+[Fix tests]
 ```
-
-页数从一页增加到两页，两页数据都保留，最终的继续加载标记为 false。
-
-### 观察列表
-
-界面使用同一个 `tasks` Handle 的 `Updates()` 接收状态变化。下面的片段复用完整示例的 `fmt` 导入：
-
-```go
-for state := range tasks.Updates() {
-    fmt.Println(len(state.Data.Pages), state.FetchingNextPage, state.HasNextPage, state.Err)
-}
-```
-
-`InfiniteSnapshot` 嵌入 `Snapshot[InfiniteData[Page, Param]]`：`Data.Pages` 按顺序保存响应，`Data.PageParams` 保存一一对应的请求参数。`HasData`、`Status`、`Err`、`Fetching`、`Stale`、`UpdatedAt` 和 `ExpiresAt` 沿用普通查询的含义。数据尚不可用时，`HasNextPage` 为 false；`FetchingNextPage` 区分追加与首次加载、刷新。慢速接收方可能跳过中间状态。
-
-### 加载更多与刷新
-
-| 操作 | 结果 |
-| --- | --- |
-| `tasks.FetchNextPage(ctx)` | 等待追加一页；尚无数据时加载第一页，返回累积的 `InfiniteData` 和错误 |
-| `tasks.Refetch(ctx)` | 从初始参数重新加载当前序列，根据新响应计算后续游标 |
-| `tasks.Snapshot()` | 读取当前数据和状态，不发起加载 |
-| `tasks.SetEnabled(enabled)` | 控制该使用方的自动加载和轮询 |
-| `tasks.Close()` | 释放当前订阅，不取消共享工作 |
-
-阻塞操作应放在 TUI 的异步命令中执行，消息循环接收更新。没有下一页时，`FetchNextPage` 返回当前数据和 nil，不调用后端。操作失败时，已有页仍可通过 `Snapshot()` 和 `Updates()` 读取；检查 `Err`，在适当时机重试对应操作。
 
 ## 配置说明
 
-可传入零个或一个现有 `QueryOptions`，省略时继承 Client 策略。各配置项见[查询配置](query-options.zh-CN.md)。
+加载策略复用现有 [QueryOptions](query-options.zh-CN.md)：
 
-| 配置 | 分页行为 |
+| 配置 | 效果 |
 | --- | --- |
-| `Disable`、`SetEnabled` | 控制自动首次加载、过期刷新和轮询；显式调用仍会执行 |
-| `RefetchInterval` | 使用现有共享定时器刷新已加载序列；已有请求时跳过该次轮询 |
-| `Retry`、`RetryIf`、`RetryDelay` | 仅重试失败的那一页，不重复加载本次操作中已成功的前页 |
-| `Timeout`、`Executor` | 超时覆盖整个操作，包括排队和重试等待；每个取页回调分别获取执行容量 |
+| `Disable`、`SetEnabled` | 控制自动加载；默认允许加载 |
+| `RefetchInterval` | 刷新已加载的页；非正值禁用轮询 |
+| `Retry`、`RetryIf`、`RetryDelay` | 仅重试失败页，不重复本次操作中已经成功的前页 |
+| `Timeout`、`Executor` | 覆盖整个操作，包括等待；每个取页回调分别获取执行容量 |
 
 ## 错误处理与常见问题
 
-| 现象 | 处理方式 |
+| 情况 | 处理方式 |
 | --- | --- |
-| `ErrQueryBusy` | 追加与首次加载、刷新冲突，或刷新与追加冲突。等待当前操作结束后重试；冲突操作不排队。 |
-| 页请求失败 | 保留并继续展示已有页，读取 `Snapshot().Err`，重试失败的追加或刷新。 |
-| 上下文取消或超时 | 处理返回的上下文错误。取消沿用现有共享请求的所有权规则，不丢弃已有页。 |
-| key 无效、缓存类型不兼容、加载函数为 nil 或配置传入过多 | 检查失败 Handle 的快照或初始更新；不会发起加载，沿用已有错误值。 |
-| `getNextPageParam` 为 nil | 必须提供继续加载函数；为空时在注册订阅前 panic。 |
+| `ErrQueryBusy` | 追加与首次加载、刷新冲突，或刷新与追加冲突；等待当前操作结束后重试。 |
+| 页请求失败 | 读取返回错误或 `Snapshot().Err`；继续展示保留的数据，按需重试对应操作。 |
+| 上下文取消或超时 | 处理上下文错误；共享请求的取消沿用普通查询的所有权规则。 |
+| key 无效、类型不兼容、加载函数为 nil 或配置过多 | 检查 `Snapshot().Err` 或初始更新；沿用已有查询错误，不会发起加载。 |
+| `getNextPageParam` 为 nil | 必须提供继续加载回调；为空时在注册订阅前 panic。 |
 
 ## 行为与限制
 
-- 同 key 的 Handle 共享一份缓存序列和一个进行中的请求；并发追加合并，并发刷新合并。该 key 的页类型、参数类型和分页语义必须一致。
-- 刷新从初始参数开始，最多重取当前页数，每次根据新响应计算下一页游标。提前结束时缩短序列；完整替换成功前继续保留旧页。
-- `getNextPageParam` 在加载、快照读取和更新投影时于 Client 锁外执行，必须快速返回且无副作用。并发调用涉及的外部可变状态需要同步。`Close` 后，已捕获的投影结束才关闭 `Updates()`。
-- 整个序列是一份缓存值，占用一个 LRU 条目。新鲜期和最大数据年龄针对整份结果，而非单独一页；追加成功安装新的聚合结果，更新普通新鲜期和年龄基准。保留多少页由应用控制。
-- `Stats().Loads` 统计共享操作数，而非页数；诊断事件的 `Attempts` 统计实际取页回调次数，`Stats().Retries` 只统计失败页的重试。
-- 现有 `Get`、`Set`、`Update`、`Invalidate`、`InvalidateAndWait`、`Cancel` 和 `Remove` 操作同一个 key。缓存页必须只读；修改时复制相关切片，保持 `Pages` 与 `PageParams` 等长且顺序对应。
-- 该 API 向前追加页，不根据空页推断结束；是否继续由回调返回的布尔值决定。
+- 同 key 的 Handle 共享页和进行中的请求。并发追加合并，并发刷新也合并；不同类型的操作发生冲突时不排队。同 key 必须使用一致的页类型、参数类型和分页语义。
+- 继续加载回调必须快速返回且无副作用，在加载、快照读取和更新投递时于 Client 锁外执行，可能被并发调用。
+- 完整序列是一份缓存值，占一个 LRU 条目。新鲜期和最大数据年龄针对整份结果；追加成功会安装新值并更新相应时间。保留多少页由应用控制。
+- 现有 `Get`、`Set`、`Update`、`Invalidate`、`InvalidateAndWait`、`Cancel` 和 `Remove` 操作列表 key。手动修改时复制相关数据，保持 `Pages` 和 `PageParams` 等长且顺序对应。
+- 分页向前追加，是否结束由继续加载标记决定，与单页数据长度无关。
 
 ## 完整示例与相关文档
 
-- [查询](queries.zh-CN.md)：普通订阅、启用控制和共享取消规则。
-- [失效与刷新](invalidation.zh-CN.md)：等待刷新及有界补刷。
-- [原子缓存更新](updates.zh-CN.md)：修改缓存值时避免覆盖并发变化。
+- [查询](queries.zh-CN.md)：普通订阅与共享取消规则。
+- [失效与刷新](invalidation.zh-CN.md)：写入后刷新并等待结果。
+- [原子缓存更新](updates.zh-CN.md)：修改缓存页，避免覆盖并发变化。
