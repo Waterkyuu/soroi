@@ -25,9 +25,19 @@ export const chapters: Chapter[] = [
 		zh: "查询与条件请求",
 		en: "Queries & conditions",
 		description: {
-			en: "Use typed queries in Go with soroi. Share requests across consumers, observe snapshots and updates, control conditional loading, and fetch or refetch data.",
+			en: "Use typed queries in Go with soroi. Subscribe to ordered independent states with Queries, define typed projections with QueriesWithCombine, and control loading and refreshes.",
 			"zh-CN":
-				"使用 soroi 在 Go 中创建类型安全查询，共享请求，通过 Snapshot 和 Updates 读取状态，并控制条件加载、同步获取与手动刷新。",
+				"使用 soroi 在 Go 中创建类型安全查询，通过 Queries 按顺序订阅独立状态，通过 QueriesWithCombine 自定义类型化组合结果，并控制加载与刷新。",
+		},
+	},
+	{
+		id: "infinite-queries",
+		zh: "分页追加查询",
+		en: "Infinite queries",
+		description: {
+			en: "Load more task pages with soroi InfiniteQuery in Go. Share accumulated pages, manage cursors, retain data after failures, and refresh the loaded sequence.",
+			"zh-CN":
+				"使用 soroi InfiniteQuery 在 Go 中追加任务页，共享累积数据、管理游标，在失败时保留已有页，并刷新已加载序列。",
 		},
 	},
 	{

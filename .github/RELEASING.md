@@ -1,7 +1,15 @@
 # Releasing soroi
 
-Open **Actions → Release → Run workflow**, select `main`, and enter a stable
-version such as `v0.1.1`. Leave **dry_run** unchecked to publish.
+Open **Actions → Release → Run workflow**, select `main` or the matching
+`release/<version>` branch, and enter a version such as `v0.3.2` or
+`v0.3.2-alpha.0.1`. Both use `release/v0.3.2`; the branch must match the version
+without its prerelease suffix. Leave **dry_run** unchecked to publish.
+
+Pushes and pull requests targeting `main` or `release/**` run CI and security
+checks. Website CI runs for pull requests and relevant pushed file changes.
+Ordinary pushes do not publish tags or releases; publication remains manual.
+Prereleases are marked as such on GitHub and do not replace the latest stable
+release. Stable publication explicitly sets the latest release.
 
 The workflow runs lint, formatting, module checks, race tests across Linux,
 macOS, and Windows, builds, and vulnerability checks. A Codex Agent powered by
@@ -43,7 +51,9 @@ Choose the version using the [version policy](../docs/versioning.en-US.md):
 - Breaking releases must include affected APIs or behavior and migration steps
   in the release notes. Check these before publishing, including generated notes.
 
-Use a new non-prerelease `v0.x.y` or `v1.x.y` version. A `v2` release requires
+Use a new `v0.x.y` or `v1.x.y` version, optionally followed by a SemVer prerelease
+suffix such as `-alpha.0.1`. Numeric suffix identifiers must not have leading
+zeroes. Build metadata is not supported. A `v2` release requires
 updating the Go module and import paths and release validation first. The
 workflow does not publish on ordinary commits.
 
@@ -51,6 +61,13 @@ An existing tag for another commit is rejected. If publication stops after
 pushing the tag, rerun the workflow at the same commit and version. It reuses
 that tag; an existing Release and its notes are preserved. Never move, delete,
 or reuse a published Go module tag; publish corrections under a new version.
+
+## v0.3.2 release
+
+Version `v0.3.2` intentionally includes new query APIs despite its patch version:
+subscription polling, grouped query subscriptions, and infinite queries. This is
+an explicit exception to the patch feature policy. State the feature scope and
+this exception in the release notes, including the `v0.3.2-alpha.0.1` preview.
 
 ## soroi rename release
 

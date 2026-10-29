@@ -19,7 +19,7 @@ type Stats struct {
 	LoadFailures uint64
 	// LoadCancellations counts shared operations ending with cancellation or deadline errors.
 	LoadCancellations uint64
-	// Retries counts actual loader attempts after the first, excluding canceled backoff waits.
+	// Retries counts repeated attempts of a failed loader or page callback, excluding canceled backoff waits.
 	Retries uint64
 	// TotalLoadDuration sums elapsed shared-operation time, including retries, backoff, and cancellation.
 	TotalLoadDuration time.Duration

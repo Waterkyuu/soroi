@@ -27,14 +27,15 @@ test("both languages retain code and resolve repository links for the website", 
 });
 
 test("edit links point to maintained documentation rather than generated content", () => {
+	// New guides can change chapter order; resolve the cache guide by its stable ID.
+	const cache = chapters.find((chapter) => chapter.id === "cache");
+	assert.ok(cache);
 	assert.ok(
 		prepareMarkdown("# Start", chapters[0], "en", 1, "main").includes(
 			"docs/getting-started.en-US.md",
 		),
 	);
-	assert.ok(
-		prepareMarkdown("# Cache", chapters[2], "zh-CN", 3, "main").includes("docs/cache.zh-CN.md"),
-	);
+	assert.ok(prepareMarkdown("# Cache", cache, "zh-CN", 3, "main").includes("docs/cache.zh-CN.md"));
 });
 
 test("benchmark artifacts resolve to source files for both locales", () => {

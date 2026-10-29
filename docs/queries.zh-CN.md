@@ -2,7 +2,7 @@
 
 [English](queries.en-US.md) · [缓存与生命周期](cache.zh-CN.md) · [缓存失效](invalidation.zh-CN.md)
 
-一个 `Client` 可以管理不同类型的数据。`Query` 订阅缓存状态并在后台加载；`Fetch` 等待新鲜数据，不保留订阅。两者均从加载函数推断结果类型，并共享同键的数据及正在进行的请求。
+一个 `Client` 可以管理不同类型的数据。`Query` 订阅缓存状态并在后台加载；`Fetch` 等待新鲜数据，不保留订阅。两者均从加载函数推断结果类型，并共享同键的数据及正在进行的请求。`Queries` 通过一个有序通道观察独立订阅；`QueriesWithCombine` 可选地转换这些状态，例如生成 TUI 面板的数据、加载状态和错误。
 
 ## 快速开始：多种结果类型
 
@@ -83,7 +83,7 @@ Alice
 
 ## API 片段前提
 
-以下局部片段使用快速开始中的 `client`、`getUser`、`getUsers`，以及非 nil 的 `ctx`。包含 `return err` 的片段放在返回 `error` 的函数中。各片段独立使用，需补充片段所用的导入。
+以下局部片段使用快速开始中的 `client`、`getUser`、`getUsers`、`getSettings`，以及非 nil 的 `ctx`。包含 `return err` 的片段放在返回 `error` 的函数中。各片段独立使用，需补充片段所用的导入。
 
 ## `Query`：读取状态与后台加载
 
@@ -114,6 +114,122 @@ for state := range users.Updates() {
 ```
 
 通道提供初始状态和后续最新状态。后台请求开始、结束、缓存更新和失效都可能产生通知。读取慢时允许跳过中间状态，因此这不是必须逐条处理的事件日志。`Close()` 会关闭通道；实际应用由界面或事件循环在独立的退出路径中释放查询，不能等待 `range` 自己结束再执行 `defer`。
+
+## `Queries`：订阅多个独立查询
+
+### 从类型化定义创建集合
+
+`Queries(client, definitions...)` 返回 `*QueriesHandle[[]Snapshot[any]]`，不等待加载完成。`QuerySpec` 输入直接使用已有 `Definition[V]` 值，各项可以具有不同结果类型。每项保留独立的 `QueryOptions`、标签、共享缓存和静态结果类型绑定。加载、同 key 请求共享、重试与轮询均遵循 `Query` 的规则。
+
+将以下两个片段追加到快速开始的 `main` 末尾，置于 `_ = settingsState` 之后。`QueryDefinition` 从已有加载函数推断 `User` 与 `Settings` 类型，不执行 I/O；传入多份配置时返回错误。集合与前面创建的订阅共享数据及执行中的请求。
+
+```go
+userDefinition, err := soroi.QueryDefinition("user:42", getUser)
+if err != nil {
+	panic(err)
+}
+settingsDefinition, err := soroi.QueryDefinition("settings", getSettings)
+if err != nil {
+	panic(err)
+}
+group := soroi.Queries(client, userDefinition, settingsDefinition)
+defer group.Close()
+```
+
+### 按顺序读取查询状态
+
+`group.Snapshot()` 返回当前 `[]Snapshot[any]`；`group.Updates()` 接收初始及后续最新状态切片。每个输入保留一个位置，包括重复 key 和构造失败的项。库不预设整体数据可用性、加载或错误的聚合规则。断言具体数据类型前，应检查对应项的 `HasData`。示例在首次加载全部完成后输出一次；TUI 可以在界面存续期间持续接收状态。
+
+```go
+for results := range group.Updates() {
+	for _, result := range results {
+		if result.Err != nil {
+			panic(result.Err)
+		}
+	}
+	ready := results[0].HasData && results[1].HasData
+	fetching := results[0].Fetching || results[1].Fetching
+	if ready && !fetching {
+		user := results[0].Data.(User)
+		settings := results[1].Data.(Settings)
+		fmt.Println(user.Name, settings.Theme)
+		break
+	}
+}
+```
+
+使用 `go run .` 运行扩展后的完整程序。预期输出：
+
+```text
+Alice
+Alice dark
+```
+
+### 定义可选的组合结果
+
+`QueriesWithCombine(client, combine, definitions...)` 使用相同的订阅逻辑，返回 `*QueriesHandle[R]`，其中 `R` 由回调返回类型推断。`Snapshot()` 与 `Updates()` 均暴露该类型。将以下片段追加到前面的循环之后，把两个查询组合为 `Combined`，保留数据并汇总加载状态和错误：
+
+```go
+// Combined keeps query data alongside the view's loading state and errors.
+type Combined struct {
+	// Data preserves the input order of the queries.
+	Data []any
+	// Pending reports an initial load without previous data.
+	Pending bool
+	// Fetching includes initial loads and background refreshes.
+	Fetching bool
+	// Errors contains every non-nil query error.
+	Errors []error
+}
+
+combined := soroi.QueriesWithCombine(
+	client,
+	func(results []soroi.Snapshot[any]) Combined {
+		state := Combined{
+			Data:   make([]any, len(results)),
+			Errors: []error{},
+		}
+		for i, result := range results {
+			state.Data[i] = result.Data
+			state.Pending = state.Pending || result.Status == soroi.Pending
+			state.Fetching = state.Fetching || result.Fetching
+			if result.Err != nil {
+				state.Errors = append(state.Errors, result.Err)
+			}
+		}
+		return state
+	},
+	userDefinition,
+	settingsDefinition,
+)
+defer combined.Close()
+state := combined.Snapshot()
+fmt.Println("data:", state.Data)
+fmt.Println("pending:", state.Pending)
+fmt.Println("fetching:", state.Fetching)
+fmt.Println("errors:", state.Errors)
+```
+
+新增输出：
+
+```text
+data: [{Alice} {dark}]
+pending: false
+fetching: false
+errors: []
+```
+
+`Data` 为每个查询保留一个位置。`Pending` 表示至少一项正在没有旧数据的情况下首次加载；`Fetching` 还包含后台刷新。`Errors` 收集非 nil 错误。`Snapshot()` 和 `Updates()` 接收到的值均以 `Combined` 暴露这些字段。
+
+更新转换由一个 worker 在 Client 锁外串行执行；默认的 `Queries` 不创建转换 worker。`Snapshot()` 在调用方同步执行回调，可能与更新转换或其他读取并发。回调应及时返回，并同步保护捕获的可变状态。慢回调和慢消费者可能跳过中间状态。`Close` 立即释放订阅并返回，不等待回调；已经捕获的状态完成转换后，组合更新通道才会关闭。nil 回调会在创建订阅前引发 panic。
+
+### 行为与所有权
+
+某一项失败不会终止其他查询，已经返回的部分结果仍然可用。每项保留自己的错误及仍可用的旧数据。无效 key、结果类型冲突、缺少加载函数和 nil 定义均在对应位置报告；nil 定义报告 `ErrNoFetcher`。空集合或全部构造失败的集合发布一次状态切片后关闭原始通道；组合句柄转换该切片后关闭自己的输出。
+
+返回的切片归调用者所有，其中的查询数据仍共享且不可变。读取和新生成的更新均应用各项的新鲜期及 `MaxAge` 规则；仅时间流逝不会发布更新。各查询保持独立，集合不提供跨 key 事务，也不将后端调用合并为批次。`Batcher` 与 `LoadMany` 见[自动批量加载](batching.zh-CN.md)。
+
+集合成员在创建时固定。刷新和取消继续使用 Client 已有的 key 操作；释放并重新创建集合可以更换成员或复制的配置。`Close` 幂等，仅释放本集合的订阅和轮询所有权。执行中的工作与其他消费者继续存续。`Client.Close` 同样会释放集合。持续接收的循环应由独立的关闭路径结束。
 
 ## `SetEnabled`：自动加载控制
 
@@ -184,6 +300,8 @@ _ = users // []User
 | `ExpiresAt` | 绝对新鲜期截止时间；失效时为零时间 |
 
 `Pending` 表示没有旧数据的首次请求正在进行；禁用且没数据时为 `Idle`。`Fetching` 与结果状态分开，所以后台刷新时可以同时是 `Success` 和 `Fetching: true`。数据变旧不会自行启动请求；也不是轮询，时间经过不会自动产生更新通知。
+
+需要定期刷新时，配置正数 `QueryOptions.RefetchInterval`。存在已启用的轮询订阅时持续调度，并复用此状态通道。[订阅轮询](query-options.zh-CN.md#订阅轮询)介绍间隔配置与订阅生命周期规则。
 
 ## HTTP 加载与取消
 

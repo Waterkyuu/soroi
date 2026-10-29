@@ -144,7 +144,7 @@ if err := client.Invalidate(
 }
 ```
 
-Even enabled consumers retain stale data without starting a request. A later `Fetch`, new `Query`, transition from disabled to enabled, or manual `Refetch` may refresh it. Existing enabled handles do not poll simply because time passes.
+Even enabled consumers retain stale data without starting a request. A later `Fetch`, new `Query`, transition from disabled to enabled, or manual `Refetch` may refresh it. Existing enabled handles poll only when a positive `RefetchInterval` is configured; invalidation does not alter that schedule.
 
 ## Predicate invalidation
 

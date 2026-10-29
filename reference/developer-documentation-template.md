@@ -26,22 +26,6 @@ reuse a user's profile through Redis to avoid loading it twice from the database
 Do not open with internal architecture, implementation history, or a list of
 abstract benefits.
 
-### 2. Installation
-
-```markdown
-## Installation
-
-<Required Go version and external services.>
-
-<Exact dependency installation commands, with the working directory stated.>
-
-<External service startup command and required connection settings.>
-```
-
-Distinguish the core module's requirements from an optional adapter's requirements.
-If setup requires a repository checkout or local `replace` directives, provide
-the commands and identify the paths the reader must change. Do not assume an
-unverified package version is available to install.
 
 ### 3. API usage
 

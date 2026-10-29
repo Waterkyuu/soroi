@@ -70,15 +70,19 @@ type Options struct {
 	Clock func() time.Time
 }
 
-// QueryOptions overrides loading policy for Query, Fetch, and Prefetch.
-// Disable only controls Query's automatic loading; explicit reads and Refetch still execute.
+// QueryOptions overrides loading policy for Query, Queries, Fetch, and Prefetch.
+// Disable only controls automatic subscription loading; explicit reads and Refetch still execute.
 // Nil policy fields inherit Client defaults; operations accept zero or one options value.
 // Duration and retry values are copied when applied; execution budgets are shared.
 // Callbacks run outside the Client lock and must synchronize captured mutable state.
 type QueryOptions struct {
-	// Disable prevents Query's automatic loading when true; its zero value permits loading.
-	// The value is copied during construction; later permission changes use SetEnabled.
+	// Disable prevents automatic subscription loading when true; its zero value permits loading.
+	// The value is copied during construction; single-query handles use SetEnabled for later changes.
 	Disable bool
+	// RefetchInterval refreshes an enabled subscription regardless of local freshness.
+	// Non-positive values disable polling. Same-key subscriptions share the shortest positive interval;
+	// its oldest subscriber supplies the loading policy. Fetch and Prefetch ignore this field.
+	RefetchInterval time.Duration
 	// StaleTime overrides this consumer's freshness for ordinary data; nil inherits Client defaults.
 	// Explicit deadlines from FetchWithExpiry remain authoritative.
 	StaleTime *time.Duration

@@ -3,9 +3,9 @@ name: Security
 on:
   workflow_call:
   push:
-    branches: [main]
+    branches: [main, 'release/**']
   pull_request:
-    branches: [main]
+    branches: [main, 'release/**']
   schedule:
     - cron: '0 0 * * 1'
 
