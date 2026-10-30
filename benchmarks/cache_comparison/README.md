@@ -72,6 +72,32 @@ and dependency graph. Record raw output with the result analysis, including
 cases where Otter remains faster. Run neither binary with race instrumentation
 when recording performance; use race detection for correctness checks separately.
 
+See [recorded results and limitations](RESULTS.md) for measured changes.
+
+### Reproduce both revisions with the same harness
+
+From this directory, export the baseline source and use an alternate module
+file. This keeps the benchmark source, dependencies, and working checkout fixed:
+
+```sh
+SOROI_BASELINE_DIR=$(mktemp -d)
+mkdir "$SOROI_BASELINE_DIR/source"
+git -C ../.. archive 2daa75e6b1c2a82b03de329305765ebd523228ae | tar -x -C "$SOROI_BASELINE_DIR/source"
+cp go.mod "$SOROI_BASELINE_DIR/comparison.mod"
+cp go.sum "$SOROI_BASELINE_DIR/comparison.sum"
+go mod edit -modfile="$SOROI_BASELINE_DIR/comparison.mod" \
+  -replace="github.com/Waterkyuu/soroi=$SOROI_BASELINE_DIR/source"
+go test -c -modfile="$SOROI_BASELINE_DIR/comparison.mod" -o "$SOROI_BASELINE_DIR/before.test"
+go test -c -o "$SOROI_BASELINE_DIR/after.test"
+"$SOROI_BASELINE_DIR/before.test" -test.run='^$' -test.bench=. -test.benchmem \
+  -test.benchtime=150ms -test.count=5 -test.cpu=1,4 > "$SOROI_BASELINE_DIR/before.txt"
+"$SOROI_BASELINE_DIR/after.test" -test.run='^$' -test.bench=. -test.benchmem \
+  -test.benchtime=150ms -test.count=5 -test.cpu=1,4 > "$SOROI_BASELINE_DIR/after.txt"
+```
+
+The recorded optimized core revision is linked from the results document.
+Future working-tree changes will produce a different after measurement.
+
 ## Profiles
 
 For a focused cache-hit profile:
