@@ -44,11 +44,6 @@ export default defineConfig({
 					translations: { "zh-CN": "HTTP、gRPC 与遥测接入" },
 				},
 				{
-					slug: "docs/business-benchmarks",
-					label: "Business workload benchmarks",
-					translations: { "zh-CN": "业务场景基准" },
-				},
-				{
 					slug: "docs/queries",
 					label: "Queries & conditions",
 					translations: { "zh-CN": "查询与条件请求" },
@@ -132,6 +127,11 @@ export default defineConfig({
 					slug: "docs/bubbletea",
 					label: "Bubble Tea example",
 					translations: { "zh-CN": "Bubble Tea 示例" },
+				},
+				{
+					slug: "docs/business-benchmarks",
+					label: "Business workload benchmarks",
+					translations: { "zh-CN": "业务场景基准" },
 				},
 			],
 			social: [{ icon: "github", label: "GitHub", href: "https://github.com/Waterkyuu/soroi" }],

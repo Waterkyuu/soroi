@@ -209,7 +209,6 @@ Read the [documentation website](https://waterkyuu.github.io/soroi/) in English 
 | Guide | Coverage |
 | --- | --- |
 | [HTTP, gRPC, and telemetry](docs/service-integrations.en-US.md) | Runnable HTTP-to-gRPC queries, injected OpenTelemetry tracing, Prometheus metrics, and HTTP error mapping |
-| [Business workload benchmarks](docs/business-benchmarks.en-US.md) | Reproducible failure and batch scenarios, physical source work, latency populations, success rates, and resource measurements |
 | [Queries and conditions](docs/queries.en-US.md) | `Query`, `Queries`, ordered states, optional combination, enablement, refresh, `Fetch`, and HTTP loaders |
 | [Infinite queries](docs/infinite-queries.en-US.md) | `InfiniteQuery`, accumulated pages, cursors, loading more, and refreshing the loaded sequence |
 | [Query options](docs/query-options.en-US.md) | Shared loading options, reusable typed query definitions, freshness, subscription polling, retries, and timeouts |
@@ -226,6 +225,7 @@ Read the [documentation website](https://waterkyuu.github.io/soroi/) in English 
 | [Observability](docs/observability.en-US.md) | Cache hits, shared requests, load outcomes and duration, retries, and cleanup statistics |
 | [Diagnostic events](docs/events.en-US.md) | Per-key load causes and sources, shared operation IDs, joins, retries, discarded results, and bounded subscriptions |
 | [MCP resource caching](docs/mcp.en-US.md) | Server-side reuse, remaining TTL, change notifications, private scopes, and e2e |
+| [Business workload benchmarks](docs/business-benchmarks.en-US.md) | Reproducible failure and batch scenarios, physical source work, latency populations, success rates, and resource measurements |
 
 Complete integrations live in `examples`; the guides cover API details. Treat cached values as immutable; copy slices and maps before modifying them. Different result types cannot reuse the same key.
 

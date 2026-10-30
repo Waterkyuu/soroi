@@ -178,7 +178,6 @@ go test -run '^$' -bench '^BenchmarkCacheBenefit$' -benchmem -count=3 -cpu=1
 | 文档 | 说明 |
 | --- | --- |
 | [HTTP、gRPC 与遥测接入](docs/service-integrations.zh-CN.md) | 可运行的 HTTP 到 gRPC 查询、注入 OpenTelemetry、Prometheus 指标与 HTTP 错误映射 |
-| [业务场景基准](docs/business-benchmarks.zh-CN.md) | 可复现的故障与批量场景、实际回源、延迟总体、成功率和资源测量 |
 | [查询与条件请求](docs/queries.zh-CN.md) | `Query`、`Queries`、有序状态、可选组合、条件开关、刷新、`Fetch` 和 HTTP 加载函数 |
 | [分页追加查询](docs/infinite-queries.zh-CN.md) | `InfiniteQuery`、累积页、游标、加载更多与刷新已加载序列 |
 | [查询配置](docs/query-options.zh-CN.md) | 共享加载配置、可复用的类型化查询定义、新鲜期、订阅轮询、重试和超时 |
@@ -195,6 +194,7 @@ go test -run '^$' -bench '^BenchmarkCacheBenefit$' -benchmem -count=3 -cpu=1
 | [可观测性](docs/observability.zh-CN.md) | 缓存命中、请求合并、加载结果与耗时、重试和清理统计 |
 | [诊断事件](docs/events.zh-CN.md) | 按 key 记录加载原因与来源、共享加载编号、合并次数、重试、结果丢弃和有界订阅 |
 | [MCP 资源缓存](docs/mcp.zh-CN.md) | 服务端资源复用、剩余 TTL、变化通知、授权隔离和 e2e |
+| [业务场景基准](docs/business-benchmarks.zh-CN.md) | 可复现的故障与批量场景、实际回源、延迟总体、成功率和资源测量 |
 
 完整集成程序在 `examples`，API 细节见功能文档。缓存值作为共享只读数据使用；修改切片或映射前先复制。不同类型不能复用同一个键。
 
