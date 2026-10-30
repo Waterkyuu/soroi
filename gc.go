@@ -19,6 +19,10 @@ func scheduleGC(delay time.Duration, cleanup func()) func() {
 // touchGCLocked restarts retention and releases empty, unowned bindings when capacity limiting is enabled.
 // Subscribed or loading keys suspend timed cleanup.
 func (c *Client) touchGCLocked(key any) {
+	// Unbounded clients without inactivity cleanup have no retention metadata to update.
+	if c.options.GCTime <= 0 && c.options.MaxEntries <= 0 {
+		return
+	}
 	c.stopGCLocked(key)
 	if c.closed {
 		return
