@@ -8,14 +8,19 @@ import (
 	"fmt"
 	"reflect"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
 // Client owns shared results of different types and merges concurrent requests by key.
 // Reuse one client across components and call Close to stop background work.
 type Client struct {
-	// mu protects state transitions; loaders always run outside the lock.
-	mu sync.Mutex
+	// mu protects state transitions; side-effect-free reads may share its read lock.
+	mu sync.RWMutex
+	// readHits counts fresh Fetch hits under the shared read lock; Stats takes the exclusive lock.
+	readHits atomic.Uint64
+	// concurrentClock permits parallel reads only when the client owns its concurrency-safe default clock.
+	concurrentClock bool
 	// stats accumulates this client's cache decisions, load outcomes, and cleanup activity under mu.
 	stats Stats
 	// eventSubscriptions indexes diagnostic streams by exact key; nil owns all-key subscriptions under mu.
@@ -100,6 +105,8 @@ type queryRequest struct {
 	tags []string
 	// load produces data and an optional explicit expiration outside the client lock.
 	load Loader[any]
+	// fetcher retains an ordinary typed function without allocating a per-read wrapper.
+	fetcher ordinaryFetcher
 	// shared optionally performs typed shared-cache access within the existing loader attempt.
 	shared *sharedQuery
 	// options supplies the initiator's retry, timeout, and ordinary freshness settings.
@@ -152,6 +159,7 @@ type flight struct {
 
 // NewClient constructs an independently owned client with optional freshness and retry policies.
 func NewClient(options Options) *Client {
+	concurrentClock := options.Clock == nil
 	if options.Clock == nil {
 		options.Clock = time.Now
 	}
@@ -161,7 +169,8 @@ func NewClient(options Options) *Client {
 	// The cancellation is transferred to Client.Close rather than a constructor defer.
 	ctx, cancel := context.WithCancel(context.Background()) // #nosec G118 -- Close owns the client's lifetime.
 	return &Client{
-		entries: make(map[any]entry), pending: make(map[any]*flight),
+		concurrentClock: concurrentClock,
+		entries:         make(map[any]entry), pending: make(map[any]*flight),
 		recencyEntries: make(map[any]*list.Element),
 		observers:      make(map[any]map[*subscription]struct{}),
 		gcTasks:        make(map[any]*gcTask), gcAfterFunc: scheduleGC,
@@ -528,17 +537,26 @@ func (c *Client) attempt(
 		}
 		return returnValue, time.Time{}, nil
 	}
-	return load(ctx)
+	if load != nil {
+		return load(ctx)
+	}
+	value, err := pending.request.fetcher.fetch(ctx)
+	return value, time.Time{}, err
 }
 
 // snapshotLocked removes data beyond MaxAge and derives state without scheduling a request.
 func (c *Client) snapshotLocked(key any) Snapshot[any] {
 	c.expireDataLocked(key)
 	cached := c.entries[key]
+	return c.entrySnapshotLocked(key, cached, cached.expiresAt,
+		cached.hasData && c.options.Clock().Before(cached.expiresAt))
+}
+
+// entrySnapshotLocked projects an already-checked entry without repeating age or freshness checks.
+func (c *Client) entrySnapshotLocked(key any, cached entry, expiresAt time.Time, fresh bool) Snapshot[any] {
 	state := Snapshot[any]{
 		Data: cached.value, HasData: cached.hasData, Err: cached.err,
-		Stale:    !cached.hasData || !c.options.Clock().Before(cached.expiresAt),
-		Fetching: c.pending[key] != nil, UpdatedAt: cached.updatedAt, ExpiresAt: cached.expiresAt,
+		Stale: !fresh, Fetching: c.pending[key] != nil, UpdatedAt: cached.updatedAt, ExpiresAt: expiresAt,
 	}
 	switch {
 	case c.closed:
@@ -582,7 +600,14 @@ func (c *Client) checkLocked(key any, typ reflect.Type) error {
 	if c.closed {
 		return ErrClosed
 	}
-	if key == nil || !reflect.ValueOf(key).Comparable() {
+	if key == nil {
+		return fmt.Errorf("%w: %T", ErrInvalidKey, key)
+	}
+	keyType := reflect.TypeOf(key)
+	// Only composite values can hide non-comparable dynamic interface fields.
+	// Avoid Value.Comparable's traversal machinery for scalar keys on the hot path.
+	composite := keyType.Kind() == reflect.Struct || keyType.Kind() == reflect.Array
+	if !keyType.Comparable() || composite && !reflect.ValueOf(key).Comparable() {
 		return fmt.Errorf("%w: %T", ErrInvalidKey, key)
 	}
 	// NaN-containing keys are comparable but cannot retrieve their own map entries.

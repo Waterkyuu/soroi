@@ -127,7 +127,7 @@ func (c *Client) scheduleRefreshLocked(
 		return nil
 	}
 	request := c.observedRequestLocked(key)
-	if request.load == nil {
+	if !request.hasLoader() {
 		return nil
 	}
 	if waitCtx != nil && request.options.Executor.heldBy(waitCtx) {
@@ -174,7 +174,7 @@ func (c *Client) finishRefreshLocked(key any, pending *flight, applied bool) {
 		return
 	}
 	request := c.observedRequestLocked(key)
-	if request.load == nil {
+	if !request.hasLoader() {
 		pending.followup.finish(false, nil)
 		return
 	}

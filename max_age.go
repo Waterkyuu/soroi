@@ -16,8 +16,11 @@ func (c *Client) limitExpiry(updatedAt, expiresAt time.Time) time.Time {
 // expireDataLocked drops an over-age value while preserving its result type, last error, and active load.
 // Availability is checked on cache operations rather than by starting another timer for each key.
 func (c *Client) expireDataLocked(key any) bool {
+	if c.options.MaxAge <= 0 {
+		return false
+	}
 	cached := c.entries[key]
-	if !cached.hasData || c.options.MaxAge <= 0 {
+	if !cached.hasData {
 		return false
 	}
 	if c.options.Clock().Before(cached.updatedAt.Add(c.options.MaxAge)) {

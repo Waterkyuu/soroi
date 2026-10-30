@@ -41,6 +41,7 @@ func (c *Client) Stats() Stats {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	state := c.stats
+	state.CacheHits += c.readHits.Load()
 	for _, cached := range c.entries {
 		if cached.hasData || cached.err != nil {
 			state.CacheEntries++
