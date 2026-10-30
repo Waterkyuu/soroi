@@ -52,8 +52,8 @@ test("every published page has server-rendered content and working internal link
 	const files = await htmlFiles(build);
 	assert.equal(
 		files.filter((file) => file.endsWith("index.html")).length,
-		44,
-		"Each language must publish one homepage and twenty-one guides without fallback duplicates",
+		42,
+		"Each language must publish one homepage and twenty guides without fallback duplicates",
 	);
 	for (const file of files) {
 		const html = await readFile(file, "utf8");
@@ -82,7 +82,6 @@ test("content pages publish distinct localized metadata and a usable sharing ima
 			"docs/shared-cache/",
 			"docs/shared-invalidation/",
 			"docs/service-integrations/",
-			"docs/business-benchmarks/",
 			"docs/invalidation/",
 			"docs/observability/",
 			"docs/events/",
@@ -122,7 +121,7 @@ test("content pages publish distinct localized metadata and a usable sharing ima
 			}
 		}
 	}
-	assert.equal(descriptions.size, 44);
+	assert.equal(descriptions.size, 42);
 	assert.ok((await readFile(path.join(build, "soroi.png"))).length > 0);
 });
 
@@ -197,7 +196,6 @@ test("Go search results resolve to published sections and public source declarat
 			["shared-cache", "InvalidateShared"],
 			["shared-invalidation", "WatchShared"],
 			["service-integrations", "Prometheus"],
-			["business-benchmarks", "source_calls"],
 			["updates", "ErrUpdateConflict"],
 			["invalidation", "InvalidateAndWait"],
 			["mutations", "SyncErr"],
@@ -288,7 +286,6 @@ test("feature guides are discoverable in the sidebar and render the maintained A
 			["execution", ["NewExecutor", "MaxConcurrent", "ErrQueueFull"]],
 			["batching", ["NewBatcher", "LoadMany", "MaxBatchSize", "ErrBatchResultMissing"]],
 			["service-integrations", ["OpenTelemetry", "Prometheus", "otelgrpc", "ErrQueueFull"]],
-			["business-benchmarks", ["all_p99_ms", "success_rate", "allocated_bytes", "source_calls"]],
 			["bubbletea", ["Bubble Tea", "examples/bubbletea", "QueryHandle"]],
 		] as const) {
 			const route = `/soroi/${prefix}docs/${slug}/`;
@@ -303,5 +300,31 @@ test("feature guides are discoverable in the sidebar and render the maintained A
 				);
 			}
 		}
+	}
+});
+
+test("the website hides benchmark guides and places HTTP and gRPC last in both sidebars", async () => {
+	const files = await htmlFiles(build);
+	assert.ok(!files.some((file) => file.includes("business-benchmarks")));
+	for (const file of files) {
+		const html = await readFile(file, "utf8");
+		assert.ok(!html.includes("business-benchmarks"), `Benchmark link remains in ${file}`);
+	}
+	const search = await readFile(path.join(build, "search-index.json"), "utf8");
+	assert.ok(!search.includes("business-benchmarks"));
+	for (const prefix of ["", "zh-CN/"]) {
+		const html = await readFile(path.join(build, prefix, "docs/index.html"), "utf8");
+		const sidebar = [...html.matchAll(/<nav\b[^>]*>([\s\S]*?)<\/nav>/g)].find((match) =>
+			match[1].includes(`/soroi/${prefix}docs/queries/`),
+		);
+		assert.ok(sidebar);
+		const links = [...sidebar[1].matchAll(/href="([^" ]+)"/g)]
+			.map((match) => match[1])
+			.filter((href) => href.startsWith(`/soroi/${prefix}docs/`));
+		assert.equal(links.at(-1), `/soroi/${prefix}docs/service-integrations/`);
+		const suffix = prefix ? "zh-CN" : "en-US";
+		assert.ok(
+			(await readFile(path.resolve(`../docs/business-benchmarks.${suffix}.md`), "utf8")).length > 0,
+		);
 	}
 });

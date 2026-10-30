@@ -39,7 +39,7 @@ test("edit links point to maintained documentation rather than generated content
 });
 
 test("benchmark artifacts resolve to source files for both locales", () => {
-	const chapter = chapters.find((chapter) => chapter.id === "business-benchmarks");
+	const chapter = chapters.find((chapter) => chapter.id === "service-integrations");
 	assert.ok(chapter);
 	for (const locale of ["en", "zh-CN"]) {
 		const output = prepareMarkdown(
@@ -54,5 +54,16 @@ test("benchmark artifacts resolve to source files for both locales", () => {
 				"https://github.com/Waterkyuu/soroi/blob/main/benchmarks/business-darwin-arm64.jsonl",
 			),
 		);
+	}
+});
+
+test("repository-only benchmark guides are excluded without changing source documentation", () => {
+	assert.ok(!chapters.some((chapter) => chapter.id === "business-benchmarks"));
+	for (const locale of ["en", "zh-CN"]) {
+		const suffix = locale === "en" ? "en-US" : "zh-CN";
+		const source = `# Guide\n\n- [Benchmarks](business-benchmarks.${suffix}.md): workload measurements.\n- [Cache](cache.${suffix}.md): cache behavior.\n`;
+		const output = prepareMarkdown(source, chapters[0], locale, 1, "main");
+		assert.ok(!output.includes("business-benchmarks"));
+		assert.ok(output.includes("cache behavior."));
 	}
 });

@@ -208,16 +208,6 @@ export const chapters: Chapter[] = [
 				"将 soroi 接入 HTTP 与 gRPC 服务，注入 OpenTelemetry 链路追踪并暴露 Prometheus 查询指标，保持核心库零依赖。",
 		},
 	},
-	{
-		id: "business-benchmarks",
-		zh: "业务场景基准",
-		en: "Business workload benchmarks",
-		description: {
-			en: "Measure soroi hot-key expiration, Redis outages, downstream deadlines and batch reads with source counts, latency populations, success rates and resource metrics.",
-			"zh-CN":
-				"测量 soroi 热点过期、Redis 故障、下游超时和批量读取场景中的回源次数、延迟、成功率与资源占用。",
-		},
-	},
 ];
 
 // Adapt repository documentation without creating another maintained copy.
@@ -240,7 +230,9 @@ export function prepareMarkdown(
 		"---",
 		"",
 	];
+	// Keep repository-only benchmark references out of the published guides.
 	const body = source
+		.replace(/^- \[[^\n]+\]\(business-benchmarks\.(?:en-US|zh-CN)\.md\)[^\n]*(?:\n|$)/gm, "")
 		.replace(/^# .+\n*/, "")
 		.replace(/^\[(?:English|简体中文)\].*$/gm, "")
 		.replace(/\]\(([^)]+)\.(?:en-US|zh-CN)\.md(#[^)]*)?\)/g, (_, name, anchor) => {
