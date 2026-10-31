@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/soroi.png" alt="soroi" width="144" />
+  <img src="./assets/soroi.webp" alt="soroi" width="700" />
 
   <h1>soroi</h1>
 
