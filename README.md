@@ -5,7 +5,7 @@
 
   <p><strong>English</strong> | <a href="./README.zh-CN.md">简体中文</a></p>
 
-  <p><strong>Manage shared query data, state, and refresh lifecycles</strong></p>
+  <p><strong>Manage data queries, request deduplication, cache reads and writes, retries, and automatic batching</strong></p>
   <p>A typed, dependency-free query client for Go 1.22 and later</p>
   <p>Share data across components, combine duplicate requests, and observe query state.</p>
 
