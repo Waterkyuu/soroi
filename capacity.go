@@ -28,6 +28,10 @@ func (c *Client) touchCapacityLocked(key any) {
 
 // forgetCapacityLocked releases a key's recency record when its retained state is discarded.
 func (c *Client) forgetCapacityLocked(key any) {
+	// Unbounded clients never register recency records, so cleanup can skip the index lookup.
+	if c.options.MaxEntries <= 0 {
+		return
+	}
 	if position := c.recencyEntries[key]; position != nil {
 		c.recency.Remove(position)
 		delete(c.recencyEntries, key)
