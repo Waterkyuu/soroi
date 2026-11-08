@@ -22,20 +22,21 @@ var ErrNoUpdater = errors.New("query has no updater")
 // Callback errors are returned unchanged. Callers may explicitly retry conflicts.
 // Success has Set semantics: it renews freshness and age, cancels older loads, and notifies observers.
 func Update[V any](client *Client, key any, update func(V) (V, error)) error {
-	client.mu.Lock()
-	if err := client.checkLocked(key, reflect.TypeFor[V]()); err != nil {
-		client.mu.Unlock()
+	bucket := client.bucketFor(key)
+	bucket.mu.Lock()
+	if err := bucket.checkLocked(key, reflect.TypeFor[V]()); err != nil {
+		bucket.mu.Unlock()
 		return err
 	}
 	if update == nil {
-		client.mu.Unlock()
+		bucket.mu.Unlock()
 		return ErrNoUpdater
 	}
-	if client.expireDataLocked(key) {
-		client.notifyLocked(key)
+	if bucket.expireDataLocked(key) {
+		bucket.notifyLocked(key)
 	}
-	previous := client.entryLocked(key)
-	client.mu.Unlock()
+	previous := bucket.entryLocked(key)
+	bucket.mu.Unlock()
 	if !previous.hasData {
 		return ErrNoData
 	}
@@ -43,23 +44,23 @@ func Update[V any](client *Client, key any, update func(V) (V, error)) error {
 	if err != nil {
 		return err
 	}
-	client.mu.Lock()
-	defer client.mu.Unlock()
-	if client.closed {
+	bucket.mu.Lock()
+	defer bucket.mu.Unlock()
+	if bucket.owner.closed {
 		return ErrClosed
 	}
-	if client.expireDataLocked(key) {
-		client.notifyLocked(key)
+	if bucket.expireDataLocked(key) {
+		bucket.notifyLocked(key)
 	}
-	current := client.entryLocked(key)
+	current := bucket.entryLocked(key)
 	if !current.hasData || current.revision != previous.revision {
 		return ErrUpdateConflict
 	}
-	client.setLocked(key, value, reflect.TypeFor[V]())
+	bucket.setLocked(key, value, reflect.TypeFor[V]())
 	return nil
 }
 
 // advanceRevisionLocked assigns a Client-wide revision so removal and recreation cannot hide conflicts.
-func (c *Client) advanceRevisionLocked(cached *entry) {
+func (c *clientBucket) advanceRevisionLocked(cached *entry) {
 	cached.revision = c.owner.nextDataRevision()
 }

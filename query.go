@@ -25,8 +25,10 @@ type subscription struct {
 // QueryHandle owns a typed subscription, its loader, and its automatic loading permission.
 // Handles for one key share data and in-flight work; call Close when a consumer leaves.
 type QueryHandle[V any] struct {
-	// client owns heterogeneous cached data and serializes all handle operations.
+	// client owns shared configuration and the lifetime of this handle.
 	client *Client
+	// bucket retains immutable key ownership so handle operations never repeat routing.
+	bucket *clientBucket
 	// key identifies the shared result independently of the handle's result type.
 	key any
 	// observer is registered only when construction succeeds.
@@ -57,9 +59,10 @@ func query[V any](client *Client, definition Definition[V], constructorErr error
 	if constructorErr == nil {
 		spec = definition.querySpec(client.options)
 	}
-	handle := &QueryHandle[V]{client: client, key: key, updates: make(chan Snapshot[V], 1)}
-	client.mu.Lock()
-	defer client.mu.Unlock()
+	bucket := client.bucketFor(key)
+	handle := &QueryHandle[V]{client: client, bucket: bucket, key: key, updates: make(chan Snapshot[V], 1)}
+	bucket.mu.Lock()
+	defer bucket.mu.Unlock()
 	handle.err = constructorErr
 	if handle.err == nil {
 		handle.observer = &subscription{
@@ -70,7 +73,7 @@ func query[V any](client *Client, definition Definition[V], constructorErr error
 				close(handle.updates)
 			},
 		}
-		handle.err = client.subscribeLocked(spec, handle.observer)
+		handle.err = bucket.subscribeLocked(spec, handle.observer)
 	}
 	if handle.err != nil {
 		handle.updates <- Snapshot[V]{Status: Error, Stale: true, Err: handle.err}
@@ -81,7 +84,7 @@ func query[V any](client *Client, definition Definition[V], constructorErr error
 }
 
 // subscribeLocked admits a typed consumer using the same policy and lifecycle for single and grouped queries.
-func (c *Client) subscribeLocked(spec querySpec, observer *subscription) error {
+func (c *clientBucket) subscribeLocked(spec querySpec, observer *subscription) error {
 	if err := c.checkLocked(spec.key, spec.typ); err != nil {
 		return err
 	}
@@ -96,6 +99,9 @@ func (c *Client) subscribeLocked(spec querySpec, observer *subscription) error {
 	observer.refetchInterval = spec.refetchInterval
 	observer.request = spec.request
 	observer.order = c.owner.nextObserverOrder()
+	if c.observers == nil {
+		c.observers = make(map[any]map[*subscription]struct{})
+	}
 	if c.observers[spec.key] == nil {
 		c.observers[spec.key] = make(map[*subscription]struct{})
 	}
@@ -119,7 +125,7 @@ func (h *QueryHandle[V]) Snapshot() Snapshot[V] {
 	if h.err != nil {
 		return Snapshot[V]{Status: Error, Stale: true, Err: h.err}
 	}
-	return typedSnapshot[V](h.client.getSnapshot(h.key, reflect.TypeFor[V](), h.observer.request.options))
+	return typedSnapshot[V](h.bucket.getSnapshot(h.key, reflect.TypeFor[V](), h.observer.request.options))
 }
 
 // Updates returns the initial and latest states; slow readers may skip intermediate transitions.
@@ -128,7 +134,7 @@ func (h *QueryHandle[V]) Updates() <-chan Snapshot[V] { return h.updates }
 // SetEnabled changes this consumer's permission to load automatically.
 // Enabling loads missing or stale data; disabling neither cancels work nor disables other consumers.
 func (h *QueryHandle[V]) SetEnabled(enabled bool) error {
-	c := h.client
+	c := h.bucket
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if err := h.activeLocked(); err != nil {
@@ -156,7 +162,7 @@ func (h *QueryHandle[V]) Refetch(ctx context.Context) (V, error) {
 	}
 	request := h.observer.request
 	request.trigger = TriggerRefetch
-	value, err := h.client.fetch(
+	value, err := h.bucket.fetch(
 		ctx,
 		h.key,
 		reflect.TypeFor[V](),
@@ -172,14 +178,14 @@ func (h *QueryHandle[V]) Close() {
 	if h.err != nil {
 		return
 	}
-	c := h.client
+	c := h.bucket
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.unsubscribeLocked(h.key, h.observer)
 }
 
 // unsubscribeLocked releases one subscription and adjusts polling and inactive retention for its key.
-func (c *Client) unsubscribeLocked(key any, observer *subscription) {
+func (c *clientBucket) unsubscribeLocked(key any, observer *subscription) {
 	if _, exists := c.observers[key][observer]; !exists {
 		return
 	}
@@ -200,7 +206,7 @@ func (h *QueryHandle[V]) activeLocked() error {
 	if h.client.closed {
 		return ErrClosed
 	}
-	if _, exists := h.client.observers[h.key][h.observer]; !exists {
+	if _, exists := h.bucket.observers[h.key][h.observer]; !exists {
 		return ErrQueryClosed
 	}
 	return nil
@@ -238,7 +244,7 @@ func FetchWithExpiry[V any](ctx context.Context, client *Client, key any, load L
 			return value, expiry, err
 		}
 	}
-	value, err := client.fetch(
+	value, err := client.bucketFor(key).fetch(
 		ctx,
 		key,
 		reflect.TypeFor[V](),
@@ -271,19 +277,19 @@ func Prefetch[V any](
 // Reads use Client freshness defaults and restart inactive retention without binding an unused key.
 // Invalid keys and closed clients return errors; existing result type bindings remain unchanged.
 func (c *Client) Get(key any) Snapshot[any] {
-	return c.getSnapshot(key, nil, c.options)
+	return c.bucketFor(key).getSnapshot(key, nil, c.options)
 }
 
 // Get reads typed cached state without starting a request or binding a previously unused key.
 // Incompatible result types return ErrTypeMismatch instead of panicking or exposing another query's data.
 // Use Client.Get to inspect cached state without specifying or checking a result type.
 func Get[V any](client *Client, key any) Snapshot[V] {
-	return typedSnapshot[V](client.getSnapshot(key, reflect.TypeFor[V](), client.options))
+	return typedSnapshot[V](client.bucketFor(key).getSnapshot(key, reflect.TypeFor[V](), client.options))
 }
 
 // getSnapshot reads shared state using one consumer's freshness without changing another consumer's policy.
 // A nil result type skips type matching while preserving key validation and cache lifecycle behavior.
-func (c *Client) getSnapshot(key any, typ reflect.Type, options Options) Snapshot[any] {
+func (c *clientBucket) getSnapshot(key any, typ reflect.Type, options Options) Snapshot[any] {
 	if c.concurrentReads() {
 		c.mu.RLock()
 		defer c.mu.RUnlock()
@@ -295,7 +301,7 @@ func (c *Client) getSnapshot(key any, typ reflect.Type, options Options) Snapsho
 }
 
 // getSnapshotLocked applies read validation, age, freshness, and retention rules under the client's lock.
-func (c *Client) getSnapshotLocked(key any, typ reflect.Type, options Options) Snapshot[any] {
+func (c *clientBucket) getSnapshotLocked(key any, typ reflect.Type, options Options) Snapshot[any] {
 	if err := c.checkLocked(key, typ); err != nil {
 		return Snapshot[any]{Status: Error, Stale: true, Err: err}
 	}
@@ -330,34 +336,37 @@ func Set[V any](client *Client, key any, value V) error {
 }
 
 // setLocked installs already-validated local data while serializing cancellation and notifications.
-func (c *Client) setLocked(key, value any, typ reflect.Type) {
+func (c *clientBucket) setLocked(key, value any, typ reflect.Type) {
 	c.setEntryLocked(key, value, typ, c.entries[key])
 }
 
 // setEntryLocked publishes a validated node without repeating its index lookup under the same lock.
-func (c *Client) setEntryLocked(key, value any, typ reflect.Type, cached *entry) {
+func (c *clientBucket) setEntryLocked(key, value any, typ reflect.Type, cached *entry) {
 	c.cancelLocked(key, ReasonSet)
-	now := c.options.Clock()
+	now := c.owner.options.Clock()
 	if cached == nil {
 		cached = new(entry)
+		if c.entries == nil {
+			c.entries = make(map[any]*entry)
+		}
 		c.entries[key] = cached
 	}
 	// Keep registered tags and shared identity in place while renewing local result state.
 	cached.typ, cached.value, cached.hasData = typ, value, true
 	cached.updatedAt = now
-	cached.expiresAt = c.limitExpiry(now, now.Add(c.options.StaleTime))
+	cached.expiresAt = c.limitExpiry(now, now.Add(c.owner.options.StaleTime))
 	cached.ordinary, cached.invalidated = true, false
 	cached.fetchedAt, cached.sharedExpiresAt = time.Time{}, time.Time{}
 	cached.err, cached.staleReason = nil, ReasonNone
 	c.advanceRevisionLocked(cached)
-	c.emitEventLocked(Event{Key: key, Kind: EventLocalWrite, Reason: ReasonSet})
+	c.owner.emitEventLocked(Event{Key: key, Kind: EventLocalWrite, Reason: ReasonSet})
 	c.touchCapacityLocked(key)
 	c.touchGCLocked(key)
 	c.notifyLocked(key)
 }
 
 // fetch shares one erased loader while keeping cancellation and type binding atomic with cache access.
-func (c *Client) fetch(
+func (c *clientBucket) fetch(
 	ctx context.Context,
 	key any,
 	typ reflect.Type,
@@ -378,7 +387,7 @@ func (c *Client) fetch(
 			return nil, err
 		}
 		c.mu.Lock()
-		if c.closed {
+		if c.owner.closed {
 			c.mu.Unlock()
 			return nil, ErrClosed
 		}
@@ -405,7 +414,7 @@ func (c *Client) fetch(
 		if !force && fresh {
 			c.registerTagsLocked(key, request.tags)
 			c.registerSharedLocked(key, request)
-			c.emitEventLocked(
+			c.owner.emitEventLocked(
 				Event{Key: key, Kind: EventCacheHit, Trigger: request.trigger, Reason: ReasonFresh, Err: cached.err},
 			)
 			c.touchCapacityLocked(key)
@@ -476,13 +485,14 @@ func (c *Client) fetch(
 }
 
 // concurrentReads excludes policies whose cache access mutates capacity, retention, or data age.
-func (c *Client) concurrentReads() bool {
-	return c.concurrentClock && c.options.MaxEntries <= 0 && c.options.GCTime <= 0 && c.options.MaxAge <= 0
+func (c *clientBucket) concurrentReads() bool {
+	return c.owner.concurrentClock && c.owner.options.MaxEntries <= 0 && c.owner.options.GCTime <= 0 &&
+		c.owner.options.MaxAge <= 0
 }
 
 // fetchReadOnly serves fresh hits without serializing independent readers or publishing diagnostic events.
 // Misses and event-observed decisions return to fetch's exclusive lifecycle path before making changes.
-func (c *Client) fetchReadOnly(
+func (c *clientBucket) fetchReadOnly(
 	ctx context.Context,
 	key any,
 	typ reflect.Type,
@@ -493,7 +503,7 @@ func (c *Client) fetchReadOnly(
 	}
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	if len(c.eventSubscriptions) != 0 {
+	if c.owner.hasEvents() {
 		return nil, nil, false
 	}
 	if err := c.checkLocked(key, typ); err != nil {
@@ -512,13 +522,13 @@ func (c *Client) fetchReadOnly(
 }
 
 // loadObservedLocked records an enabled consumer's cache decision and starts or joins a stale load.
-func (c *Client) loadObservedLocked(key any, request queryRequest) {
+func (c *clientBucket) loadObservedLocked(key any, request queryRequest) {
 	// Enabling a consumer must still discard over-age data before checking its freshness policy.
 	c.expireDataLocked(key)
 	_, fresh := c.entryFreshnessLocked(c.entryLocked(key), request.options.StaleTime)
 	c.recordLookupLocked(fresh)
 	if fresh {
-		c.emitEventLocked(Event{Key: key, Kind: EventCacheHit, Trigger: request.trigger, Reason: ReasonFresh,
+		c.owner.emitEventLocked(Event{Key: key, Kind: EventCacheHit, Trigger: request.trigger, Reason: ReasonFresh,
 			Err: c.entryLocked(key).err})
 		return
 	}
@@ -527,7 +537,7 @@ func (c *Client) loadObservedLocked(key any, request queryRequest) {
 		c.joinLoadLocked(key, pending, request)
 		return
 	}
-	c.startLocked(c.ctx, key, request)
+	c.startLocked(c.owner.ctx, key, request)
 }
 
 // eraseFetcher copies an ordinary fetcher's policy and retains static typing at the API boundary.

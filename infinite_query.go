@@ -96,12 +96,13 @@ func InfiniteQuery[Page, Param any](
 		request.load = pagination.loader(initialPageParam)
 		request.pages = pagination.load
 	}
-	query := &QueryHandle[InfiniteData[Page, Param]]{client: client, key: key, err: err}
+	bucket := client.bucketFor(key)
+	query := &QueryHandle[InfiniteData[Page, Param]]{client: client, bucket: bucket, key: key, err: err}
 	h := &InfiniteQueryHandle[Page, Param]{
 		query: query, pagination: pagination, updates: make(chan InfiniteSnapshot[Page, Param], 1),
 	}
 	raw := make(chan InfiniteSnapshot[Page, Param], 1)
-	client.mu.Lock()
+	bucket.mu.Lock()
 	if query.err == nil {
 		query.observer = &subscription{
 			publish: func(state Snapshot[any]) {
@@ -109,7 +110,7 @@ func InfiniteQuery[Page, Param any](
 			},
 			close: func() { close(raw) },
 		}
-		query.err = client.subscribeLocked(querySpec{
+		query.err = bucket.subscribeLocked(querySpec{
 			key: key, typ: reflect.TypeFor[InfiniteData[Page, Param]](), request: request,
 			disable: option.Disable, refetchInterval: option.RefetchInterval,
 		}, query.observer)
@@ -120,7 +121,7 @@ func InfiniteQuery[Page, Param any](
 		}}
 		close(raw)
 	}
-	client.mu.Unlock()
+	bucket.mu.Unlock()
 	// Continuation is application code, so it must not execute in a locked subscription callback.
 	go func() {
 		defer close(h.updates)
@@ -139,17 +140,17 @@ func (h *InfiniteQueryHandle[Page, Param]) Snapshot() InfiniteSnapshot[Page, Par
 			Status: Error, Stale: true, Err: q.err,
 		}}
 	}
-	q.client.mu.Lock()
+	q.bucket.mu.Lock()
 	state := h.snapshotLocked(
-		q.client.getSnapshotLocked(q.key, reflect.TypeFor[InfiniteData[Page, Param]](), q.observer.request.options),
+		q.bucket.getSnapshotLocked(q.key, reflect.TypeFor[InfiniteData[Page, Param]](), q.observer.request.options),
 	)
-	q.client.mu.Unlock()
+	q.bucket.mu.Unlock()
 	return h.project(state)
 }
 
 // snapshotLocked captures ordinary state and the shared operation kind at the same instant.
 func (h *InfiniteQueryHandle[Page, Param]) snapshotLocked(state Snapshot[any]) InfiniteSnapshot[Page, Param] {
-	pending := h.query.client.pending[h.query.key]
+	pending := h.query.bucket.pending[h.query.key]
 	return InfiniteSnapshot[Page, Param]{
 		Snapshot:         typedSnapshot[InfiniteData[Page, Param]](state),
 		FetchingNextPage: pending != nil && pending.request.nextPage,
@@ -191,9 +192,9 @@ func (h *InfiniteQueryHandle[Page, Param]) fetch(ctx context.Context, next bool)
 		return zero, err
 	}
 	q := h.query
-	q.client.mu.Lock()
+	q.bucket.mu.Lock()
 	err := q.activeLocked()
-	q.client.mu.Unlock()
+	q.bucket.mu.Unlock()
 	if err != nil {
 		return zero, err
 	}
@@ -209,7 +210,7 @@ func (h *InfiniteQueryHandle[Page, Param]) fetch(ctx context.Context, next bool)
 	if next {
 		request.trigger = TriggerFetchNextPage
 	}
-	value, err := q.client.fetch(ctx, q.key, reflect.TypeFor[InfiniteData[Page, Param]](), request, true, q.observer)
+	value, err := q.bucket.fetch(ctx, q.key, reflect.TypeFor[InfiniteData[Page, Param]](), request, true, q.observer)
 	return typedValue[InfiniteData[Page, Param]](value), err
 }
 
