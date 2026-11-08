@@ -8,6 +8,9 @@ import (
 )
 
 // hashBucketKey retains Go equality for non-string keys without unsafe or private runtime hashing.
+// bucketFor calls this only for non-native-string keys; the returned hash selects an owner.
+// Equal keys must route together: for example, float64(+0) and float64(-0) produce the same
+// hash. Unequal keys may collide; the bucket's Go map still checks full key equality.
 // Invalid keys may route to any bucket; admission rejects them before map access.
 func hashBucketKey(seed maphash.Seed, key any) uint64 {
 	var hash maphash.Hash
@@ -16,7 +19,11 @@ func hashBucketKey(seed maphash.Seed, key any) uint64 {
 	return hash.Sum64()
 }
 
-// hashBucketValue encodes equality-relevant values; the underlying map resolves hash collisions.
+// hashBucketValue is called by hashBucketKey to append equality-relevant bits to hash.
+// It recursively visits arrays, struct fields, and interface contents; scalar values end
+// recursion. For example, an array of two integers appends two scalar words in index order.
+// It does not need a collision-free encoding because entries still uses Go map equality.
+// Blank struct fields and signed floating-point zero must follow Go's equality rules.
 func hashBucketValue(hash *maphash.Hash, value reflect.Value) {
 	switch value.Kind() {
 	case reflect.Interface:

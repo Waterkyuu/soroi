@@ -2,7 +2,10 @@ package soroi
 
 import "sync"
 
-// clientMutex acquires bucket locks in a fixed order for coherent global operations.
+// clientMutex is the all-bucket coordinator, not an additional mutex ahead of every key.
+// Clear, Close, aggregate operations, and group admission/closure acquire bucket 0, then 1,
+// and so on. Ordinary key operations go directly to bucketMutex below. Every operation
+// needing multiple buckets uses the same increasing order to avoid circular waits.
 type clientMutex struct {
 	// owner owns the stable lock array for this mutex's entire lifetime.
 	owner *Client
@@ -36,7 +39,11 @@ func (m *clientMutex) TryLock() bool {
 	return true
 }
 
-// bucketMutex selects local or coordinated writes without changing key ownership.
+// bucketMutex chooses how many owners an exclusive operation must protect.
+// Normally only this key's bucket is needed. A grouped notification can read other owners,
+// so its write must protect the whole connected group. Global LRU capacity and a supplied
+// clock retain all-bucket serialization. This wrapper never replaces the underlying lock.
+// Fields all and held describe the current writer's acquired locks, not cached topology.
 type bucketMutex struct {
 	// raw protects both key state and the selected write-lock mode.
 	raw sync.RWMutex
@@ -48,7 +55,13 @@ type bucketMutex struct {
 	held *bucketLockSet
 }
 
-// Lock takes one bucket, its transitive group owners, or every bucket for global policies.
+// Lock is called before a key operation that can change cache state or publish updates.
+// It first acquires the local raw lock to inspect protected topology. For an ungrouped
+// key it returns holding only that lock; capacity/custom-clock policies acquire all owners.
+// For a grouped key it drops the local lock, acquires the ordered immutable component,
+// and checks that the component is still current. Admission or closure may have changed
+// it during the gap; in that case release the old set and retry before touching any data.
+// Keeping the local lock while acquiring an earlier bucket would invert the global order.
 func (m *bucketMutex) Lock() {
 	m.raw.Lock()
 	owner := m.bucket.owner
@@ -77,7 +90,9 @@ func (m *bucketMutex) Lock() {
 	}
 }
 
-// Unlock releases the acquired set even if group membership changed before acquisition.
+// Unlock finishes the matching exclusive operation. It releases the exact all-bucket,
+// component, or single-bucket locks selected by Lock, in reverse acquisition order.
+// Never reconstruct this list from current topology: a writer must release what it owns.
 func (m *bucketMutex) Unlock() {
 	if m.all {
 		m.all = false
@@ -93,7 +108,9 @@ func (m *bucketMutex) Unlock() {
 	m.raw.Unlock()
 }
 
-// RLock shares side-effect-free reads without a Client-wide reader count.
+// RLock is used only by read paths whose policies require no mutation or group publication.
+// It takes the owner's ordinary RWMutex read lock; reader registration still exists within
+// that bucket. The optimization changes lock ownership; it does not make reads lock-free.
 func (m *bucketMutex) RLock() { m.raw.RLock() }
 
 // RUnlock completes a side-effect-free local read.

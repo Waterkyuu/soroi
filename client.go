@@ -15,6 +15,9 @@ import (
 
 // Client owns shared results of different types and merges concurrent requests by key.
 // Reuse one client across components and call Close to stop background work.
+// One Client contains 64 stable buckets. Ordinary key operations lock their owner rather
+// than the whole Client; global operations and group admission/closure lock every bucket.
+// Grouped publications may lock a connected set of owners; see client_lock.go.
 type Client struct {
 	// mu coordinates operations that require a coherent view of every bucket.
 	mu clientMutex
@@ -38,7 +41,9 @@ type Client struct {
 	nextLoadID atomic.Uint64
 	// loadNow measures elapsed load time independently of the freshness clock; tests may replace it.
 	loadNow func() time.Time
-	// The reserved slot preserves Client layout while isolating revision ownership.
+	// The reserved slot preserves the measured Client layout after moving revision generation
+	// into each bucket. It is intentionally unused, not a second revision counter. Removing
+	// it would be a separate layout change and would invalidate the measured candidate.
 	_ atomic.Uint64
 	// recency orders retained results and errors from least to most recently used.
 	recency list.List
@@ -56,7 +61,8 @@ type Client struct {
 	ctx context.Context
 	// cancel stops the client's background lifetime.
 	cancel context.CancelFunc
-	// closed prevents new work after resource release.
+	// closed prevents new work after resource release. Close writes it while holding every
+	// bucket exclusively; key operations can therefore inspect it under their own bucket lock.
 	closed bool
 }
 
@@ -64,7 +70,9 @@ type Client struct {
 type entry struct {
 	// tags retains the union of labels registered for this key until its query state is released.
 	tags []string
-	// revision changes when data or its invalidation state is replaced.
+	// revision stores this entry's latest bucket-issued change number. Update captures it
+	// before running user code and compares this entry again afterward. Other keys can
+	// consume numbers without changing this field or invalidating an unrelated update.
 	revision uint64
 	// typ binds this key to one static result type until its state and subscriptions are released.
 	typ reflect.Type
@@ -124,7 +132,7 @@ type flight struct {
 	reason EventReason
 	// joined counts additional joins independently of current waiter count.
 	joined uint64
-	// attempts counts actual loader invocations under the Client lock.
+	// attempts counts actual loader invocations under the owning bucket lock.
 	attempts int
 	// discardReason identifies an explicit operation that detached this load.
 	discardReason EventReason
@@ -155,16 +163,23 @@ type flight struct {
 }
 
 // NewClient constructs an independently owned client with optional freshness and retry policies.
+// NewClient(Options{}) returns one *Client containing 64 buckets with initially nil per-key maps.
+// Call Close when finished: it stops the shared background lifetime and releases subscriptions.
+// The bucket count does not split capacity, statistics, or cancellation into separate clients.
 func NewClient(options Options) *Client {
 	return newClient(options, defaultBucketCount)
 }
 
 // newClient constructs one lifetime and a fixed power-of-two set of storage buckets.
-// The internal count supports parameter experiments without adding public configuration.
+// NewClient passes the fixed default count; internal tests can pass other powers of two.
+// For example, newClient(Options{}, 8) returns one Client with eight stable owners, while
+// a non-positive or non-power-of-two count panics. This is not public configuration.
 func newClient(options Options, bucketCount int) *Client {
 	if bucketCount <= 0 || bucketCount&(bucketCount-1) != 0 {
 		panic("bucket count must be a positive power of two")
 	}
+	// Only the default clock is assumed safe for simultaneous calls. A supplied clock
+	// keeps the existing serialization guarantee through the global lock fallback.
 	concurrentClock := options.Clock == nil
 	if options.Clock == nil {
 		options.Clock = time.Now
@@ -601,7 +616,9 @@ func (c *clientBucket) entrySnapshotLocked(key any, cached entry, expiresAt time
 	return state
 }
 
-// notifyLocked publishes the latest state while the client lock prevents subscription closure races.
+// notifyLocked publishes the latest state while the acquired bucket lock set excludes closure.
+// A plain subscription needs only its owner; a grouped subscription may inspect connected
+// buckets, which bucketMutex.Lock has already acquired in the global bucket order.
 func (c *clientBucket) notifyLocked(key any) {
 	if len(c.observers[key]) == 0 {
 		return
@@ -629,7 +646,13 @@ func (c *clientBucket) checkLocked(key any, typ reflect.Type) error {
 	return err
 }
 
-// checkedEntryLocked validates admission and returns state owned by the caller's existing lock.
+// checkedEntryLocked is the shared admission lookup used by Get, Fetch, Set, and Update.
+// The caller holds this bucket's read or write lock. key identifies the record; typ is the
+// requested static result type, or nil when no type check is requested. It never binds a key.
+// For a valid missing key it returns (nil, nil); for an existing matching key it returns
+// (currentEntry, nil); invalid keys, closure, or type mismatch return (nil, an error).
+// Reuse the returned pointer only within the same uninterrupted lock scope and only if
+// intervening maintenance cannot delete the record. An unlock requires a new lookup.
 func (c *clientBucket) checkedEntryLocked(key any, typ reflect.Type) (*entry, error) {
 	if c.owner.closed {
 		return nil, ErrClosed
