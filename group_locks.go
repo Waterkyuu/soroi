@@ -56,25 +56,46 @@ func (c *Client) rebuildGroupLocksLocked() {
 			parents[root] = groupRoot(parents, first)
 		}
 	}
-	sets := make([]*bucketLockSet, len(c.buckets))
+	sizes := make([]int, len(c.buckets))
 	for i := range c.buckets {
 		bucket := &c.buckets[i]
 		if bucket.groupRefs == 0 {
 			continue
 		}
-		root := groupRoot(parents, i)
-		if sets[root] == nil {
-			sets[root] = &bucketLockSet{}
-		}
-		sets[root].buckets = append(sets[root].buckets, bucket)
+		sizes[groupRoot(parents, i)]++
 	}
-	for i := range c.buckets {
-		if c.buckets[i].groupRefs == 0 {
+	var componentCount, memberCount int
+	for _, size := range sizes {
+		if size > 1 {
+			componentCount++
+			memberCount += size
+		}
+	}
+	// One allocation owns all sets and another owns their disjoint pointer ranges.
+	// This avoids per-component allocations when many independent groups are active.
+	sets := make([]bucketLockSet, componentCount)
+	members := make([]*clientBucket, memberCount)
+	indexes := make([]int, len(c.buckets))
+	var nextSet, offset int
+	for root, size := range sizes {
+		if size <= 1 {
 			continue
 		}
-		set := sets[groupRoot(parents, i)]
-		if set != nil && len(set.buckets) > 1 {
-			c.buckets[i].groupLocks = set
+		sets[nextSet].buckets = members[offset : offset : offset+size]
+		indexes[root] = nextSet + 1
+		nextSet++
+		offset += size
+	}
+	for i := range c.buckets {
+		bucket := &c.buckets[i]
+		if bucket.groupRefs == 0 {
+			continue
+		}
+		index := indexes[groupRoot(parents, i)]
+		if index != 0 {
+			set := &sets[index-1]
+			set.buckets = append(set.buckets, bucket)
+			bucket.groupLocks = set
 		}
 	}
 }
