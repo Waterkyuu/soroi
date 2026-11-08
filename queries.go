@@ -145,6 +145,8 @@ func newQueriesGroup(client *Client, definitions []QuerySpec) *queriesGroup {
 				if group.remaining == 0 {
 					group.closed = true
 					close(group.updates)
+					delete(client.groups, group)
+					client.rebuildGroupLocksLocked()
 				}
 			},
 		}
@@ -153,6 +155,13 @@ func newQueriesGroup(client *Client, definitions []QuerySpec) *queriesGroup {
 			member.bucket.groupRefs++
 			group.remaining++
 		}
+	}
+	if group.remaining > 0 {
+		if client.groups == nil {
+			client.groups = make(map[*queriesGroup]struct{})
+		}
+		client.groups[group] = struct{}{}
+		client.rebuildGroupLocksLocked()
 	}
 	group.initialized = true
 	group.publishLocked()

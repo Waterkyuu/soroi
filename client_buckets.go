@@ -10,6 +10,8 @@ const defaultBucketCount = 64
 
 // clientBucket owns every mutable part of a key lifecycle without creating another Client.
 type clientBucket struct {
+	// index orders this bucket in immutable Client storage and precomputed lock sets.
+	index int
 	// owner shares configuration, diagnostics and cancellation with all other buckets.
 	owner *Client
 	// mu protects this bucket or coordinates global policies when required.
@@ -28,8 +30,10 @@ type clientBucket struct {
 	gcTasks map[any]*gcTask
 	// pollTasks owns optional polling timers.
 	pollTasks map[any]*pollTask
-	// groupRefs requires all-bucket coordination while a group reads this bucket in publications.
+	// groupRefs counts admitted group memberships under coordinated locks.
 	groupRefs uint64
+	// groupLocks covers transitive group publications and is replaced only under every bucket lock.
+	groupLocks *bucketLockSet
 }
 
 // bucketFor locates immutable key ownership before taking a lock; callers retain the returned pointer.

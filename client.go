@@ -22,6 +22,8 @@ type Client struct {
 	seed maphash.Seed
 	// buckets owns stable key partitions; it is never resized or replaced.
 	buckets []clientBucket
+	// groups indexes live grouped subscriptions while every bucket lock is held.
+	groups map[*queriesGroup]struct{}
 	// concurrentClock permits parallel reads only when the client owns its concurrency-safe default clock.
 	concurrentClock bool
 	// eventSubscriptions indexes diagnostic streams by exact key; nil owns all-key subscriptions under mu.
@@ -183,6 +185,7 @@ func newClient(options Options, bucketCount int) *Client {
 	// Nil per-bucket maps are intentional: only a first write allocates each optional index.
 	for i := range client.buckets {
 		bucket := &client.buckets[i]
+		bucket.index = i
 		bucket.owner = client
 		bucket.mu.bucket = bucket
 	}

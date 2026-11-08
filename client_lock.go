@@ -44,22 +44,37 @@ type bucketMutex struct {
 	bucket *clientBucket
 	// all records this writer's acquired lock set and is protected by raw exclusively.
 	all bool
+	// held records the immutable group lock set acquired by this writer under raw exclusively.
+	held *bucketLockSet
 }
 
-// Lock normally takes this bucket; global policies and grouped publications acquire the full set.
+// Lock takes one bucket, its transitive group owners, or every bucket for global policies.
 func (m *bucketMutex) Lock() {
 	m.raw.Lock()
 	owner := m.bucket.owner
 	globalPolicy := owner.options.MaxEntries > 0 || !owner.concurrentClock
-	if !globalPolicy && m.bucket.groupRefs == 0 {
-		m.all = false
+	if globalPolicy {
+		m.raw.Unlock()
+		owner.mu.Lock()
+		m.all = true
 		return
 	}
-	// Release before acquiring the ordered set, avoiding cross-bucket lock cycles.
-	// Membership may change in this gap; Unlock uses the actual acquired mode.
-	m.raw.Unlock()
-	owner.mu.Lock()
-	m.all = true
+	for {
+		set := m.bucket.groupLocks
+		if set == nil {
+			return
+		}
+		// Release before ordered acquisition; topology changes may replace this set in the gap.
+		m.raw.Unlock()
+		set.lock()
+		if m.bucket.groupLocks == set {
+			m.held = set
+			return
+		}
+		// Retry from the current topology while still preserving one global lock order.
+		set.unlock()
+		m.raw.Lock()
+	}
 }
 
 // Unlock releases the acquired set even if group membership changed before acquisition.
@@ -67,6 +82,12 @@ func (m *bucketMutex) Unlock() {
 	if m.all {
 		m.all = false
 		m.bucket.owner.mu.Unlock()
+		return
+	}
+	if m.held != nil {
+		set := m.held
+		m.held = nil
+		set.unlock()
 		return
 	}
 	m.raw.Unlock()
