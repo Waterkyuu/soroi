@@ -1,11 +1,10 @@
 <div align="center">
-  <img src="./assets/soroi.png" alt="soroi" width="144" />
-
+  <img src="./assets/soroi.webp" alt="soroi" width="700" />
   <h1>soroi</h1>
 
   <p><a href="./README.md">English</a> | <strong>简体中文</strong></p>
 
-  <p><strong>管理共享查询数据、请求状态和刷新生命周期</strong></p>
+  <p><strong>管理数据查询，请求合并，缓存读写，重试，自动批量处理</strong></p>
   <p>面向 Go 1.22 及以上版本、没有外部依赖的查询客户端</p>
   <p>多个组件共享数据、合并重复请求，并订阅查询状态。</p>
 
