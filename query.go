@@ -302,7 +302,8 @@ func (c *clientBucket) getSnapshot(key any, typ reflect.Type, options Options) S
 
 // getSnapshotLocked applies read validation, age, freshness, and retention rules under the client's lock.
 func (c *clientBucket) getSnapshotLocked(key any, typ reflect.Type, options Options) Snapshot[any] {
-	if err := c.checkLocked(key, typ); err != nil {
+	cached, err := c.checkedEntryLocked(key, typ)
+	if err != nil {
 		return Snapshot[any]{Status: Error, Stale: true, Err: err}
 	}
 	if c.expireDataLocked(key) {
@@ -310,8 +311,10 @@ func (c *clientBucket) getSnapshotLocked(key any, typ reflect.Type, options Opti
 	}
 	c.touchCapacityLocked(key)
 	c.touchGCLocked(key)
-	// The lock owns the node; avoid materializing an intermediate full-state copy on cache hits.
-	cached := c.entries[key]
+	// Policy maintenance can discard a node, so only reuse admission when those policies are disabled.
+	if c.owner.options.MaxAge > 0 || c.owner.options.GCTime > 0 || c.owner.options.MaxEntries > 0 {
+		cached = c.entries[key]
+	}
 	if cached == nil {
 		return c.entrySnapshotLocked(key, entry{}, time.Time{}, false)
 	}
@@ -506,11 +509,11 @@ func (c *clientBucket) fetchReadOnly(
 	if c.owner.hasEvents() {
 		return nil, nil, false
 	}
-	if err := c.checkLocked(key, typ); err != nil {
+	cached, err := c.checkedEntryLocked(key, typ)
+	if err != nil {
 		return nil, err, true
 	}
 	// A missing node follows the existing exclusive miss path; live nodes remain protected by RLock.
-	cached := c.entries[key]
 	if cached == nil {
 		return nil, nil, false
 	}
