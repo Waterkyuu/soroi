@@ -6,7 +6,9 @@ import (
 	"time"
 )
 
-// subscription connects a typed handle to shared state; all fields are protected by Client.mu.
+// subscription connects a typed handle to shared state under its owning bucket's lock.
+// Group admission and closure hold every bucket; publication holds the required connected
+// set. A reader cannot close a channel while a writer is publishing under that same owner.
 type subscription struct {
 	// enabled permits this handle to initiate automatic requests.
 	enabled bool
@@ -198,7 +200,7 @@ func (c *clientBucket) unsubscribeLocked(key any, observer *subscription) {
 	c.touchGCLocked(key)
 }
 
-// activeLocked verifies handle ownership while the client's lock is held.
+// activeLocked verifies handle ownership while the handle's bucket is exclusively locked.
 func (h *QueryHandle[V]) activeLocked() error {
 	if h.err != nil {
 		return h.err
@@ -283,12 +285,21 @@ func (c *Client) Get(key any) Snapshot[any] {
 // Get reads typed cached state without starting a request or binding a previously unused key.
 // Incompatible result types return ErrTypeMismatch instead of panicking or exposing another query's data.
 // Use Client.Get to inspect cached state without specifying or checking a result type.
+// For example, after Set(client, "balance", 100), Get[int](client, "balance") returns a
+// Snapshot[int] with Data=100 and HasData=true; it does not invoke an application loader.
+// The call routes once, locks that owner, validates and looks up the entry once, projects
+// its state, then unlocks. Maintenance policies can require an exclusive lock and a reload.
 func Get[V any](client *Client, key any) Snapshot[V] {
 	return typedSnapshot[V](client.bucketFor(key).getSnapshot(key, reflect.TypeFor[V](), client.options))
 }
 
 // getSnapshot reads shared state using one consumer's freshness without changing another consumer's policy.
 // A nil result type skips type matching while preserving key validation and cache lifecycle behavior.
+// Get, Client.Get, and QueryHandle.Snapshot call this after selecting the owner. key identifies
+// the record and options supplies this consumer's freshness policy; the returned Snapshot
+// contains a copy of state metadata plus the shared immutable data reference.
+// A default-policy hit can share a read lock. Capacity, age cleanup, inactive retention,
+// or a supplied clock may have side effects, so those paths keep exclusive protection.
 func (c *clientBucket) getSnapshot(key any, typ reflect.Type, options Options) Snapshot[any] {
 	if c.concurrentReads() {
 		c.mu.RLock()
@@ -300,7 +311,11 @@ func (c *clientBucket) getSnapshot(key any, typ reflect.Type, options Options) S
 	return c.getSnapshotLocked(key, typ, options)
 }
 
-// getSnapshotLocked applies read validation, age, freshness, and retention rules under the client's lock.
+// getSnapshotLocked is called with the read or write protection selected by getSnapshot.
+// It returns the requested key's snapshot, such as HasData=true and Data=100 for a retained
+// balance, or Status=Error with ErrTypeMismatch for a rejected typed read. Validation runs
+// before maintenance so a rejected type cannot expire or otherwise change another query.
+// The admitted entry pointer avoids a second map lookup only while it still names live storage.
 func (c *clientBucket) getSnapshotLocked(key any, typ reflect.Type, options Options) Snapshot[any] {
 	cached, err := c.checkedEntryLocked(key, typ)
 	if err != nil {
@@ -311,7 +326,10 @@ func (c *clientBucket) getSnapshotLocked(key any, typ reflect.Type, options Opti
 	}
 	c.touchCapacityLocked(key)
 	c.touchGCLocked(key)
-	// Policy maintenance can discard a node, so only reuse admission when those policies are disabled.
+	// Expiration or retention work above may remove the record, release its type binding,
+	// or publish changes that perform more maintenance. Never return data through a pointer
+	// to that removed node. With all such policies disabled, admission's pointer is still
+	// protected by this uninterrupted lock scope and the second map lookup can be skipped.
 	if c.owner.options.MaxAge > 0 || c.owner.options.GCTime > 0 || c.owner.options.MaxEntries > 0 {
 		cached = c.entries[key]
 	}
@@ -324,11 +342,15 @@ func (c *clientBucket) getSnapshotLocked(key any, typ reflect.Type, options Opti
 
 // Set installs a typed local result, cancels older loads, and notifies all compatible handles.
 // Type conflicts are checked before cancellation so a rejected update cannot damage an existing query.
+// Set(client, "balance", 100) returns nil after storing 100 and publishing the new state.
+// The selected bucket lock also covers every owner reachable by grouped notifications.
+// Validation returns the current node; installation reuses it within the same lock scope.
 func Set[V any](client *Client, key any, value V) error {
 	bucket := client.bucketFor(key)
 	bucket.mu.Lock()
 	defer bucket.mu.Unlock()
-	// setLocked installs the type and value together; an intermediate empty binding duplicates the map write.
+	// setEntryLocked installs the type and value together. Creating an empty binding first
+	// would add another lookup/write without making the operation any more atomic.
 	typ := reflect.TypeFor[V]()
 	cached, err := bucket.checkedEntryLocked(key, typ)
 	if err != nil {
@@ -338,7 +360,12 @@ func Set[V any](client *Client, key any, value V) error {
 	return nil
 }
 
-// setEntryLocked publishes a validated node without repeating its index lookup under the same lock.
+// setEntryLocked is called by Set or a successfully validated Update while holding the
+// owner's exclusive lock set. key/value/typ describe the new typed result; cached is the
+// current indexed node, or nil for a valid missing key. Callers must not pass a node saved
+// across an unlock. The function installs the value, cancels superseded loads, advances
+// only this entry's revision, applies retention policies, and publishes synchronously.
+// Reusing the caller's node avoids another lookup; it does not skip any lifecycle work.
 func (c *clientBucket) setEntryLocked(key, value any, typ reflect.Type, cached *entry) {
 	c.cancelLocked(key, ReasonSet)
 	now := c.owner.options.Clock()
@@ -488,8 +515,19 @@ func (c *clientBucket) concurrentReads() bool {
 		c.owner.options.MaxAge <= 0
 }
 
-// fetchReadOnly serves fresh hits without serializing independent readers or publishing diagnostic events.
-// Misses and event-observed decisions return to fetch's exclusive lifecycle path before making changes.
+// fetchReadOnly is the optional fresh-hit path called by fetch before taking a write lock.
+// ctx controls this wait, key/typ identify the requested result, and request carries the
+// consumer's freshness policy. It returns (value, error, done): a fresh cached 100 returns
+// (100, nil, true); a miss returns (nil, nil, false), asking fetch to take its full lifecycle
+// path. A canceled context or validation error is final and also returns done=true.
+//
+// Call flow for a default-policy Fetch on a fresh key:
+//  1. Fetch builds the typed definition and routes once to its bucket.
+//  2. fetch checks eligibility, then calls fetchReadOnly under that bucket's read lock.
+//  3. checkedEntryLocked validates and retrieves the node once; freshness uses that node.
+//  4. A hit records statistics and returns its immutable value; no source loader is called.
+//  5. A miss or diagnostic observer returns done=false, releases RLock, and enters the
+//     exclusive path with a new validation. No entry pointer crosses that unlock.
 func (c *clientBucket) fetchReadOnly(
 	ctx context.Context,
 	key any,
@@ -515,6 +553,8 @@ func (c *clientBucket) fetchReadOnly(
 	if _, fresh := c.entryFreshnessLocked(*cached, request.options.StaleTime); !fresh {
 		return nil, nil, false
 	}
+	// Hit statistics still need an atomic increment because multiple readers share RLock.
+	// This counter belongs to the bucket and is separate from RWMutex reader registration.
 	c.readHits.Add(1)
 	return cached.value, cached.err, true
 }

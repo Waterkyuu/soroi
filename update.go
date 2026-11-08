@@ -15,12 +15,27 @@ var ErrUpdateConflict = errors.New("query changed during update")
 var ErrNoUpdater = errors.New("query has no updater")
 
 // Update transforms existing cached data and installs it only if that state has not changed.
-// The callback runs exactly once, outside the Client lock, and may call Client APIs.
+// The callback runs exactly once, outside all cache locks, and may call Client APIs.
 // Data is shared and immutable: copy maps, slices, and pointed-to values before modifying them.
 // Missing or over-age data returns ErrNoData without calling update. Concurrent writes,
 // invalidation, removal, or expiration return ErrUpdateConflict without applying the result.
 // Callback errors are returned unchanged. Callers may explicitly retry conflicts.
 // Success has Set semantics: it renews freshness and age, cancels older loads, and notifies observers.
+//
+// Example: after Set(client, "balance", 100), Update(client, "balance", addTen) returns
+// nil and stores 110 if the entry is unchanged. If another writer changes that key while
+// addTen runs, Update returns ErrUpdateConflict and leaves the newer writer's result intact.
+// It does not automatically rerun addTen, which may have application-owned side effects.
+//
+// The three phases deliberately keep different data:
+//  1. Lock the owner, validate once, perform required expiry work, and copy the immutable
+//     value reference and this entry's revision. Do not carry *entry outside the lock.
+//  2. Unlock and invoke the user's callback exactly once.
+//  3. Lock again, find the current entry afresh, and compare its stored revision. Only then
+//     pass that current node to setEntryLocked, avoiding another lookup within this phase.
+//
+// A write to another key in the same bucket advances the number generator, not this entry's
+// stored revision, so it alone cannot make the update conflict.
 func Update[V any](client *Client, key any, update func(V) (V, error)) error {
 	bucket := client.bucketFor(key)
 	bucket.mu.Lock()
@@ -30,6 +45,8 @@ func Update[V any](client *Client, key any, update func(V) (V, error)) error {
 		bucket.mu.Unlock()
 		return err
 	}
+	// Preserve error precedence: closed/key/type errors above win over a missing updater,
+	// and a missing updater is reported before examining whether usable data exists.
 	if update == nil {
 		bucket.mu.Unlock()
 		return ErrNoUpdater
@@ -58,7 +75,9 @@ func Update[V any](client *Client, key any, update func(V) (V, error)) error {
 	if bucket.expireDataLocked(key) {
 		bucket.notifyLocked(key)
 	}
-	// The callback can remove or recreate the key, so always look up its current node again.
+	// The callback can Remove/Clear and recreate the key, even with the same value or a
+	// different type. The bucket's revision generator survives that cleanup. A fresh lookup
+	// plus revision comparison rejects the replacement; pointer or value equality is not enough.
 	current := bucket.entries[key]
 	if current == nil || !current.hasData || current.revision != previousRevision {
 		return ErrUpdateConflict
@@ -67,7 +86,10 @@ func Update[V any](client *Client, key any, update func(V) (V, error)) error {
 	return nil
 }
 
-// advanceRevisionLocked assigns a bucket-lifetime revision so recreation cannot hide same-key conflicts.
+// advanceRevisionLocked is called whenever a state transition must invalidate an in-flight Update.
+// cached is the entry being changed and the caller holds its owner exclusively. It writes
+// the next bucket-issued number into that entry alone; same-value writes still advance it.
+// The generator is not reset by removal, so a recreated key cannot reuse the old revision.
 func (c *clientBucket) advanceRevisionLocked(cached *entry) {
 	cached.revision = c.nextDataRevision()
 }
