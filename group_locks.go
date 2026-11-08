@@ -1,5 +1,7 @@
 package soroi
 
+import "slices"
+
 // bucketLockSet owns an immutable, ordered component of buckets joined by live groups.
 type bucketLockSet struct {
 	// buckets includes every owner reachable through recursive group publications in Client order.
@@ -97,5 +99,77 @@ func (c *Client) rebuildGroupLocksLocked() {
 			set.buckets = append(set.buckets, bucket)
 			bucket.groupLocks = set
 		}
+	}
+}
+
+// groupBuckets returns sorted distinct admitted owners, omitting groups confined to one bucket.
+func groupBuckets(group *queriesGroup) []*clientBucket {
+	var first *clientBucket
+	multiple := false
+	for _, member := range group.members {
+		if member.err != nil {
+			continue
+		}
+		if first == nil {
+			first = member.bucket
+		} else if first != member.bucket {
+			multiple = true
+			break
+		}
+	}
+	if !multiple {
+		return nil
+	}
+	buckets := make([]*clientBucket, 0, len(group.members))
+	for _, member := range group.members {
+		if member.err == nil {
+			buckets = append(buckets, member.bucket)
+		}
+	}
+	slices.SortFunc(buckets, compareGroupBuckets)
+	return slices.Compact(buckets)
+}
+
+// compareGroupBuckets preserves the global write-lock order in immutable component lists.
+func compareGroupBuckets(a, b *clientBucket) int { return a.index - b.index }
+
+// addGroupLocksLocked merges only the components connected by a newly admitted group.
+// The caller holds every bucket lock; removal continues to use the original full rebuild.
+func (c *Client) addGroupLocksLocked(group *queriesGroup) {
+	buckets := groupBuckets(group)
+	if len(buckets) == 0 {
+		return
+	}
+	c.mergeGroupLocksLocked(buckets)
+}
+
+// mergeGroupLocksLocked reuses an existing component or publishes one new ordered union without mutating old sets.
+func (c *Client) mergeGroupLocksLocked(buckets []*clientBucket) {
+	first := buckets[0].groupLocks
+	same := first != nil
+	for _, bucket := range buckets[1:] {
+		if bucket.groupLocks != first {
+			same = false
+			break
+		}
+	}
+	if same {
+		return
+	}
+	seen := make(map[*bucketLockSet]bool)
+	merged := make([]*clientBucket, 0, len(buckets))
+	for _, bucket := range buckets {
+		set := bucket.groupLocks
+		if set == nil {
+			merged = append(merged, bucket)
+		} else if !seen[set] {
+			seen[set] = true
+			merged = append(merged, set.buckets...)
+		}
+	}
+	slices.SortFunc(merged, compareGroupBuckets)
+	set := &bucketLockSet{buckets: merged}
+	for _, bucket := range merged {
+		bucket.groupLocks = set
 	}
 }

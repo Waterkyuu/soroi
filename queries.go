@@ -161,7 +161,7 @@ func newQueriesGroup(client *Client, definitions []QuerySpec) *queriesGroup {
 			client.groups = make(map[*queriesGroup]struct{})
 		}
 		client.groups[group] = struct{}{}
-		client.rebuildGroupLocksLocked()
+		client.addGroupLocksLocked(group)
 	}
 	group.initialized = true
 	group.publishLocked()
