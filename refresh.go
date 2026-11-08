@@ -117,7 +117,7 @@ func waitRefresh(ctx context.Context, refresh *refreshCompletion) RefreshResult 
 }
 
 // scheduleRefreshLocked uses enabled observers and bounds each active chain to one follow-up.
-func (c *Client) scheduleRefreshLocked(
+func (c *clientBucket) scheduleRefreshLocked(
 	key any,
 	pending *flight,
 	options InvalidateOptions,
@@ -138,7 +138,7 @@ func (c *Client) scheduleRefreshLocked(
 	}
 	if pending == nil {
 		request.trigger = TriggerInvalidate
-		pending = c.startLocked(c.ctx, key, request)
+		pending = c.startLocked(c.owner.ctx, key, request)
 		if waitCtx != nil {
 			pending.refresh = newRefreshCompletion(key)
 		}
@@ -157,7 +157,7 @@ func (c *Client) scheduleRefreshLocked(
 }
 
 // finishRefreshLocked settles this load's receipt and starts at most one coalesced successor.
-func (c *Client) finishRefreshLocked(key any, pending *flight, applied bool) {
+func (c *clientBucket) finishRefreshLocked(key any, pending *flight, applied bool) {
 	err := pending.err
 	if err == nil && pending.invalidated {
 		err = ErrRefreshInvalidated
@@ -170,7 +170,7 @@ func (c *Client) finishRefreshLocked(key any, pending *flight, applied bool) {
 		return
 	}
 	// Set, Remove, Cancel, Clear, and Close settle scheduled work when detaching the flight.
-	if pending.detached || c.closed {
+	if pending.detached || c.owner.closed {
 		return
 	}
 	request := c.observedRequestLocked(key)
@@ -179,13 +179,13 @@ func (c *Client) finishRefreshLocked(key any, pending *flight, applied bool) {
 		return
 	}
 	request.trigger = TriggerInvalidate
-	next := c.startLocked(c.ctx, key, request)
+	next := c.startLocked(c.owner.ctx, key, request)
 	next.refresh = pending.followup
 	next.followupLoad = true
 }
 
 // cancelRefreshLocked releases waiters immediately even if a detached loader ignores cancellation.
-func (c *Client) cancelRefreshLocked(pending *flight, reason EventReason) {
+func (c *clientBucket) cancelRefreshLocked(pending *flight, reason EventReason) {
 	err := error(context.Canceled)
 	switch reason {
 	case ReasonSet:

@@ -59,6 +59,8 @@ type queriesGroup struct {
 type queriesMember struct {
 	// spec retains the captured identity, result type, and loading policy.
 	spec querySpec
+	// bucket retains this member's storage owner across every group publication.
+	bucket *clientBucket
 	// observer is registered only if validation succeeds.
 	observer *subscription
 	// err retains construction failures independently of later cache changes.
@@ -124,6 +126,7 @@ func newQueriesGroup(client *Client, definitions []QuerySpec) *queriesGroup {
 		// Shared configuration can call an application-owned store's InvalidationScope method.
 		// Resolve it before locking, allowing diagnostics to reenter Client APIs safely.
 		member.spec = definition.querySpec(client.options)
+		member.bucket = client.bucketFor(member.spec.key)
 	}
 	client.mu.Lock()
 	defer client.mu.Unlock()
@@ -134,7 +137,7 @@ func newQueriesGroup(client *Client, definitions []QuerySpec) *queriesGroup {
 		}
 		member.observer = &subscription{
 			publish: func(Snapshot[any]) {
-				client.bucketFor(member.spec.key).deferGroupLocked(group)
+				member.bucket.deferGroupLocked(group)
 			},
 			close: func() {
 				group.remaining--
@@ -144,7 +147,7 @@ func newQueriesGroup(client *Client, definitions []QuerySpec) *queriesGroup {
 				}
 			},
 		}
-		member.err = client.subscribeLocked(member.spec, member.observer)
+		member.err = member.bucket.subscribeLocked(member.spec, member.observer)
 		if member.err == nil {
 			group.remaining++
 		}
@@ -179,7 +182,7 @@ func (h *QueriesHandle[V]) Close() {
 	}
 	for _, member := range group.members {
 		if member.err == nil {
-			group.client.unsubscribeLocked(member.spec.key, member.observer)
+			member.bucket.unsubscribeLocked(member.spec.key, member.observer)
 		}
 	}
 }
@@ -199,7 +202,7 @@ func (g *queriesGroup) snapshotLocked() []Snapshot[any] {
 			results[i] = Snapshot[any]{Status: Error, Stale: true, Err: member.err}
 			continue
 		}
-		results[i] = g.client.getSnapshotLocked(member.spec.key, member.spec.typ, member.spec.request.options)
+		results[i] = member.bucket.getSnapshotLocked(member.spec.key, member.spec.typ, member.spec.request.options)
 	}
 	return results
 }

@@ -595,7 +595,11 @@ func TestInfiniteQueryNilContinuation(t *testing.T) {
 		if recover() == nil {
 			t.Error("nil continuation did not panic")
 		}
-		if len(client.observers) != 0 || client.Stats().Loads != 0 {
+		observers := 0
+		client.mu.Lock()
+		client.forEachBucketLocked(func(bucket *clientBucket) { observers += len(bucket.observers) })
+		client.mu.Unlock()
+		if observers != 0 || client.Stats().Loads != 0 {
 			t.Error("nil continuation admitted work")
 		}
 	}()

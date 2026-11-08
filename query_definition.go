@@ -42,7 +42,7 @@ func QueryDefinition[V any](key any, fetch Fetcher[V], options ...QueryOptions) 
 // Fetch waits for this definition's result using the supplied Client and caller context.
 // Disable does not suppress this explicit read; validation and errors follow Fetch's contract.
 func (d Definition[V]) Fetch(ctx context.Context, client *Client) (V, error) {
-	value, err := client.fetch(
+	value, err := client.bucketFor(d.Key).fetch(
 		ctx,
 		d.Key,
 		reflect.TypeFor[V](),
@@ -73,7 +73,7 @@ func (d Definition[V]) querySpec(defaults Options) querySpec {
 // Prefetch warms this definition's cached data and returns any loading error.
 // Disable does not suppress this explicit read; it creates no persistent subscription.
 func (d Definition[V]) Prefetch(ctx context.Context, client *Client) error {
-	_, err := client.fetch(
+	_, err := client.bucketFor(d.Key).fetch(
 		ctx,
 		d.Key,
 		reflect.TypeFor[V](),
@@ -116,9 +116,10 @@ func (d Definition[V]) InvalidateShared(
 	if d.Shared == nil {
 		return ErrInvalidSharedCache
 	}
-	client.mu.Lock()
-	err = client.checkLocked(d.Key, reflect.TypeFor[V]())
-	client.mu.Unlock()
+	bucket := client.bucketFor(d.Key)
+	bucket.mu.Lock()
+	err = bucket.checkLocked(d.Key, reflect.TypeFor[V]())
+	bucket.mu.Unlock()
 	if err != nil {
 		return err
 	}
@@ -126,5 +127,5 @@ func (d Definition[V]) InvalidateShared(
 	if err != nil {
 		return err
 	}
-	return client.applySharedKey(d.Key, event, option)
+	return bucket.applySharedKey(d.Key, event, option)
 }
