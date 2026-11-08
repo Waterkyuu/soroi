@@ -3,7 +3,7 @@ package soroi
 import "slices"
 
 // registerTagsLocked merges labels without replacing another consumer's labels or changing data revision.
-func (c *Client) registerTagsLocked(key any, tags []string) {
+func (c *clientBucket) registerTagsLocked(key any, tags []string) {
 	if len(tags) == 0 {
 		return
 	}

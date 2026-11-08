@@ -3,9 +3,9 @@ package soroi
 import "time"
 
 // limitExpiry prevents a freshness deadline from extending beyond the configured availability limit.
-func (c *Client) limitExpiry(updatedAt, expiresAt time.Time) time.Time {
-	if c.options.MaxAge > 0 {
-		deadline := updatedAt.Add(c.options.MaxAge)
+func (c *clientBucket) limitExpiry(updatedAt, expiresAt time.Time) time.Time {
+	if c.owner.options.MaxAge > 0 {
+		deadline := updatedAt.Add(c.owner.options.MaxAge)
 		if expiresAt.After(deadline) {
 			return deadline
 		}
@@ -15,15 +15,15 @@ func (c *Client) limitExpiry(updatedAt, expiresAt time.Time) time.Time {
 
 // expireDataLocked drops an over-age value while preserving its result type, last error, and active load.
 // Availability is checked on cache operations rather than by starting another timer for each key.
-func (c *Client) expireDataLocked(key any) bool {
-	if c.options.MaxAge <= 0 {
+func (c *clientBucket) expireDataLocked(key any) bool {
+	if c.owner.options.MaxAge <= 0 {
 		return false
 	}
 	cached := c.entryLocked(key)
 	if !cached.hasData {
 		return false
 	}
-	if c.options.Clock().Before(cached.updatedAt.Add(c.options.MaxAge)) {
+	if c.owner.options.Clock().Before(cached.updatedAt.Add(c.owner.options.MaxAge)) {
 		return false
 	}
 	// A failed refresh changes the error and freshness deadline, but not UpdatedAt.
@@ -36,6 +36,6 @@ func (c *Client) expireDataLocked(key any) bool {
 	if cached.err == nil {
 		c.forgetCapacityLocked(key)
 	}
-	c.emitEventLocked(Event{Key: key, Kind: EventCacheRemoved, Reason: ReasonMaxAge})
+	c.owner.emitEventLocked(Event{Key: key, Kind: EventCacheRemoved, Reason: ReasonMaxAge})
 	return true
 }

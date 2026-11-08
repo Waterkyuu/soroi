@@ -1,8 +1,8 @@
 package soroi
 
 // touchCapacityLocked records use of a completed result or error and enforces the configured capacity.
-func (c *Client) touchCapacityLocked(key any) {
-	if c.closed || c.options.MaxEntries <= 0 {
+func (c *clientBucket) touchCapacityLocked(key any) {
+	if c.owner.closed || c.owner.options.MaxEntries <= 0 {
 		return
 	}
 	cached := c.entryLocked(key)
@@ -10,30 +10,31 @@ func (c *Client) touchCapacityLocked(key any) {
 		c.forgetCapacityLocked(key)
 		return
 	}
-	if position := c.recencyEntries[key]; position != nil {
-		c.recency.MoveToBack(position)
+	if position := c.owner.recencyEntries[key]; position != nil {
+		c.owner.recency.MoveToBack(position)
 	} else {
-		c.recencyEntries[key] = c.recency.PushBack(key)
+		c.owner.recencyEntries[key] = c.owner.recency.PushBack(key)
 	}
-	for c.recency.Len() > c.options.MaxEntries {
-		oldest := c.recency.Front().Value
-		c.stats.LRUEvictions++
+	for c.owner.recency.Len() > c.owner.options.MaxEntries {
+		oldest := c.owner.recency.Front().Value
+		bucket := c.owner.bucketFor(oldest)
+		bucket.stats.LRUEvictions++
 		// Retain the type binding while a handle or load still owns this key.
 		// Eviction clears only cached state and never cancels shared work or starts a refresh.
-		c.discardLocked(oldest, ReasonCapacity)
-		c.stopGCLocked(oldest)
-		c.notifyLocked(oldest)
+		bucket.discardLocked(oldest, ReasonCapacity)
+		bucket.stopGCLocked(oldest)
+		bucket.notifyLocked(oldest)
 	}
 }
 
 // forgetCapacityLocked releases a key's recency record when its retained state is discarded.
-func (c *Client) forgetCapacityLocked(key any) {
+func (c *clientBucket) forgetCapacityLocked(key any) {
 	// Unbounded clients never register recency records, so cleanup can skip the index lookup.
-	if c.options.MaxEntries <= 0 {
+	if c.owner.options.MaxEntries <= 0 {
 		return
 	}
-	if position := c.recencyEntries[key]; position != nil {
-		c.recency.Remove(position)
-		delete(c.recencyEntries, key)
+	if position := c.owner.recencyEntries[key]; position != nil {
+		c.owner.recency.Remove(position)
+		delete(c.owner.recencyEntries, key)
 	}
 }
