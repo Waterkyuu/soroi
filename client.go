@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hash/maphash"
 	"reflect"
 	"sync"
 	"sync/atomic"
@@ -15,16 +16,14 @@ import (
 // Client owns shared results of different types and merges concurrent requests by key.
 // Reuse one client across components and call Close to stop background work.
 type Client struct {
-	// owner is the shared identity used while storage responsibilities are extracted.
-	owner *Client
-	// mu protects state transitions; side-effect-free reads may share its read lock.
-	mu sync.RWMutex
-	// readHits counts fresh Fetch hits under the shared read lock; Stats takes the exclusive lock.
-	readHits atomic.Uint64
+	// mu coordinates operations that require a coherent view of every bucket.
+	mu clientMutex
+	// seed fixes routing for this Client lifetime, including after Clear and Close.
+	seed maphash.Seed
+	// buckets owns stable key partitions; it is never resized or replaced.
+	buckets []clientBucket
 	// concurrentClock permits parallel reads only when the client owns its concurrency-safe default clock.
 	concurrentClock bool
-	// stats accumulates this client's cache decisions, load outcomes, and cleanup activity under mu.
-	stats Stats
 	// eventSubscriptions indexes diagnostic streams by exact key; nil owns all-key subscriptions under mu.
 	eventSubscriptions map[any]map[*EventSubscription]struct{}
 	// eventMu serializes ordered event emission across independent key owners.
@@ -34,29 +33,19 @@ type Client struct {
 	// eventSequence orders emitted diagnostic records without retaining history.
 	eventSequence uint64
 	// nextLoadID assigns operation identities even without active diagnostic subscriptions.
-	nextLoadID uint64
+	nextLoadID atomic.Uint64
 	// loadNow measures elapsed load time independently of the freshness clock; tests may replace it.
 	loadNow func() time.Time
 	// nextRevision distinguishes writes even when a key is removed and recreated.
-	nextRevision uint64
-	// entries indexes lock-owned stable result nodes, including expired data for background refresh.
-	entries map[any]*entry
+	nextRevision atomic.Uint64
 	// recency orders retained results and errors from least to most recently used.
 	recency list.List
 	// recencyEntries connects cached keys to their positions without scanning the cache.
 	recencyEntries map[any]*list.Element
-	// pending contains at most one active loader per key.
-	pending map[any]*flight
-	// observers receives shared state and tracks each subscriber's automatic loading permission.
-	observers map[any]map[*subscription]struct{}
 	// nextObserver orders subscriptions so automatic refresh chooses the oldest enabled consumer.
-	nextObserver uint64
-	// gcTasks owns at most one scheduled cleanup for each inactive cached key.
-	gcTasks map[any]*gcTask
+	nextObserver atomic.Uint64
 	// gcAfterFunc schedules cleanup and returns a stop function; tests can replace the timer source.
 	gcAfterFunc func(time.Duration, func()) func()
-	// pollTasks owns one interval timer per key with enabled polling subscriptions.
-	pollTasks map[any]*pollTask
 	// pollAfterFunc schedules interval callbacks and returns their stop functions; tests replace the timer source.
 	pollAfterFunc func(time.Duration, func()) func()
 	// options supplies freshness and request policies.
@@ -165,6 +154,15 @@ type flight struct {
 
 // NewClient constructs an independently owned client with optional freshness and retry policies.
 func NewClient(options Options) *Client {
+	return newClient(options, defaultBucketCount)
+}
+
+// newClient constructs one lifetime and a fixed power-of-two set of storage buckets.
+// The internal count supports parameter experiments without adding public configuration.
+func newClient(options Options, bucketCount int) *Client {
+	if bucketCount <= 0 || bucketCount&(bucketCount-1) != 0 {
+		panic("bucket count must be a positive power of two")
+	}
 	concurrentClock := options.Clock == nil
 	if options.Clock == nil {
 		options.Clock = time.Now
@@ -176,15 +174,18 @@ func NewClient(options Options) *Client {
 	ctx, cancel := context.WithCancel(context.Background()) // #nosec G118 -- Close owns the client's lifetime.
 	client := &Client{
 		concurrentClock: concurrentClock,
-		entries:         make(map[any]*entry), pending: make(map[any]*flight),
-		recencyEntries: make(map[any]*list.Element),
-		observers:      make(map[any]map[*subscription]struct{}),
-		gcTasks:        make(map[any]*gcTask), gcAfterFunc: scheduleGC,
-		pollTasks: make(map[any]*pollTask), pollAfterFunc: schedulePoll,
-		options: options, ctx: ctx, cancel: cancel,
-		loadNow: time.Now,
+		options:         options, ctx: ctx, cancel: cancel,
+		loadNow: time.Now, gcAfterFunc: scheduleGC, pollAfterFunc: schedulePoll,
+		seed: maphash.MakeSeed(), buckets: make([]clientBucket, bucketCount),
 	}
-	client.owner = client
+	client.recencyEntries = make(map[any]*list.Element)
+	client.mu.owner = client
+	// Nil per-bucket maps are intentional: only a first write allocates each optional index.
+	for i := range client.buckets {
+		bucket := &client.buckets[i]
+		bucket.owner = client
+		bucket.mu.bucket = bucket
+	}
 	return client
 }
 

@@ -137,9 +137,10 @@ func newQueriesGroup(client *Client, definitions []QuerySpec) *queriesGroup {
 		}
 		member.observer = &subscription{
 			publish: func(Snapshot[any]) {
-				member.bucket.deferGroupLocked(group)
+				member.bucket.publishGroupLocked(group)
 			},
 			close: func() {
+				member.bucket.groupRefs--
 				group.remaining--
 				if group.remaining == 0 {
 					group.closed = true
@@ -149,6 +150,7 @@ func newQueriesGroup(client *Client, definitions []QuerySpec) *queriesGroup {
 		}
 		member.err = member.bucket.subscribeLocked(member.spec, member.observer)
 		if member.err == nil {
+			member.bucket.groupRefs++
 			group.remaining++
 		}
 	}
