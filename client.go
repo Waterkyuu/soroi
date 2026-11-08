@@ -219,12 +219,12 @@ func (c *Client) invalidate(
 
 // invalidateLocked marks stale state and captures the exact refresh required by this invalidation.
 func (c *Client) invalidateLocked(key any, options InvalidateOptions, waitCtx context.Context) *refreshCompletion {
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	cached.expiresAt = time.Time{}
 	cached.invalidated = true
 	cached.staleReason = ReasonInvalidated
 	c.advanceRevisionLocked(&cached)
-	c.entries[key] = cached
+	c.storeEntryLocked(key, cached)
 	event := Event{Key: key, Kind: EventInvalidated, Trigger: TriggerInvalidate, Reason: ReasonInvalidated}
 	pending := c.pending[key]
 	if pending != nil {
@@ -320,9 +320,9 @@ func (c *Client) startLocked(ctx context.Context, key any, request queryRequest)
 	var previous any
 	if request.pages != nil {
 		c.expireDataLocked(key)
-		previous = c.entries[key].value
+		previous = c.entryLocked(key).value
 		// Missing or expired pages make FetchNextPage an initial load, rather than an append.
-		if !c.entries[key].hasData {
+		if !c.entryLocked(key).hasData {
 			request.nextPage = false
 		}
 	}
@@ -338,7 +338,7 @@ func (c *Client) startLocked(ctx context.Context, key any, request queryRequest)
 	pending := &flight{
 		previous:  previous,
 		id:        c.nextLoadID,
-		reason:    loadReason(c.entries[key]),
+		reason:    loadReason(c.entryLocked(key)),
 		done:      make(chan struct{}),
 		cancel:    cancel,
 		owner:     owner,
@@ -387,7 +387,7 @@ func (c *Client) execute(ctx context.Context, key any, pending *flight) {
 		delete(c.pending, key)
 		if !c.closed && ctx.Err() == nil {
 			c.expireDataLocked(key)
-			cached := c.entries[key]
+			cached := c.entryLocked(key)
 			installsData := err == nil || c.options.Clock().Before(expiresAt)
 			if installsData {
 				cached.value, cached.hasData, cached.updatedAt = value, true, c.options.Clock()
@@ -415,7 +415,7 @@ func (c *Client) execute(ctx context.Context, key any, pending *flight) {
 			}
 			cached.err, cached.expiresAt = err, expiresAt
 			c.advanceRevisionLocked(&cached)
-			c.entries[key] = cached
+			c.storeEntryLocked(key, cached)
 			applied = true
 			c.touchCapacityLocked(key)
 		}
@@ -524,13 +524,13 @@ func (c *Client) attempt(
 			if c.pending[key] != pending || c.closed {
 				return
 			}
-			cached := c.entries[key]
+			cached := c.entryLocked(key)
 			for _, tag := range tags {
 				if !matchesQueryTags(cached.shared.tags, []string{tag}) {
 					cached.shared.tags = append(cached.shared.tags, tag)
 				}
 			}
-			c.entries[key] = cached
+			c.storeEntryLocked(key, cached)
 		})
 		if sharedErr != nil {
 			return nil, time.Time{}, sharedErr
@@ -547,7 +547,7 @@ func (c *Client) attempt(
 // snapshotLocked removes data beyond MaxAge and derives state without scheduling a request.
 func (c *Client) snapshotLocked(key any) Snapshot[any] {
 	c.expireDataLocked(key)
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	return c.entrySnapshotLocked(key, cached, cached.expiresAt,
 		cached.hasData && c.options.Clock().Before(cached.expiresAt))
 }
@@ -634,19 +634,19 @@ func (c *Client) bindLocked(key any, typ reflect.Type) error {
 	if err := c.checkLocked(key, typ); err != nil {
 		return err
 	}
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	cached.typ = typ
-	c.entries[key] = cached
+	c.storeEntryLocked(key, cached)
 	return nil
 }
 
 // discardLocked clears retained state, preserves active type bindings, and records an explicit removal cause.
 // ReasonNone suppresses events for internal cleanup of empty, unowned type metadata.
 func (c *Client) discardLocked(key any, reason EventReason) {
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	c.forgetCapacityLocked(key)
 	if len(c.observers[key]) > 0 || c.pending[key] != nil {
-		c.entries[key] = entry{typ: cached.typ, tags: cached.tags, shared: cached.shared}
+		c.storeEntryLocked(key, entry{typ: cached.typ, tags: cached.tags, shared: cached.shared})
 	} else {
 		delete(c.entries, key)
 	}
@@ -699,7 +699,7 @@ func (c *Client) ordinaryExpiry(cached entry, staleTime time.Duration) time.Time
 
 // withFreshnessLocked applies one consumer's freshness to ordinary, non-invalidated shared data.
 func (c *Client) withFreshnessLocked(key any, state Snapshot[any], options Options) Snapshot[any] {
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	applyPolicy := cached.ordinary && state.HasData && !cached.invalidated
 	if applyPolicy {
 		expiresAt, fresh := c.entryFreshnessLocked(cached, options.StaleTime)

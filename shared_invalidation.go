@@ -222,14 +222,14 @@ func (c *Client) registerSharedLocked(key any, request queryRequest) {
 	if request.shared == nil {
 		return
 	}
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	cached.shared.scope, cached.shared.key = request.shared.scope, request.shared.key
 	for _, tag := range request.shared.tags {
 		if !slices.Contains(cached.shared.tags, tag) {
 			cached.shared.tags = append(cached.shared.tags, tag)
 		}
 	}
-	c.entries[key] = cached
+	c.storeEntryLocked(key, cached)
 }
 
 // applySharedInvalidation selects only retained queries bound to this store, without application predicates.
@@ -255,7 +255,7 @@ func (c *Client) applySharedInvalidation(
 						cached.shared.tags = append(cached.shared.tags, tag)
 					}
 				}
-				c.entries[key] = cached
+				c.storeEntryLocked(key, cached)
 			}
 			continue
 		}
@@ -265,7 +265,7 @@ func (c *Client) applySharedInvalidation(
 			continue
 		}
 		cached.shared.lastID = event.ID
-		c.entries[key] = cached
+		c.storeEntryLocked(key, cached)
 		c.invalidateLocked(key, policy, nil)
 		count++
 	}
@@ -279,12 +279,13 @@ func (c *Client) applySharedKey(key any, event SharedInvalidation, policy Invali
 	if c.closed {
 		return ErrClosed
 	}
-	cached, exists := c.entries[key]
+	cached := c.entryLocked(key)
+	_, exists := c.entries[key]
 	if !exists || (event.ID != "" && cached.shared.lastID == event.ID) {
 		return nil
 	}
 	cached.shared.lastID = event.ID
-	c.entries[key] = cached
+	c.storeEntryLocked(key, cached)
 	c.invalidateLocked(key, policy, nil)
 	return nil
 }

@@ -5,7 +5,7 @@ func (c *Client) touchCapacityLocked(key any) {
 	if c.closed || c.options.MaxEntries <= 0 {
 		return
 	}
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	if !cached.hasData && cached.err == nil {
 		c.forgetCapacityLocked(key)
 		return

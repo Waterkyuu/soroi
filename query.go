@@ -305,7 +305,7 @@ func (c *Client) getSnapshotLocked(key any, typ reflect.Type, options Options) S
 	}
 	c.touchCapacityLocked(key)
 	c.touchGCLocked(key)
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	expiresAt, fresh := c.entryFreshnessLocked(cached, options.StaleTime)
 	return c.entrySnapshotLocked(key, cached, expiresAt, fresh)
 }
@@ -327,14 +327,14 @@ func Set[V any](client *Client, key any, value V) error {
 func (c *Client) setLocked(key, value any, typ reflect.Type) {
 	c.cancelLocked(key, ReasonSet)
 	now := c.options.Clock()
-	previous := c.entries[key]
+	previous := c.entryLocked(key)
 	cached := entry{
 		typ: typ, value: value, hasData: true, updatedAt: now, tags: previous.tags,
 		shared:    previous.shared,
 		expiresAt: c.limitExpiry(now, now.Add(c.options.StaleTime)), ordinary: true,
 	}
 	c.advanceRevisionLocked(&cached)
-	c.entries[key] = cached
+	c.storeEntryLocked(key, cached)
 	c.emitEventLocked(Event{Key: key, Kind: EventLocalWrite, Reason: ReasonSet})
 	c.touchCapacityLocked(key)
 	c.touchGCLocked(key)
@@ -380,7 +380,7 @@ func (c *Client) fetch(
 		if c.expireDataLocked(key) {
 			c.notifyLocked(key)
 		}
-		cached := c.entries[key]
+		cached := c.entryLocked(key)
 		// A cache decision only needs freshness; building a snapshot repeats age checks and clock reads under mu.
 		_, fresh := c.entryFreshnessLocked(cached, request.options.StaleTime)
 		if useCache && !countedLookup {
@@ -421,12 +421,12 @@ func (c *Client) fetch(
 		c.registerTagsLocked(key, request.tags)
 		c.registerSharedLocked(key, request)
 		if force {
-			cached = c.entries[key]
+			cached = c.entryLocked(key)
 			cached.expiresAt = time.Time{}
 			cached.invalidated = true
 			cached.staleReason = ReasonRefetch
 			c.advanceRevisionLocked(&cached)
-			c.entries[key] = cached
+			c.storeEntryLocked(key, cached)
 			c.notifyLocked(key)
 			force = false
 		}
@@ -484,7 +484,7 @@ func (c *Client) fetchReadOnly(
 	if err := c.checkLocked(key, typ); err != nil {
 		return nil, err, true
 	}
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	if _, fresh := c.entryFreshnessLocked(cached, request.options.StaleTime); !fresh {
 		return nil, nil, false
 	}
@@ -496,11 +496,11 @@ func (c *Client) fetchReadOnly(
 func (c *Client) loadObservedLocked(key any, request queryRequest) {
 	// Enabling a consumer must still discard over-age data before checking its freshness policy.
 	c.expireDataLocked(key)
-	_, fresh := c.entryFreshnessLocked(c.entries[key], request.options.StaleTime)
+	_, fresh := c.entryFreshnessLocked(c.entryLocked(key), request.options.StaleTime)
 	c.recordLookupLocked(fresh)
 	if fresh {
 		c.emitEventLocked(Event{Key: key, Kind: EventCacheHit, Trigger: request.trigger, Reason: ReasonFresh,
-			Err: c.entries[key].err})
+			Err: c.entryLocked(key).err})
 		return
 	}
 	if pending := c.pending[key]; pending != nil {

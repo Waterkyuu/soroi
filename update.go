@@ -34,7 +34,7 @@ func Update[V any](client *Client, key any, update func(V) (V, error)) error {
 	if client.expireDataLocked(key) {
 		client.notifyLocked(key)
 	}
-	previous := client.entries[key]
+	previous := client.entryLocked(key)
 	client.mu.Unlock()
 	if !previous.hasData {
 		return ErrNoData
@@ -51,7 +51,7 @@ func Update[V any](client *Client, key any, update func(V) (V, error)) error {
 	if client.expireDataLocked(key) {
 		client.notifyLocked(key)
 	}
-	current := client.entries[key]
+	current := client.entryLocked(key)
 	if !current.hasData || current.revision != previous.revision {
 		return ErrUpdateConflict
 	}
