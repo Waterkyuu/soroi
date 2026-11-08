@@ -33,8 +33,8 @@ type Client struct {
 	loadNow func() time.Time
 	// nextRevision distinguishes writes even when a key is removed and recreated.
 	nextRevision uint64
-	// entries contains completed query state, including expired data for background refresh.
-	entries map[any]entry
+	// entries indexes lock-owned stable result nodes, including expired data for background refresh.
+	entries map[any]*entry
 	// recency orders retained results and errors from least to most recently used.
 	recency list.List
 	// recencyEntries connects cached keys to their positions without scanning the cache.
@@ -170,7 +170,7 @@ func NewClient(options Options) *Client {
 	ctx, cancel := context.WithCancel(context.Background()) // #nosec G118 -- Close owns the client's lifetime.
 	return &Client{
 		concurrentClock: concurrentClock,
-		entries:         make(map[any]entry), pending: make(map[any]*flight),
+		entries:         make(map[any]*entry), pending: make(map[any]*flight),
 		recencyEntries: make(map[any]*list.Element),
 		observers:      make(map[any]map[*subscription]struct{}),
 		gcTasks:        make(map[any]*gcTask), gcAfterFunc: scheduleGC,
@@ -597,28 +597,37 @@ func (c *Client) cancelLocked(key any, reason EventReason) {
 
 // checkLocked rejects closed clients, unsafe keys, and incompatible static result types without changing state.
 func (c *Client) checkLocked(key any, typ reflect.Type) error {
+	_, err := c.checkedEntryLocked(key, typ)
+	return err
+}
+
+// checkedEntryLocked validates admission and returns state owned by the caller's existing lock.
+func (c *Client) checkedEntryLocked(key any, typ reflect.Type) (*entry, error) {
 	if c.closed {
-		return ErrClosed
+		return nil, ErrClosed
 	}
-	if key == nil {
-		return fmt.Errorf("%w: %T", ErrInvalidKey, key)
-	}
-	keyType := reflect.TypeOf(key)
-	// Only composite values can hide non-comparable dynamic interface fields.
-	// Avoid Value.Comparable's traversal machinery for scalar keys on the hot path.
-	composite := keyType.Kind() == reflect.Struct || keyType.Kind() == reflect.Array
-	if !keyType.Comparable() || composite && !reflect.ValueOf(key).Comparable() {
-		return fmt.Errorf("%w: %T", ErrInvalidKey, key)
-	}
-	// NaN-containing keys are comparable but cannot retrieve their own map entries.
-	if key != key { //nolint:gocritic // Reject non-reflexive keys before any map access.
-		return fmt.Errorf("%w: %T", ErrInvalidKey, key)
+	// Native strings are comparable and reflexive; other types retain complete value validation.
+	if _, nativeString := key.(string); !nativeString {
+		if key == nil {
+			return nil, fmt.Errorf("%w: %T", ErrInvalidKey, key)
+		}
+		keyType := reflect.TypeOf(key)
+		// Only composite values can hide non-comparable dynamic interface fields.
+		// Avoid Value.Comparable's traversal machinery for scalar keys on the hot path.
+		composite := keyType.Kind() == reflect.Struct || keyType.Kind() == reflect.Array
+		if !keyType.Comparable() || composite && !reflect.ValueOf(key).Comparable() {
+			return nil, fmt.Errorf("%w: %T", ErrInvalidKey, key)
+		}
+		// NaN-containing keys are comparable but cannot retrieve their own map entries.
+		if key != key { //nolint:gocritic // Reject non-reflexive keys before any map access.
+			return nil, fmt.Errorf("%w: %T", ErrInvalidKey, key)
+		}
 	}
 	cached := c.entries[key]
-	typeMismatch := typ != nil && cached.typ != nil && cached.typ != typ
+	typeMismatch := typ != nil && cached != nil && cached.typ != nil && cached.typ != typ
 	if typeMismatch {
 		// Key value formatting can reenter Client APIs while mu is held; type formatting cannot.
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"%w: key type %T contains %v, requested %v",
 			ErrTypeMismatch,
 			key,
@@ -626,7 +635,7 @@ func (c *Client) checkLocked(key any, typ reflect.Type) error {
 			typ,
 		)
 	}
-	return nil
+	return cached, nil
 }
 
 // bindLocked installs a static type before a result or flight can become visible to other callers.

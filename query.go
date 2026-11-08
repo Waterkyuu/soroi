@@ -305,9 +305,13 @@ func (c *Client) getSnapshotLocked(key any, typ reflect.Type, options Options) S
 	}
 	c.touchCapacityLocked(key)
 	c.touchGCLocked(key)
-	cached := c.entryLocked(key)
-	expiresAt, fresh := c.entryFreshnessLocked(cached, options.StaleTime)
-	return c.entrySnapshotLocked(key, cached, expiresAt, fresh)
+	// The lock owns the node; avoid materializing an intermediate full-state copy on cache hits.
+	cached := c.entries[key]
+	if cached == nil {
+		return c.entrySnapshotLocked(key, entry{}, time.Time{}, false)
+	}
+	expiresAt, fresh := c.entryFreshnessLocked(*cached, options.StaleTime)
+	return c.entrySnapshotLocked(key, *cached, expiresAt, fresh)
 }
 
 // Set installs a typed local result, cancels older loads, and notifies all compatible handles.
@@ -316,25 +320,36 @@ func Set[V any](client *Client, key any, value V) error {
 	client.mu.Lock()
 	defer client.mu.Unlock()
 	// setLocked installs the type and value together; an intermediate empty binding duplicates the map write.
-	if err := client.checkLocked(key, reflect.TypeFor[V]()); err != nil {
+	typ := reflect.TypeFor[V]()
+	cached, err := client.checkedEntryLocked(key, typ)
+	if err != nil {
 		return err
 	}
-	client.setLocked(key, value, reflect.TypeFor[V]())
+	client.setEntryLocked(key, value, typ, cached)
 	return nil
 }
 
 // setLocked installs already-validated local data while serializing cancellation and notifications.
 func (c *Client) setLocked(key, value any, typ reflect.Type) {
+	c.setEntryLocked(key, value, typ, c.entries[key])
+}
+
+// setEntryLocked publishes a validated node without repeating its index lookup under the same lock.
+func (c *Client) setEntryLocked(key, value any, typ reflect.Type, cached *entry) {
 	c.cancelLocked(key, ReasonSet)
 	now := c.options.Clock()
-	previous := c.entryLocked(key)
-	cached := entry{
-		typ: typ, value: value, hasData: true, updatedAt: now, tags: previous.tags,
-		shared:    previous.shared,
-		expiresAt: c.limitExpiry(now, now.Add(c.options.StaleTime)), ordinary: true,
+	if cached == nil {
+		cached = new(entry)
+		c.entries[key] = cached
 	}
-	c.advanceRevisionLocked(&cached)
-	c.storeEntryLocked(key, cached)
+	// Keep registered tags and shared identity in place while renewing local result state.
+	cached.typ, cached.value, cached.hasData = typ, value, true
+	cached.updatedAt = now
+	cached.expiresAt = c.limitExpiry(now, now.Add(c.options.StaleTime))
+	cached.ordinary, cached.invalidated = true, false
+	cached.fetchedAt, cached.sharedExpiresAt = time.Time{}, time.Time{}
+	cached.err, cached.staleReason = nil, ReasonNone
+	c.advanceRevisionLocked(cached)
 	c.emitEventLocked(Event{Key: key, Kind: EventLocalWrite, Reason: ReasonSet})
 	c.touchCapacityLocked(key)
 	c.touchGCLocked(key)
@@ -484,8 +499,12 @@ func (c *Client) fetchReadOnly(
 	if err := c.checkLocked(key, typ); err != nil {
 		return nil, err, true
 	}
-	cached := c.entryLocked(key)
-	if _, fresh := c.entryFreshnessLocked(cached, request.options.StaleTime); !fresh {
+	// A missing node follows the existing exclusive miss path; live nodes remain protected by RLock.
+	cached := c.entries[key]
+	if cached == nil {
+		return nil, nil, false
+	}
+	if _, fresh := c.entryFreshnessLocked(*cached, request.options.StaleTime); !fresh {
 		return nil, nil, false
 	}
 	c.readHits.Add(1)

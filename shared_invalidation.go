@@ -244,7 +244,8 @@ func (c *Client) applySharedInvalidation(
 		return 0, ErrClosed
 	}
 	var count uint64
-	for key, cached := range c.entries {
+	for key, stored := range c.entries {
+		cached := *stored
 		if cached.shared.scope != scope {
 			continue
 		}
