@@ -189,6 +189,30 @@ See the [shared cache guide](docs/shared-cache.en-US.md) and [shared invalidatio
 
 ## Reproducible benchmarks
 
+### Eight-worker cached operations
+
+![Eight-worker Get, Set, and grouped-workflow benchmark](assets/cache-8-worker-benchmarks.svg)
+
+The retained 64-bucket candidate measures **29.52 ns/op for Get**, **37.59 ns/op
+for Set**, and **371.05 ns per complete grouped workflow**. The workflow performs
+`Set → Get → Update → Fetch` and checks the resulting grouped notification; the
+cache is populated, and no source loader performs I/O during measurement.
+
+Both chart variants already include the earlier storage, bucket, revision, read,
+and Update optimizations. The comparison isolates the later change to group
+admission. These are aggregate costs under eight concurrent workers, rather than
+single-request latency or P95/P99. Each panel uses its own scale.
+
+Measured on Apple M3 Pro, macOS 14.6, Go 1.27.1, with `GOMAXPROCS=8`, 64 buckets,
+1,024 cached keys, and 20 alternating paired runs of 2 seconds per variant
+(2026-11-09). The chart shows medians. The paired grouped-workflow cost change is
++2.23%, with an exploratory 95% interval of [+0.41%, +6.19%], so its 5% regression
+limit remains unresolved. Get and Set support that limit in this recheck.
+
+[Method, source identities, uncertainty, and raw results](https://github.com/Waterkyuu/soroi-performance-diagnostics/blob/36d6d38/experiments/admission_guard_recheck/RESULTS.md)
+are maintained in the separate diagnostics repository (repository access required).
+Results describe this macOS workload and do not establish Linux performance.
+
 The [business workload guide](docs/business-benchmarks.en-US.md) measures hot-key
 expiration, Redis outages, downstream deadlines, and batch reads. It includes
 source calls, P95/P99 latency, success and rejection counts, allocation metrics,

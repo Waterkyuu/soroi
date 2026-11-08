@@ -160,6 +160,25 @@ go run .
 
 ## 可复现的 benchmark
 
+### 八并发缓存操作
+
+![八并发 Get、Set 和组工作流基准](assets/cache-8-worker-benchmarks.svg)
+
+保留的 64 桶候选测得：**Get 为 29.52 ns/op**，**Set 为 37.59 ns/op**，
+**完整组工作流为 371.05 ns/次**。完整流程执行
+`Set → Get → Update → Fetch`，并核对最终组通知；数据已预置，计时期间没有实际源加载 I/O。
+
+图中两版均已包含此前的存储、分桶、编号、读取和 Update 优化，对比的是后续新增组订阅方式的改动。
+这些数值是八个并发工作者完成操作后的平均分摊耗时，不是单请求延迟或 P95/P99；各子图使用独立刻度。
+
+测量环境：Apple M3 Pro、macOS 14.6、Go 1.27.1、`GOMAXPROCS=8`、64 桶、
+1,024 个预置 key；每版每项 20 次，每次 2 秒，修改前后交替配对执行（2026-11-09）。
+图中展示中位数。组工作流的逐对耗时变化为 +2.23%，探索性 95% 区间为 [+0.41%, +6.19%]，
+因此是否守住 5% 回退限制仍未确定；Get 和 Set 在本次复测中支持该限制。
+
+[方法、源码身份、不确定性及原始结果](https://github.com/Waterkyuu/soroi-performance-diagnostics/blob/36d6d38/experiments/admission_guard_recheck/RESULTS.md)
+保存在独立诊断仓库，需要该仓库的访问权限。本结果仅代表上述 macOS 工作负载，不能代替 Linux 实机数据。
+
 [业务场景基准](docs/business-benchmarks.zh-CN.md) 测量热点过期、Redis 故障、下游超时和批量读取，
 包含回源次数、P95/P99 延迟、成功与拒绝数量、内存分配，以及附带负载条件的实测记录。
 
