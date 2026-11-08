@@ -15,6 +15,8 @@ import (
 // Client owns shared results of different types and merges concurrent requests by key.
 // Reuse one client across components and call Close to stop background work.
 type Client struct {
+	// owner is the shared identity used while storage responsibilities are extracted.
+	owner *Client
 	// mu protects state transitions; side-effect-free reads may share its read lock.
 	mu sync.RWMutex
 	// readHits counts fresh Fetch hits under the shared read lock; Stats takes the exclusive lock.
@@ -25,6 +27,10 @@ type Client struct {
 	stats Stats
 	// eventSubscriptions indexes diagnostic streams by exact key; nil owns all-key subscriptions under mu.
 	eventSubscriptions map[any]map[*EventSubscription]struct{}
+	// eventMu serializes ordered event emission across independent key owners.
+	eventMu sync.Mutex
+	// eventCount permits subscription-free reads without accessing the subscription index.
+	eventCount atomic.Int64
 	// eventSequence orders emitted diagnostic records without retaining history.
 	eventSequence uint64
 	// nextLoadID assigns operation identities even without active diagnostic subscriptions.
@@ -168,7 +174,7 @@ func NewClient(options Options) *Client {
 	}
 	// The cancellation is transferred to Client.Close rather than a constructor defer.
 	ctx, cancel := context.WithCancel(context.Background()) // #nosec G118 -- Close owns the client's lifetime.
-	return &Client{
+	client := &Client{
 		concurrentClock: concurrentClock,
 		entries:         make(map[any]*entry), pending: make(map[any]*flight),
 		recencyEntries: make(map[any]*list.Element),
@@ -178,6 +184,8 @@ func NewClient(options Options) *Client {
 		options: options, ctx: ctx, cancel: cancel,
 		loadNow: time.Now,
 	}
+	client.owner = client
+	return client
 }
 
 // Invalidate marks targets selected by an exact key, []any, func(any) bool, or QueryFilter stale.
@@ -268,16 +276,18 @@ func (c *Client) Remove(target any) error {
 func (c *Client) Clear() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	for key := range c.pending {
-		c.cancelLocked(key, ReasonClear)
-	}
-	for key := range c.entries {
-		c.discardLocked(key, ReasonClear)
-	}
-	c.clearGCLocked()
-	for key := range c.observers {
-		c.notifyLocked(key)
-	}
+	c.forEachBucketLocked(func(bucket *clientBucket) {
+		for key := range bucket.pending {
+			bucket.cancelLocked(key, ReasonClear)
+		}
+		for key := range bucket.entries {
+			bucket.discardLocked(key, ReasonClear)
+		}
+		bucket.clearGCLocked()
+		for key := range bucket.observers {
+			bucket.notifyLocked(key)
+		}
+	})
 }
 
 // Close cancels active work, closes subscriptions, and prevents new requests; it is idempotent.
@@ -312,6 +322,7 @@ func (c *Client) Close() {
 		}
 	}
 	clear(c.eventSubscriptions)
+	c.eventCount.Store(0)
 }
 
 // startLocked publishes pending state before starting one asynchronous load.
@@ -334,10 +345,9 @@ func (c *Client) startLocked(ctx context.Context, key any, request queryRequest)
 		previousCancel := cancel
 		cancel = func() { timeoutCancel(); previousCancel() }
 	}
-	c.nextLoadID++
 	pending := &flight{
 		previous:  previous,
-		id:        c.nextLoadID,
+		id:        c.owner.nextLoadIdentity(),
 		reason:    loadReason(c.entryLocked(key)),
 		done:      make(chan struct{}),
 		cancel:    cancel,

@@ -61,6 +61,5 @@ func Update[V any](client *Client, key any, update func(V) (V, error)) error {
 
 // advanceRevisionLocked assigns a Client-wide revision so removal and recreation cannot hide conflicts.
 func (c *Client) advanceRevisionLocked(cached *entry) {
-	c.nextRevision++
-	cached.revision = c.nextRevision
+	cached.revision = c.owner.nextDataRevision()
 }

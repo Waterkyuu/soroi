@@ -95,8 +95,7 @@ func (c *Client) subscribeLocked(spec querySpec, observer *subscription) error {
 	observer.enabled = !spec.disable
 	observer.refetchInterval = spec.refetchInterval
 	observer.request = spec.request
-	observer.order = c.nextObserver
-	c.nextObserver++
+	observer.order = c.owner.nextObserverOrder()
 	if c.observers[spec.key] == nil {
 		c.observers[spec.key] = make(map[*subscription]struct{})
 	}
@@ -317,15 +316,16 @@ func (c *Client) getSnapshotLocked(key any, typ reflect.Type, options Options) S
 // Set installs a typed local result, cancels older loads, and notifies all compatible handles.
 // Type conflicts are checked before cancellation so a rejected update cannot damage an existing query.
 func Set[V any](client *Client, key any, value V) error {
-	client.mu.Lock()
-	defer client.mu.Unlock()
+	bucket := client.bucketFor(key)
+	bucket.mu.Lock()
+	defer bucket.mu.Unlock()
 	// setLocked installs the type and value together; an intermediate empty binding duplicates the map write.
 	typ := reflect.TypeFor[V]()
-	cached, err := client.checkedEntryLocked(key, typ)
+	cached, err := bucket.checkedEntryLocked(key, typ)
 	if err != nil {
 		return err
 	}
-	client.setEntryLocked(key, value, typ, cached)
+	bucket.setEntryLocked(key, value, typ, cached)
 	return nil
 }
 
