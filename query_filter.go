@@ -97,7 +97,7 @@ func (c *Client) querySelectionLocked(target any) (querySelection, error) {
 		if selection.existingOnly && !c.hasQueryLocked(key) {
 			continue
 		}
-		if tags != nil && !matchesQueryTags(c.entries[key].tags, tags) {
+		if tags != nil && !matchesQueryTags(c.entryLocked(key).tags, tags) {
 			continue
 		}
 		keys = append(keys, key)

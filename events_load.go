@@ -24,6 +24,6 @@ func (pending *flight) event(key any, kind EventKind) Event {
 func (c *Client) joinLoadLocked(key any, pending *flight, request queryRequest) {
 	pending.joined++
 	event := pending.event(key, EventLoadJoined)
-	event.Trigger, event.Reason = request.trigger, loadReason(c.entries[key])
+	event.Trigger, event.Reason = request.trigger, loadReason(c.entryLocked(key))
 	c.emitEventLocked(event)
 }

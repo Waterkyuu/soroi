@@ -7,13 +7,13 @@ func (c *Client) registerTagsLocked(key any, tags []string) {
 	if len(tags) == 0 {
 		return
 	}
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	for _, tag := range tags {
 		if !slices.Contains(cached.tags, tag) {
 			cached.tags = append(cached.tags, tag)
 		}
 	}
-	c.entries[key] = cached
+	c.storeEntryLocked(key, cached)
 }
 
 // matchesQueryTags accepts a query when any requested label is present in its registered labels.

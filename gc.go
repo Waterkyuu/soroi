@@ -27,7 +27,7 @@ func (c *Client) touchGCLocked(key any) {
 	if c.closed {
 		return
 	}
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	unowned := len(c.observers[key]) == 0 && c.pending[key] == nil
 	empty := !cached.hasData && cached.err == nil
 	releaseBinding := c.options.MaxEntries > 0 && unowned && empty

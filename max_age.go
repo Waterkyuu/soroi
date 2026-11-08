@@ -19,7 +19,7 @@ func (c *Client) expireDataLocked(key any) bool {
 	if c.options.MaxAge <= 0 {
 		return false
 	}
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	if !cached.hasData {
 		return false
 	}
@@ -31,7 +31,7 @@ func (c *Client) expireDataLocked(key any) bool {
 	cached.value, cached.hasData, cached.expiresAt = nil, false, time.Time{}
 	cached.staleReason = ReasonMaxAge
 	c.advanceRevisionLocked(&cached)
-	c.entries[key] = cached
+	c.storeEntryLocked(key, cached)
 	c.stats.AgeExpirations++
 	if cached.err == nil {
 		c.forgetCapacityLocked(key)
