@@ -34,6 +34,8 @@ type clientBucket struct {
 	groupRefs uint64
 	// groupLocks covers transitive group publications and is replaced only under every bucket lock.
 	groupLocks *bucketLockSet
+	// nextRevision assigns same-bucket identities under mu and survives Remove and Clear.
+	nextRevision uint64
 }
 
 // bucketFor locates immutable key ownership before taking a lock; callers retain the returned pointer.
@@ -59,8 +61,12 @@ func (c *clientBucket) publishGroupLocked(group *queriesGroup) { group.publishLo
 // nextLoadIdentity reserves a unique Client-wide identity without serializing unrelated keys.
 func (c *Client) nextLoadIdentity() uint64 { return c.nextLoadID.Add(1) }
 
-// nextDataRevision prevents removal and recreation from hiding an Update conflict.
-func (c *Client) nextDataRevision() uint64 { return c.nextRevision.Add(1) }
+// nextDataRevision uses stable bucket ownership to detect changes without a shared atomic write.
+// Callers hold this bucket exclusively; lifecycle cleanup must never reset the sequence.
+func (c *clientBucket) nextDataRevision() uint64 {
+	c.nextRevision++
+	return c.nextRevision
+}
 
 // nextObserverOrder preserves admission ordering for automatic same-key loader selection.
 func (c *Client) nextObserverOrder() uint64 { return c.nextObserver.Add(1) - 1 }

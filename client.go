@@ -38,8 +38,8 @@ type Client struct {
 	nextLoadID atomic.Uint64
 	// loadNow measures elapsed load time independently of the freshness clock; tests may replace it.
 	loadNow func() time.Time
-	// nextRevision distinguishes writes even when a key is removed and recreated.
-	nextRevision atomic.Uint64
+	// The reserved slot preserves Client layout while isolating revision ownership.
+	_ atomic.Uint64
 	// recency orders retained results and errors from least to most recently used.
 	recency list.List
 	// recencyEntries connects cached keys to their positions without scanning the cache.
