@@ -15,6 +15,10 @@
   <p><a href="#功能">功能</a> · <a href="#安装">安装</a></p>
 </div>
 
+![八并发 Get、Set 和组工作流基准](assets/cache-8-worker-benchmarks.svg)
+
+[查看测试条件与限制](#八并发缓存操作)
+
 ## 什么时候使用 soroi
 
 当 Go 应用需要协调数据加载与同步时，可以使用 soroi：复用缓存结果、合并并发请求、批量读取，或在写入后刷新关联查询。
@@ -160,8 +164,6 @@ go run .
 ## 可复现的 benchmark
 
 ### 八并发缓存操作
-
-![八并发 Get、Set 和组工作流基准](assets/cache-8-worker-benchmarks.svg)
 
 保留的 64 桶候选测得：**Get 为 29.52 ns/op**，**Set 为 37.59 ns/op**，
 **完整组工作流为 371.05 ns/次**。完整流程执行

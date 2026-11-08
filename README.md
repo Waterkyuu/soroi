@@ -16,6 +16,10 @@
   <p><a href="#features">Features</a> · <a href="#install">Install</a></p>
 </div>
 
+![Eight-worker Get, Set, and grouped-workflow benchmark](assets/cache-8-worker-benchmarks.svg)
+
+[Benchmark setup and limitations](#eight-worker-cached-operations)
+
 ## When to use soroi
 
 Use soroi when your Go application needs to coordinate data loading and
@@ -190,8 +194,6 @@ See the [shared cache guide](docs/shared-cache.en-US.md) and [shared invalidatio
 ## Reproducible benchmarks
 
 ### Eight-worker cached operations
-
-![Eight-worker Get, Set, and grouped-workflow benchmark](assets/cache-8-worker-benchmarks.svg)
 
 The retained 64-bucket candidate measures **29.52 ns/op for Get**, **37.59 ns/op
 for Set**, and **371.05 ns per complete grouped workflow**. The workflow performs
