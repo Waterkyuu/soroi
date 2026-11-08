@@ -24,7 +24,9 @@ var ErrNoUpdater = errors.New("query has no updater")
 func Update[V any](client *Client, key any, update func(V) (V, error)) error {
 	bucket := client.bucketFor(key)
 	bucket.mu.Lock()
-	if err := bucket.checkLocked(key, reflect.TypeFor[V]()); err != nil {
+	typ := reflect.TypeFor[V]()
+	cached, err := bucket.checkedEntryLocked(key, typ)
+	if err != nil {
 		bucket.mu.Unlock()
 		return err
 	}
@@ -34,13 +36,17 @@ func Update[V any](client *Client, key any, update func(V) (V, error)) error {
 	}
 	if bucket.expireDataLocked(key) {
 		bucket.notifyLocked(key)
+		// Maintenance and publication may discard storage; reacquire the current node under this lock.
+		cached = bucket.entries[key]
 	}
-	previous := bucket.entryLocked(key)
-	bucket.mu.Unlock()
-	if !previous.hasData {
+	if cached == nil || !cached.hasData {
+		bucket.mu.Unlock()
 		return ErrNoData
 	}
-	value, err := update(typedValue[V](previous.value))
+	// Carry immutable callback input and a revision value, never mutable storage, across the unlock.
+	previousValue, previousRevision := cached.value, cached.revision
+	bucket.mu.Unlock()
+	value, err := update(typedValue[V](previousValue))
 	if err != nil {
 		return err
 	}
@@ -52,11 +58,12 @@ func Update[V any](client *Client, key any, update func(V) (V, error)) error {
 	if bucket.expireDataLocked(key) {
 		bucket.notifyLocked(key)
 	}
-	current := bucket.entryLocked(key)
-	if !current.hasData || current.revision != previous.revision {
+	// The callback can remove or recreate the key, so always look up its current node again.
+	current := bucket.entries[key]
+	if current == nil || !current.hasData || current.revision != previousRevision {
 		return ErrUpdateConflict
 	}
-	bucket.setLocked(key, value, reflect.TypeFor[V]())
+	bucket.setEntryLocked(key, value, typ, current)
 	return nil
 }
 

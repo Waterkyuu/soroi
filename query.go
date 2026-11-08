@@ -338,11 +338,6 @@ func Set[V any](client *Client, key any, value V) error {
 	return nil
 }
 
-// setLocked installs already-validated local data while serializing cancellation and notifications.
-func (c *clientBucket) setLocked(key, value any, typ reflect.Type) {
-	c.setEntryLocked(key, value, typ, c.entries[key])
-}
-
 // setEntryLocked publishes a validated node without repeating its index lookup under the same lock.
 func (c *clientBucket) setEntryLocked(key, value any, typ reflect.Type, cached *entry) {
 	c.cancelLocked(key, ReasonSet)
