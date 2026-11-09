@@ -12,8 +12,8 @@ importers:
         specifier: 7.1.4
         version: 7.1.4(@types/node@26.6.6)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(esbuild@0.28.2)(jiti@1.21.7)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(terser@5.51.2)(yaml@2.9.1)
       '@astrojs/starlight':
-        specifier: 0.42.7
-        version: 0.42.7(astro@7.4.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1))(typescript@6.0.3)
+        specifier: 0.42.9
+        version: 0.42.9(astro@7.4.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1))(typescript@6.0.3)
       astro:
         specifier: 7.4.4
         version: 7.4.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1)
@@ -147,8 +147,11 @@ packages:
   '@astrojs/markdown-satteri@0.4.6':
     resolution: {integrity: sha512-6biKp2lEAYycF3jhv91br+Otyf4EgDFkF1oRL9ks0u/m/YRGmI7XkGQ2MgaM35DslT03f7NtozKtlqfBNkp6bw==}
 
-  '@astrojs/mdx@8.1.2':
-    resolution: {integrity: sha512-ZIUVfosVtK4SKcFrGOH+1+HwG0encjxQOxu76M9VuTqeQNZWQ//2eY2Iz+W1eq87AOT5JD4wOHyZ8xFwlcFteg==}
+  '@astrojs/markdown-satteri@0.4.7':
+    resolution: {integrity: sha512-MZvnec/898GGGHQZfkArVbkdZmL1imjIM8RWkmzbAmse737zr8D9inUjFQ5eLBXV3vPobOUs/ZRV/D6Po/bVDg==}
+
+  '@astrojs/mdx@8.1.3':
+    resolution: {integrity: sha512-Fd72Sy0AvFqXSC/RR7icvNi27T5KWNojnvuHgu38lx6RkevRzLWDxzHk3sbtL2z17yvVr7j28KCyHcLr2jQ7Pg==}
     engines: {node: '>=22.23.4'}
     peerDependencies:
       '@astrojs/markdown-remark': ^7.3.0
@@ -178,8 +181,8 @@ packages:
   '@astrojs/sitemap@3.7.4':
     resolution: {integrity: sha512-LbKNC24bdUWcQf/pThB6qLlSqHojxGjZDURIzFocY8rlWnAn2t74nnhnK6S5x0NHriHoAduLEpVjRykmeGiVvA==}
 
-  '@astrojs/starlight@0.42.7':
-    resolution: {integrity: sha512-mlbit5iRjLx5eIcLf84Q2CwkrrsEgZrQwKKBK+vRf+ZGiSrwy1UGdT1hUfAIaHrMfcvkDpL+gw3aua7HobiKFg==}
+  '@astrojs/starlight@0.42.9':
+    resolution: {integrity: sha512-kMqDdFDWBClBNY9fc3pWAlR+eFh6JhOd7lIr4RczNDXUVk9EzzxVQvYizRuxlx0aVbSk8Gb1rVHiJlxgybwc/g==}
     peerDependencies:
       '@astrojs/markdown-remark': ^7.3.0
       astro: ^7.2.10
@@ -211,8 +214,18 @@ packages:
     resolution: {integrity: sha512-WCsemW40Cpc6gouC1SrY6PBaZ+oLRlEVY9XBvZBI7il/HyUrb2nJ505wE1MHEFyDZNnrWDEuy4jL50WVHfTTSQ==}
     engines: {node: '>=6.9.0'}
 
+  '@bruits/satteri-android-arm64@0.11.6':
+    resolution: {integrity: sha512-9Cb6ZRDn29c0kluGA9urp/So/JnJOJJSf4J40xYLAIAj3GuqTNsCyquS4A1/yLuuHE2ngYJNnCylAQnDM3L9ow==}
+    cpu: [arm64]
+    os: [android]
+
   '@bruits/satteri-darwin-arm64@0.10.5':
     resolution: {integrity: sha512-27KTVl4TJkVahMy/ohyA7qd4938G5UNneFUz/PsScYfpIhj0IVAS23mpcJXdPF44sa6nva198lmV/cKIb2YPyA==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@bruits/satteri-darwin-arm64@0.11.6':
+    resolution: {integrity: sha512-kcr7QOPGrckuyhMZmUKYcyoXgjQN4vJ/6tCWHE2866mztZPNrTuy5itTwSAbIs1tK0XpTW42tBQ+XPNnkg0XIg==}
     cpu: [arm64]
     os: [darwin]
 
@@ -221,8 +234,24 @@ packages:
     cpu: [x64]
     os: [darwin]
 
+  '@bruits/satteri-darwin-x64@0.11.6':
+    resolution: {integrity: sha512-nwh4Atd/Cxw2SNS6+Gs0Esf/w2i4qyHzwcECaTgoFyxse3m0dpBpu8eqkqqIPfBc1lWhfe4i9LXuk7rG+4pwQw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@bruits/satteri-freebsd-x64@0.11.6':
+    resolution: {integrity: sha512-qMkNZRYN3cLshfYawQYjfDS05A208QCOVh1adtEteYH+03MkuOoVVhYkzDRIKhWdfM3gFFEaUjXDOGfVqGjEJg==}
+    cpu: [x64]
+    os: [freebsd]
+
   '@bruits/satteri-linux-arm64-gnu@0.10.5':
     resolution: {integrity: sha512-glkYXZCJywjP13v67eAyAMSJdF+ncvEbYvgi/wOtffL9tQ27lr/zsyzUfgs+ovjJ9d8JNQKiXeiArJcX8PJL9w==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@bruits/satteri-linux-arm64-gnu@0.11.6':
+    resolution: {integrity: sha512-A7cHeCZQkvF3oTgQ6/5LvVriauE1dHo3u3gAME6H1X/+KMeum5Wras3Y7rYUcvPym1CxdmzjZh9WlYD62Ul1xg==}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
@@ -233,8 +262,20 @@ packages:
     os: [linux]
     libc: [musl]
 
+  '@bruits/satteri-linux-arm64-musl@0.11.6':
+    resolution: {integrity: sha512-P/YAudp6VmUr63SFaZefwPIefsw92oZ1wQ6vqrtO/GY9qB3OxLqUVjSIcnKAtqMp4kDW8xBEdSwHz4GZU7P2+g==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
   '@bruits/satteri-linux-x64-gnu@0.10.5':
     resolution: {integrity: sha512-FVaLoPT1fBgGl0J+AYebyyXJYBachGl8Oyyrf1lye4RTqCB4S0Gwkj1uM9RJyThUOvx5VUmAT1CnNh1SFHA+kw==}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@bruits/satteri-linux-x64-gnu@0.11.6':
+    resolution: {integrity: sha512-nhj90eZFLSA+Icd6n+oYpAi/UXr/mppLGd8jdEOB/larvWAZ/ewFxpT7CLzuNCg7r75+gkdHv9JuRb5eERY1Kg==}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
@@ -245,8 +286,19 @@ packages:
     os: [linux]
     libc: [musl]
 
+  '@bruits/satteri-linux-x64-musl@0.11.6':
+    resolution: {integrity: sha512-mkWxwHd5Q2dDs+OZK/P1tZFvSPrh2Bb69utWHcBNM0wyJCRWd61T4jU1tF21lGL1C5dy7P+LvaT0y6PQDJj89Q==}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
   '@bruits/satteri-wasm32-wasi@0.10.5':
     resolution: {integrity: sha512-ypz8c/Zmipxp4IoeDa228Gstv6TLzVmNs3yC6wKCoNSOjx1iwpgzu87Y3hTkXFdwChVGU85qeUDuOIarGUZQLw==}
+    engines: {node: '>=14.0.0'}
+    cpu: [wasm32]
+
+  '@bruits/satteri-wasm32-wasi@0.11.6':
+    resolution: {integrity: sha512-GrjNThC6BfA0u8LZwGpOeEFVKoJZsriowLtj/rBYj18fW7/UZouyzn/0Tsxg+tMaxMUgC9HFA078EmfAsdVONg==}
     engines: {node: '>=14.0.0'}
     cpu: [wasm32]
 
@@ -255,8 +307,18 @@ packages:
     cpu: [arm64]
     os: [win32]
 
+  '@bruits/satteri-win32-arm64-msvc@0.11.6':
+    resolution: {integrity: sha512-Plesa0QYtJoa3nlObg1Ypj9oD1VOioHMldHUUtG61T/JNU11EcN0pyj0tDsT3DW2pAxKrV0Q8xrfzGtBHuSjfg==}
+    cpu: [arm64]
+    os: [win32]
+
   '@bruits/satteri-win32-x64-msvc@0.10.5':
     resolution: {integrity: sha512-C3IfPvfvMXmlzBxaMPKFS1XiuV9pu2mC7YqkPk7PSvTgPZ8gbdASIpHpztDLvTTQjqZ0z1Ol8tK5X+V6XXC0wQ==}
+    cpu: [x64]
+    os: [win32]
+
+  '@bruits/satteri-win32-x64-msvc@0.11.6':
+    resolution: {integrity: sha512-fGs5d/7jBIPkYmXkhm9unoEfDuRZ5r66NLxbr+6c8bm0f7ywgPHgW3HJ9L7fKvyqhw49ePtbT4vkWREju8/U6w==}
     cpu: [x64]
     os: [win32]
 
@@ -668,12 +730,12 @@ packages:
       '@emnapi/core': ^1.7.1 || ^2.0.0-alpha.4
       '@emnapi/runtime': ^1.7.1 || ^2.0.0-alpha.4
 
-  '@napi-rs/wasm-runtime@1.2.6':
-    resolution: {integrity: sha512-mRyDmEw9/fCDXCGfL1sbgIw/GUK0PVxRW4YwgPN61F3LQ+fSyoBFarJVzgGyhF6kRzEQZ0FejDqm4WLXSeqQmw==}
+  '@napi-rs/wasm-runtime@1.2.7':
+    resolution: {integrity: sha512-zJccwplOAbgfZju95IUHazLnx9RAPtPN2YGJXI6UbrgeaR9QfPjGrQL6ERkSAtnVCA4Q+83ApGyaX5zdpCaKkQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=23.5.0}
     peerDependencies:
-      '@emnapi/core': ^1.7.1 || 2.0.0-beta.2
-      '@emnapi/runtime': ^1.7.1 || 2.0.0-beta.2
+      '@emnapi/core': ^1.7.1 || 2.0.0-beta.2 || 2.0.0-beta.3
+      '@emnapi/runtime': ^1.7.1 || 2.0.0-beta.2 || 2.0.0-beta.3
 
   '@oslojs/encoding@1.1.0':
     resolution: {integrity: sha512-70wQhgYmndg4GCPxPPxPGevRKqTIJ2Nh4OkiMWmDAVYsTQ+Ta7Sq+rPevXyXGdzr30/qZBnyOalCszoMxlyldQ==}
@@ -925,41 +987,41 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@pagefind/darwin-arm64@1.5.2':
-    resolution: {integrity: sha512-MXpI+7HsAdPkvJ0gk9xj9g541BCqBZOBbdwj9g6lB5LCj6kSV6nqDSjzcAJwvOsfu0fjwvC8hQU+ecfhp+MpiQ==}
+  '@pagefind/darwin-arm64@1.6.0':
+    resolution: {integrity: sha512-611gl64aqN12UcMyKPtZ8+vRWBKlJFSh2JgO8uScxa1Eyjo1dXz9r4wZuRno0yCUE/KN0FauEoKZ3KEwUYHCCg==}
     cpu: [arm64]
     os: [darwin]
 
-  '@pagefind/darwin-x64@1.5.2':
-    resolution: {integrity: sha512-IojxFWMEJe0RQ7PQ3KXQsPIImNsbpPYpoZ+QUDrL8fAl/O27IX+LVLs74/UzEZy5uA2LD8Nz1AiwKr72vrkZQw==}
+  '@pagefind/darwin-x64@1.6.0':
+    resolution: {integrity: sha512-rd3ZbtuxyYqjASKZAPuIV7eeQQHJ7VYpoNKKG8CvglaD3g30eT5Nb7XGNLYwVReBsCccpkURwrGwWjSwr8nyQQ==}
     cpu: [x64]
     os: [darwin]
 
-  '@pagefind/default-ui@1.5.2':
-    resolution: {integrity: sha512-pm1LMnQg8N2B3n2TnjKlhaFihpz6zTiA4HiGQ6/slKO/+8K9CAU5kcjdSSPgpuk1PMuuN4hxLipUIifnrkl3Sg==}
+  '@pagefind/default-ui@1.6.0':
+    resolution: {integrity: sha512-Wj93IzlLnaYYrMpOYrsqUerzA7+Vrs5Ri1U78hBh3zuKHNVkcjApNo5DUM99MzAam6f437VGG64jDenAObIt+w==}
 
-  '@pagefind/freebsd-x64@1.5.2':
-    resolution: {integrity: sha512-7EVzo9+0w+2cbe671BtMj10UlNo83I+HrLVLfRxO731svHRJKUfJ/mo05gU14pe9PCfpKNQT8FS3Xc/oDN6pOA==}
+  '@pagefind/freebsd-x64@1.6.0':
+    resolution: {integrity: sha512-d+sXqsaThszmPWGVDSRKqIz9GpZcj/bAksNZfg19asSxU0ogNPOMND4kV4giQvOjPFMsltUFf6hQJfoHQ6+hSQ==}
     cpu: [x64]
     os: [freebsd]
 
-  '@pagefind/linux-arm64@1.5.2':
-    resolution: {integrity: sha512-Ovt9+K35sqzn8H3ZMXGwls4TD/wMJuvRtShHIsmUQREmaxjrDEX7gHckRCrwYJ4XE1H1p6HkLz3wukrAnsfXQw==}
+  '@pagefind/linux-arm64@1.6.0':
+    resolution: {integrity: sha512-SLB2I+XqCZma8NvIGIH8nyKblgKIxw5PmqsVtofWOKxNHhEtOEsddbqU+hsrNcT3EV0faM6UmKDHVIxcPYq29w==}
     cpu: [arm64]
     os: [linux]
 
-  '@pagefind/linux-x64@1.5.2':
-    resolution: {integrity: sha512-V+tFqHKXhQKq/WqPBD67AFy7scn1/aZID00ws4fSDd+1daSi5UHR9VVlRrOUYKxn3VuFQYRD7lYXdZK1WED1YA==}
+  '@pagefind/linux-x64@1.6.0':
+    resolution: {integrity: sha512-IbMSx/+Vr/Xk0TTBlLkjgK+rvnbOXGmmb2/MKxQu99AR5DsqQoV3NKEA9PQz2tAhuCZjeD5xJBp4w5N5DHIC7Q==}
     cpu: [x64]
     os: [linux]
 
-  '@pagefind/windows-arm64@1.5.2':
-    resolution: {integrity: sha512-hN9Nh90fNW61nNRCW9ZyQrAj/mD0eRvmJ8NlTUzkbuW8kIzGJUi3cxjFkEcMZ5h/8FsKWD/VcouZl4yo1F7B6g==}
+  '@pagefind/windows-arm64@1.6.0':
+    resolution: {integrity: sha512-wUrniW3REr7VWJHz6xE6F/p/AQgHDFpGZiY9sbWT71KfEijDE5Jnc37V8zc7cilV9h/QkwJGXoEP2+ZLwDmhtw==}
     cpu: [arm64]
     os: [win32]
 
-  '@pagefind/windows-x64@1.5.2':
-    resolution: {integrity: sha512-Fa2Iyw7kaDRzGMfNYNUXNW2zbL5FQVDgSOcbDHdzBrDEdpqOqg8TcZ68F22ol6NJ9IGzvUdmeyZypLW5dyhqsg==}
+  '@pagefind/windows-x64@1.6.0':
+    resolution: {integrity: sha512-cUA2+yXfbymdJllyMjY5YTBwuOgh0/H53Pn5fYKjDnDjk154Ft4U5RVj3TenWySPL/jG6zJfARUWSlyUyXHlZw==}
     cpu: [x64]
     os: [win32]
 
@@ -1136,9 +1198,6 @@ packages:
   '@types/hast@3.0.5':
     resolution: {integrity: sha512-rp/ezSWaD1m44dPKICGhiskI13nVr7qTloFwDa/IYkhhf5nzwP+zIQcIJh3WIFSBOy/H1PzB40jPjMDksN4F+g==}
 
-  '@types/js-yaml@4.0.9':
-    resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
-
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==}
 
@@ -1270,9 +1329,6 @@ packages:
 
   arg@5.0.2:
     resolution: {integrity: sha512-PYjyFOLKQ9y57JvQ6QLo8dAgNqswh8M1RMJYdQduT6xbWSgK36P/Z/v+p888pM69jMMfS8Xd8F6I1kQ/I9HUGg==}
-
-  argparse@2.0.1:
-    resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
   aria-query@5.3.2:
     resolution: {integrity: sha512-COROpnaoap1E2F000S62r6A60uHZnmlvomhfyT2DlTcrY1OrBKn2UhH7qn5wTC9zMvD0AY7csdPSNwKP+7WiQw==}
@@ -1586,8 +1642,8 @@ packages:
   hast-util-whitespace@3.0.0:
     resolution: {integrity: sha512-88JUN06ipLwsnv+dVn+OIYOvAuvBMy/Qoi6O7mQHxdPXpjy+Cd6xRkWwux7DKO+4sYILtLBRIKgsdpS2gQc7qw==}
 
-  hastscript@9.0.2:
-    resolution: {integrity: sha512-ghcIWJlrROwOddvAvbt0AAnLTyt/Xt02Ucc6VfXejSPESai+q24iROd0MjOYUEhJiI/b4vokkm9ZHb4MNOOizA==}
+  hastscript@9.0.3:
+    resolution: {integrity: sha512-1ALZXSmCGmW3h8AMz4R4+QKSKFi7sNgXLVwmwB8FYVtl1CwQ3WDkSAEY/d5tp1g/vbQgq2s1WlHgfO3jbw1TsA==}
 
   html-escaper@3.0.3:
     resolution: {integrity: sha512-RuMffC89BOWQoY0WKGpIhn5gX3iI54O6nRA0yC124NYVtzjmFWBIiFd8M0x+ZdX0P9R4lADg1mgP8C7PxGOWuQ==}
@@ -1601,8 +1657,8 @@ packages:
   http-cache-semantics@4.3.0:
     resolution: {integrity: sha512-M5t5LlJpS1UHMjvwRQVdFHvPISGeLAxNcrWuJkeGh0KxsqCHZ1O3NXZU/8x7cD0BDcGW8kapxMKTvwlqrNkHkA==}
 
-  i18next@26.5.11:
-    resolution: {integrity: sha512-Wc0klBPKxqZ2tL2qdAnF8xvvnWgr1IMGSY2ikTiAvaFVbz7xiFARtkoU4RidBDw1SyziGROp0qxu6qnJ7l2Wug==}
+  i18next@26.7.2:
+    resolution: {integrity: sha512-RsOY3BeaCDdkk52NeJSFAXELQ2rQXBO/tOub6L8ue2ICPfR/FRDWDOfEDg4xMPd1SqO5goVYQ6i72qWEUB/PPw==}
     peerDependencies:
       typescript: ^5 || ^6 || ^7
     peerDependenciesMeta:
@@ -1635,10 +1691,6 @@ packages:
 
   jiti@1.21.7:
     resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
-    hasBin: true
-
-  js-yaml@4.3.2:
-    resolution: {integrity: sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==}
     hasBin: true
 
   json-schema-traverse@1.0.0:
@@ -1745,8 +1797,8 @@ packages:
   magicast@0.5.5:
     resolution: {integrity: sha512-UicdXN8zQ3JHlxVq+28afMXPr1z7WNY6+7EJnzTdQWkTAlMLF5fNCCKxJHBQwGaNGR11581EiQmQzx73+MvszA==}
 
-  mdast-util-directive@3.1.1:
-    resolution: {integrity: sha512-Gqpa3MHorXYEZ0VfbroyvBlVKUfz371V6mIERqOYMcb0W1D3LwmFq1ZW4O2TDrbn+4ZmGLwMWeFRJgYZ+bc5fQ==}
+  mdast-util-directive@3.2.0:
+    resolution: {integrity: sha512-Yxq+hH4pBEmtaLIJyMVcNbtBiCIKzdOK3HvDeM+JAqC8XVAT1e5PUYbHBpwFvQLIJuJfO2zCu7aNUXWoyZLmhw==}
 
   mdast-util-from-markdown@2.1.0:
     resolution: {integrity: sha512-KRLgmPaP2H1ul2bpoJkOS+9pAcDAAj9Nu1mqLnh8NLeJG5tlvj42TH80PIGBpROWlRXLk0lDrWNuZCFy/tsB4A==}
@@ -1757,8 +1809,8 @@ packages:
   mdast-util-to-hast@13.2.1:
     resolution: {integrity: sha512-cctsq2wp5vTsLIcaymblUriiTcZd0CwWtCbLvrOzYCDZoWyMNV8sZ7krj09FSnsiJi3WVsHLM4k6Dq/yaPyCXA==}
 
-  mdast-util-to-markdown@2.2.1:
-    resolution: {integrity: sha512-ThatlCBxG2GE+mljhNSfZPv56d3QrGiRh97jjYgIk80IzS4uU6d7cHAaexCYSAmUCCcOs3grJ07kX3oTGsFUOw==}
+  mdast-util-to-markdown@2.2.2:
+    resolution: {integrity: sha512-ELNT5jYDUdx0B/hlUSSAiAEtvqkY3Oriwkp1KEYseF1Ccu4MnKkmE5yK3oE3WGT/Pq8VTE+XwP0GLL5pafY8yA==}
 
   mdast-util-to-string@4.0.0:
     resolution: {integrity: sha512-0H44vDimn51F0YwvxSJSm0eCDOJTRlmN0R1yBh4HLj9wiV1Dn0QoXGbvFAWj2hSItVTlCmBF1hqKlIyUBVFLPg==}
@@ -1930,8 +1982,8 @@ packages:
   package-manager-detector@1.9.0:
     resolution: {integrity: sha512-zAMfbta9nPA8AKkA4WdmNAT8R8s6Dk0/xwPsqNnRidMFcLo1YkLuPDTgs2f64XdzS8vbLNnoJ+uUIkgbz7oRHA==}
 
-  pagefind@1.5.2:
-    resolution: {integrity: sha512-XTUaK0hXMCu2jszWE584JGQT7y284TmMV9l/HX3rnG5uo3rHI/uHU56XTyyyPFjeWEBxECbAi0CaFDJOONtG0Q==}
+  pagefind@1.6.0:
+    resolution: {integrity: sha512-yeOd9EA0TUE1PUfbQIluBxzPadBG5/0BV48FAxwMVLkhZcOvwCz6TX4/a/Ofz97pF9/FwwT7CVbTC97BfmI+LQ==}
     hasBin: true
 
   parse-entities@4.0.2:
@@ -2038,6 +2090,9 @@ packages:
 
   satteri@0.10.5:
     resolution: {integrity: sha512-Ao1LKpAEa9Wdg0otgbVKViZHEq9ebdXe4DMrp3s9vQAU0HNIuHnFEuMuOcm0ZIXyV0Yzxj91NvhLpvXZJO/5ZQ==}
+
+  satteri@0.11.6:
+    resolution: {integrity: sha512-ddGCTqSfwL+A+odhdjj8E+ZMu1h0QEnG3VTmu7fPJL2+80GdjxDh1AeCw8mn2aa95eQSosG4e2QBYYfCc5nyiA==}
 
   sax@1.6.1:
     resolution: {integrity: sha512-42tBVwLWnaQvW5zc4HbZrTuWccECCZfBi92FDuwtqxasH+JbPB3/FOKb1m222K42R4WxuxzzMsTswfzgtSu64Q==}
@@ -2152,6 +2207,9 @@ packages:
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
+
+  tslib@2.9.1:
+    resolution: {integrity: sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA==}
 
   typesafe-path@0.2.2:
     resolution: {integrity: sha512-OJabfkAg1WLZSqJAJ0Z6Sdt3utnbzr/jh+NAHoyWHJe8CMSy79Gm085094M9nvTPy22KzTVn5Zq5mbapCI/hPA==}
@@ -2568,7 +2626,7 @@ snapshots:
     dependencies:
       '@emnapi/core': 1.11.3
       '@emnapi/runtime': 1.11.3
-      '@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
+      '@napi-rs/wasm-runtime': 1.2.7(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
     optional: true
 
   '@astrojs/compiler-binding-win32-arm64-msvc@0.5.2':
@@ -2648,10 +2706,17 @@ snapshots:
       github-slugger: 2.0.0
       satteri: 0.10.5
 
-  '@astrojs/mdx@8.1.2(@astrojs/markdown-satteri@0.4.6)(astro@7.4.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1))':
+  '@astrojs/markdown-satteri@0.4.7':
     dependencies:
-      '@astrojs/internal-helpers': 0.13.0
-      '@astrojs/markdown-satteri': 0.4.6
+      '@astrojs/internal-helpers': 0.13.1
+      '@astrojs/prism': 4.1.2
+      github-slugger: 2.0.0
+      satteri: 0.11.6
+
+  '@astrojs/mdx@8.1.3(@astrojs/markdown-satteri@0.4.7)(astro@7.4.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1))':
+    dependencies:
+      '@astrojs/internal-helpers': 0.13.1
+      '@astrojs/markdown-satteri': 0.4.7
       astro: 7.4.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1)
       es-module-lexer: 3.0.4
 
@@ -2691,14 +2756,13 @@ snapshots:
       sitemap: 9.0.1
       zod: 4.6.7
 
-  '@astrojs/starlight@0.42.7(astro@7.4.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1))(typescript@6.0.3)':
+  '@astrojs/starlight@0.42.9(astro@7.4.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1))(typescript@6.0.3)':
     dependencies:
-      '@astrojs/markdown-satteri': 0.4.6
-      '@astrojs/mdx': 8.1.2(@astrojs/markdown-satteri@0.4.6)(astro@7.4.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1))
+      '@astrojs/markdown-satteri': 0.4.7
+      '@astrojs/mdx': 8.1.3(@astrojs/markdown-satteri@0.4.7)(astro@7.4.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1))
       '@astrojs/sitemap': 3.7.4
-      '@pagefind/default-ui': 1.5.2
+      '@pagefind/default-ui': 1.6.0
       '@types/hast': 3.0.5
-      '@types/js-yaml': 4.0.9
       '@types/mdast': 4.0.4
       astro: 7.4.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1)
       astro-expressive-code: 0.44.3(astro@7.4.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@1.21.7)(terser@5.51.2)(yaml@2.9.1))
@@ -2707,21 +2771,21 @@ snapshots:
       hast-util-select: 6.0.4
       hast-util-to-html: 9.0.6
       hast-util-to-string: 3.0.1
-      hastscript: 9.0.2
-      i18next: 26.5.11(typescript@6.0.3)
-      js-yaml: 4.3.2
+      hastscript: 9.0.3
+      i18next: 26.7.2(typescript@6.0.3)
       klona: 2.0.6
       magic-string: 1.4.5
-      mdast-util-directive: 3.1.1
-      mdast-util-to-markdown: 2.2.1
+      mdast-util-directive: 3.2.0
+      mdast-util-to-markdown: 2.2.2
       mdast-util-to-string: 4.0.0
-      pagefind: 1.5.2
+      pagefind: 1.6.0
       remark-directive: 4.0.0
       satteri: 0.10.5
       ultrahtml: 1.7.0
       unified: 11.0.5
       unist-util-visit: 5.2.0
       vfile: 6.0.3
+      yaml: 2.9.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -2750,35 +2814,72 @@ snapshots:
       '@babel/helper-string-parser': 7.29.11
       '@babel/helper-validator-identifier': 7.29.7
 
+  '@bruits/satteri-android-arm64@0.11.6':
+    optional: true
+
   '@bruits/satteri-darwin-arm64@0.10.5':
+    optional: true
+
+  '@bruits/satteri-darwin-arm64@0.11.6':
     optional: true
 
   '@bruits/satteri-darwin-x64@0.10.5':
     optional: true
 
+  '@bruits/satteri-darwin-x64@0.11.6':
+    optional: true
+
+  '@bruits/satteri-freebsd-x64@0.11.6':
+    optional: true
+
   '@bruits/satteri-linux-arm64-gnu@0.10.5':
+    optional: true
+
+  '@bruits/satteri-linux-arm64-gnu@0.11.6':
     optional: true
 
   '@bruits/satteri-linux-arm64-musl@0.10.5':
     optional: true
 
+  '@bruits/satteri-linux-arm64-musl@0.11.6':
+    optional: true
+
   '@bruits/satteri-linux-x64-gnu@0.10.5':
     optional: true
 
+  '@bruits/satteri-linux-x64-gnu@0.11.6':
+    optional: true
+
   '@bruits/satteri-linux-x64-musl@0.10.5':
+    optional: true
+
+  '@bruits/satteri-linux-x64-musl@0.11.6':
     optional: true
 
   '@bruits/satteri-wasm32-wasi@0.10.5':
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.1
-      '@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
+      '@napi-rs/wasm-runtime': 1.2.7(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
+    optional: true
+
+  '@bruits/satteri-wasm32-wasi@0.11.6':
+    dependencies:
+      '@emnapi/core': 1.11.1
+      '@emnapi/runtime': 1.11.1
+      '@napi-rs/wasm-runtime': 1.2.7(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)
     optional: true
 
   '@bruits/satteri-win32-arm64-msvc@0.10.5':
     optional: true
 
+  '@bruits/satteri-win32-arm64-msvc@0.11.6':
+    optional: true
+
   '@bruits/satteri-win32-x64-msvc@0.10.5':
+    optional: true
+
+  '@bruits/satteri-win32-x64-msvc@0.11.6':
     optional: true
 
   '@capsizecss/unpack@4.0.1':
@@ -2825,7 +2926,7 @@ snapshots:
   '@emnapi/core@1.11.1':
     dependencies:
       '@emnapi/wasi-threads': 1.2.2
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@emnapi/core@1.11.3':
@@ -2835,16 +2936,16 @@ snapshots:
 
   '@emnapi/runtime@1.11.1':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@emnapi/runtime@1.11.3':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@emnapi/wasi-threads@1.2.2':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@emnapi/wasi-threads@1.2.3':
@@ -2935,7 +3036,7 @@ snapshots:
       hast-util-select: 6.0.4
       hast-util-to-html: 9.0.6
       hast-util-to-text: 4.0.3
-      hastscript: 9.0.2
+      hastscript: 9.0.3
       postcss: 8.5.32
       postcss-nested: 7.0.2(postcss@8.5.32)
       unist-util-visit: 5.2.0
@@ -3090,14 +3191,14 @@ snapshots:
       '@emnapi/runtime': 1.11.3
       '@tybys/wasm-util': 0.10.4
 
-  '@napi-rs/wasm-runtime@1.2.6(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
+  '@napi-rs/wasm-runtime@1.2.7(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)':
     dependencies:
       '@emnapi/core': 1.11.1
       '@emnapi/runtime': 1.11.1
       '@tybys/wasm-util': 0.10.4
     optional: true
 
-  '@napi-rs/wasm-runtime@1.2.6(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
+  '@napi-rs/wasm-runtime@1.2.7(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
     dependencies:
       '@emnapi/core': 1.11.3
       '@emnapi/runtime': 1.11.3
@@ -3222,27 +3323,27 @@ snapshots:
   '@oxlint/binding-win32-x64-msvc@1.89.0':
     optional: true
 
-  '@pagefind/darwin-arm64@1.5.2':
+  '@pagefind/darwin-arm64@1.6.0':
     optional: true
 
-  '@pagefind/darwin-x64@1.5.2':
+  '@pagefind/darwin-x64@1.6.0':
     optional: true
 
-  '@pagefind/default-ui@1.5.2': {}
+  '@pagefind/default-ui@1.6.0': {}
 
-  '@pagefind/freebsd-x64@1.5.2':
+  '@pagefind/freebsd-x64@1.6.0':
     optional: true
 
-  '@pagefind/linux-arm64@1.5.2':
+  '@pagefind/linux-arm64@1.6.0':
     optional: true
 
-  '@pagefind/linux-x64@1.5.2':
+  '@pagefind/linux-x64@1.6.0':
     optional: true
 
-  '@pagefind/windows-arm64@1.5.2':
+  '@pagefind/windows-arm64@1.6.0':
     optional: true
 
-  '@pagefind/windows-x64@1.5.2':
+  '@pagefind/windows-x64@1.6.0':
     optional: true
 
   '@rolldown/binding-android-arm-eabi@1.2.16':
@@ -3388,8 +3489,6 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
 
-  '@types/js-yaml@4.0.9': {}
-
   '@types/mdast@4.0.4':
     dependencies:
       '@types/unist': 3.0.3
@@ -3520,8 +3619,6 @@ snapshots:
       picomatch: 2.3.2
 
   arg@5.0.2: {}
-
-  argparse@2.0.1: {}
 
   aria-query@5.3.2: {}
 
@@ -3954,7 +4051,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.5
 
-  hastscript@9.0.2:
+  hastscript@9.0.3:
     dependencies:
       '@types/hast': 3.0.5
       comma-separated-tokens: 2.0.3
@@ -3970,7 +4067,7 @@ snapshots:
 
   http-cache-semantics@4.3.0: {}
 
-  i18next@26.5.11(typescript@6.0.3):
+  i18next@26.7.2(typescript@6.0.3):
     optionalDependencies:
       typescript: 6.0.3
 
@@ -3993,10 +4090,6 @@ snapshots:
 
   jiti@1.21.7:
     optional: true
-
-  js-yaml@4.3.2:
-    dependencies:
-      argparse: 2.0.1
 
   json-schema-traverse@1.0.0: {}
 
@@ -4071,18 +4164,17 @@ snapshots:
       '@babel/types': 7.29.11
       source-map-js: 1.2.2
 
-  mdast-util-directive@3.1.1:
+  mdast-util-directive@3.2.0:
     dependencies:
       '@types/mdast': 4.0.4
       '@types/unist': 3.0.3
       ccount: 2.0.1
       devlop: 1.1.0
       mdast-util-from-markdown: 2.1.0
-      mdast-util-to-markdown: 2.2.1
+      mdast-util-to-markdown: 2.2.2
       micromark-util-character: 2.1.1
       parse-entities: 4.0.2
       stringify-entities: 4.0.4
-      unist-util-visit-parents: 6.1.0
     transitivePeerDependencies:
       - supports-color
 
@@ -4120,7 +4212,7 @@ snapshots:
       unist-util-visit: 5.2.0
       vfile: 6.0.3
 
-  mdast-util-to-markdown@2.2.1:
+  mdast-util-to-markdown@2.2.2:
     dependencies:
       '@types/mdast': 4.0.4
       '@types/unist': 3.0.3
@@ -4391,15 +4483,15 @@ snapshots:
 
   package-manager-detector@1.9.0: {}
 
-  pagefind@1.5.2:
+  pagefind@1.6.0:
     optionalDependencies:
-      '@pagefind/darwin-arm64': 1.5.2
-      '@pagefind/darwin-x64': 1.5.2
-      '@pagefind/freebsd-x64': 1.5.2
-      '@pagefind/linux-arm64': 1.5.2
-      '@pagefind/linux-x64': 1.5.2
-      '@pagefind/windows-arm64': 1.5.2
-      '@pagefind/windows-x64': 1.5.2
+      '@pagefind/darwin-arm64': 1.6.0
+      '@pagefind/darwin-x64': 1.6.0
+      '@pagefind/freebsd-x64': 1.6.0
+      '@pagefind/linux-arm64': 1.6.0
+      '@pagefind/linux-x64': 1.6.0
+      '@pagefind/windows-arm64': 1.6.0
+      '@pagefind/windows-x64': 1.6.0
 
   parse-entities@4.0.2:
     dependencies:
@@ -4473,7 +4565,7 @@ snapshots:
   remark-directive@4.0.0:
     dependencies:
       '@types/mdast': 4.0.4
-      mdast-util-directive: 3.1.1
+      mdast-util-directive: 3.2.0
       micromark-extension-directive: 4.0.0
       unified: 11.0.5
     transitivePeerDependencies:
@@ -4530,6 +4622,25 @@ snapshots:
       '@bruits/satteri-wasm32-wasi': 0.10.5
       '@bruits/satteri-win32-arm64-msvc': 0.10.5
       '@bruits/satteri-win32-x64-msvc': 0.10.5
+
+  satteri@0.11.6:
+    dependencies:
+      '@types/estree-jsx': 1.0.5
+      '@types/hast': 3.0.5
+      '@types/mdast': 4.0.4
+      '@types/unist': 3.0.3
+    optionalDependencies:
+      '@bruits/satteri-android-arm64': 0.11.6
+      '@bruits/satteri-darwin-arm64': 0.11.6
+      '@bruits/satteri-darwin-x64': 0.11.6
+      '@bruits/satteri-freebsd-x64': 0.11.6
+      '@bruits/satteri-linux-arm64-gnu': 0.11.6
+      '@bruits/satteri-linux-arm64-musl': 0.11.6
+      '@bruits/satteri-linux-x64-gnu': 0.11.6
+      '@bruits/satteri-linux-x64-musl': 0.11.6
+      '@bruits/satteri-wasm32-wasi': 0.11.6
+      '@bruits/satteri-win32-arm64-msvc': 0.11.6
+      '@bruits/satteri-win32-x64-msvc': 0.11.6
 
   sax@1.6.1: {}
 
@@ -4677,6 +4788,8 @@ snapshots:
   trough@2.2.0: {}
 
   tslib@2.8.1: {}
+
+  tslib@2.9.1: {}
 
   typesafe-path@0.2.2: {}
 
