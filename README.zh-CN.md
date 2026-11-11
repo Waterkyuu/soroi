@@ -15,7 +15,7 @@
   <p><a href="#功能">功能</a> · <a href="#安装">安装</a></p>
 </div>
 
-![八并发 Get、Set 和组工作流基准](assets/cache-8-worker-benchmarks.svg)
+![main 与 concurrent-cache-candidates 的八并发 Get、Set 和完整组工作流对比](assets/cache-8-worker-benchmarks.svg)
 
 [查看测试条件与限制](#八并发缓存操作)
 
@@ -165,20 +165,31 @@ go run .
 
 ### 八并发缓存操作
 
-保留的 64 桶候选测得：**Get 为 29.52 ns/op**，**Set 为 37.59 ns/op**，
-**完整组工作流为 371.05 ns/次**。完整流程执行
-`Set → Get → Update → Fetch`，并核对最终组通知；数据已预置，计时期间没有实际源加载 I/O。
+图中直接比较 **main（[`80738c3`](https://github.com/Waterkyuu/soroi/commit/80738c390ab00e51477ba39f9c4874f67833a882)）**
+与 **concurrent-cache-candidates（[`d8fa236`](https://github.com/Waterkyuu/soroi/commit/d8fa236bb62d23cb2bb2dbcbf0e2e5afc6569949)）**，
+双方使用完全相同的公共 API 工作负载。main 保持原有实现；候选包含 64 桶及后续缓存优化。
 
-图中两版均已包含此前的存储、分桶、编号、读取和 Update 优化，对比的是后续新增组订阅方式的改动。
-这些数值是八个并发工作者完成操作后的平均分摊耗时，不是单请求延迟或 P95/P99；各子图使用独立刻度。
+| 场景 | main | 候选 | 配对耗时变化 | 探索性 95% 区间 |
+| --- | ---: | ---: | ---: | --- |
+| Get | 374.75 | 28.38 | -92.37% | [-92.50%, -92.28%] |
+| Set | 305.00 | 36.16 | -88.11% | [-88.35%, -87.23%] |
+| 完整组工作流 | 3328.00 | 381.30 | -88.59% | [-89.04%, -87.48%] |
 
-测量环境：Apple M3 Pro、macOS 14.6、Go 1.27.1、`GOMAXPROCS=8`、64 桶、
-1,024 个预置 key；每版每项 20 次，每次 2 秒，修改前后交替配对执行（2026-11-09）。
-图中展示中位数。组工作流的逐对耗时变化为 +2.23%，探索性 95% 区间为 [+0.41%, +6.19%]，
-因此是否守住 5% 回退限制仍未确定；Get 和 Set 在本次复测中支持该限制。
+Get、Set 单位为 ns/op，完整组工作流为 ns/次，越低越好。数值为中位数；
+变化取各对候选/main 比值的中位数，因此不一定等于表中两列中位数直接相除。
+这是八个并发工作者的平均分摊耗时，不是单请求延迟或 P95/P99；各子图独立刻度，均从零开始。
 
-[方法、源码身份、不确定性及原始结果](https://github.com/Waterkyuu/soroi-performance-diagnostics/blob/36d6d38/experiments/admission_guard_recheck/RESULTS.md)
-保存在独立诊断仓库，需要该仓库的访问权限。本结果仅代表上述 macOS 工作负载，不能代替 Linux 实机数据。
+完整缓存流程执行 `Set → Get → Update → Fetch`，并核对最终组通知。
+8 个工作者各拥有一个双 key 组，组在计时前建立，两版使用相同的固定 key。
+数据已预置，计时期间没有实际源加载 I/O；Get 和变化值 Set 使用互不重叠的工作者 key 范围。
+
+测量环境：Apple M3 Pro、macOS 14.6、Go 1.27.1、`GOMAXPROCS=8`，
+1,024 个预置 key、关闭容量限制；每版每项 20 次，每次 2 秒，两版交替配对执行（2026-11-12）。
+主机为电池供电，桌面应用仍在活动。三项结果不能证明所有功能和配置均满足回退限制，
+本机 macOS 数据也不能代替 Linux 实机性能证据。
+
+[方法、源码身份、不确定性及原始结果](https://github.com/Waterkyuu/soroi-performance-diagnostics/blob/e4519e5537b147c02e19ccffaa37862068a93a9a/experiments/main_candidate_readme/RESULTS.md)
+保存在独立诊断仓库，需要该仓库的访问权限。
 
 [业务场景基准](docs/business-benchmarks.zh-CN.md) 测量热点过期、Redis 故障、下游超时和批量读取，
 包含回源次数、P95/P99 延迟、成功与拒绝数量、内存分配，以及附带负载条件的实测记录。
