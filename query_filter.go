@@ -29,7 +29,20 @@ type querySelection struct {
 
 // withQueryTargets runs user matching outside mu and applies the operation under one lock.
 // The operation callback must not call public Client methods or otherwise release mu.
-func (c *Client) withQueryTargets(target any, apply func(any)) error {
+func (c *Client) withQueryTargets(target any, apply func(*clientBucket, any)) error {
+	switch target.(type) {
+	case QueryFilter, []any, func(any) bool:
+		// Multi-key selection retains all-key validation and snapshot semantics below.
+	default:
+		bucket := c.bucketFor(target)
+		bucket.mu.Lock()
+		defer bucket.mu.Unlock()
+		if err := bucket.checkLocked(target, nil); err != nil {
+			return err
+		}
+		apply(bucket, target)
+		return nil
+	}
 	c.mu.Lock()
 	selection, err := c.querySelectionLocked(target)
 	if err != nil {
@@ -55,7 +68,7 @@ func (c *Client) withQueryTargets(target any, apply func(any)) error {
 		if selection.existingOnly && !c.hasQueryLocked(key) {
 			continue
 		}
-		apply(key)
+		apply(c.bucketFor(key), key)
 	}
 	return nil
 }
@@ -87,7 +100,7 @@ func (c *Client) querySelectionLocked(target any) (querySelection, error) {
 	keys := make([]any, 0, len(selection.keys))
 	seen := make(map[any]struct{}, len(selection.keys))
 	for _, key := range selection.keys {
-		if err := c.checkLocked(key, nil); err != nil {
+		if err := c.bucketFor(key).checkLocked(key, nil); err != nil {
 			return querySelection{}, err
 		}
 		if _, duplicate := seen[key]; duplicate {
@@ -97,7 +110,7 @@ func (c *Client) querySelectionLocked(target any) (querySelection, error) {
 		if selection.existingOnly && !c.hasQueryLocked(key) {
 			continue
 		}
-		if tags != nil && !matchesQueryTags(c.entries[key].tags, tags) {
+		if tags != nil && !matchesQueryTags(c.bucketFor(key).entryLocked(key).tags, tags) {
 			continue
 		}
 		keys = append(keys, key)
@@ -108,26 +121,29 @@ func (c *Client) querySelectionLocked(target any) (querySelection, error) {
 
 // queryKeysLocked snapshots distinct keys owned by cache state, a load, or a subscription.
 func (c *Client) queryKeysLocked() []any {
-	keys := make([]any, 0, len(c.entries)+len(c.pending)+len(c.observers))
-	for key := range c.entries {
-		keys = append(keys, key)
-	}
-	for key := range c.pending {
-		if _, cached := c.entries[key]; !cached {
+	keys := make([]any, 0)
+	c.forEachBucketLocked(func(bucket *clientBucket) {
+		for key := range bucket.entries {
 			keys = append(keys, key)
 		}
-	}
-	for key := range c.observers {
-		_, cached := c.entries[key]
-		if !cached && c.pending[key] == nil {
-			keys = append(keys, key)
+		for key := range bucket.pending {
+			if _, cached := bucket.entries[key]; !cached {
+				keys = append(keys, key)
+			}
 		}
-	}
+		for key := range bucket.observers {
+			_, cached := bucket.entries[key]
+			if !cached && bucket.pending[key] == nil {
+				keys = append(keys, key)
+			}
+		}
+	})
 	return keys
 }
 
 // hasQueryLocked reports whether a key belongs to this Client without reading or touching its data.
 func (c *Client) hasQueryLocked(key any) bool {
-	_, cached := c.entries[key]
-	return cached || c.pending[key] != nil || len(c.observers[key]) > 0
+	bucket := c.bucketFor(key)
+	_, cached := bucket.entries[key]
+	return cached || bucket.pending[key] != nil || len(bucket.observers[key]) > 0
 }

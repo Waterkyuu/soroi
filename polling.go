@@ -17,9 +17,9 @@ func schedulePoll(delay time.Duration, poll func()) func() {
 }
 
 // schedulePollingLocked retains one timer for the fastest enabled consumer of this key.
-func (c *Client) schedulePollingLocked(key any) {
+func (c *clientBucket) schedulePollingLocked(key any) {
 	var selected *subscription
-	if !c.closed {
+	if !c.owner.closed {
 		for observer := range c.observers[key] {
 			if !observer.enabled || observer.refetchInterval <= 0 {
 				continue
@@ -43,12 +43,16 @@ func (c *Client) schedulePollingLocked(key any) {
 		return
 	}
 	task := &pollTask{observer: selected}
+	// Clients without polling do not allocate per-bucket scheduling indexes.
+	if c.pollTasks == nil {
+		c.pollTasks = make(map[any]*pollTask)
+	}
 	c.pollTasks[key] = task
-	task.stop = c.pollAfterFunc(selected.refetchInterval, func() { c.poll(key, task) })
+	task.stop = c.owner.pollAfterFunc(selected.refetchInterval, func() { c.poll(key, task) })
 }
 
 // poll starts a refresh only for the current schedule and skips occupied intervals without queuing work.
-func (c *Client) poll(key any, task *pollTask) {
+func (c *clientBucket) poll(key any, task *pollTask) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if c.pollTasks[key] != task {
@@ -59,13 +63,13 @@ func (c *Client) poll(key any, task *pollTask) {
 		c.expireDataLocked(key)
 		request := task.observer.request
 		request.trigger = TriggerPoll
-		c.startLocked(c.ctx, key, request)
+		c.startLocked(c.owner.ctx, key, request)
 	}
 	c.schedulePollingLocked(key)
 }
 
 // stopPollingLocked detaches a schedule before stopping it so callbacks racing with Stop become harmless.
-func (c *Client) stopPollingLocked(key any) {
+func (c *clientBucket) stopPollingLocked(key any) {
 	if task := c.pollTasks[key]; task != nil {
 		delete(c.pollTasks, key)
 		task.stop()

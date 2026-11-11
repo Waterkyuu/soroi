@@ -218,18 +218,18 @@ func (w *SharedWatcher) run(
 }
 
 // registerSharedLocked preserves remote identity and tagged relationships while admitting a query request.
-func (c *Client) registerSharedLocked(key any, request queryRequest) {
+func (c *clientBucket) registerSharedLocked(key any, request queryRequest) {
 	if request.shared == nil {
 		return
 	}
-	cached := c.entries[key]
+	cached := c.entryLocked(key)
 	cached.shared.scope, cached.shared.key = request.shared.scope, request.shared.key
 	for _, tag := range request.shared.tags {
 		if !slices.Contains(cached.shared.tags, tag) {
 			cached.shared.tags = append(cached.shared.tags, tag)
 		}
 	}
-	c.entries[key] = cached
+	c.storeEntryLocked(key, cached)
 }
 
 // applySharedInvalidation selects only retained queries bound to this store, without application predicates.
@@ -244,47 +244,51 @@ func (c *Client) applySharedInvalidation(
 		return 0, ErrClosed
 	}
 	var count uint64
-	for key, cached := range c.entries {
-		if cached.shared.scope != scope {
-			continue
-		}
-		if len(event.RegisteredTags) > 0 {
-			if cached.shared.key == event.Key {
-				for _, tag := range event.RegisteredTags {
-					if !slices.Contains(cached.shared.tags, tag) {
-						cached.shared.tags = append(cached.shared.tags, tag)
-					}
-				}
-				c.entries[key] = cached
+	c.forEachBucketLocked(func(bucket *clientBucket) {
+		for key, stored := range bucket.entries {
+			cached := *stored
+			if cached.shared.scope != scope {
+				continue
 			}
-			continue
+			if len(event.RegisteredTags) > 0 {
+				if cached.shared.key == event.Key {
+					for _, tag := range event.RegisteredTags {
+						if !slices.Contains(cached.shared.tags, tag) {
+							cached.shared.tags = append(cached.shared.tags, tag)
+						}
+					}
+					bucket.storeEntryLocked(key, cached)
+				}
+				continue
+			}
+			matches := event.Reset || cached.shared.key == event.Key || matchesQueryTags(cached.shared.tags, event.Tags)
+			duplicate := event.ID != "" && cached.shared.lastID == event.ID
+			if !matches || duplicate {
+				continue
+			}
+			cached.shared.lastID = event.ID
+			bucket.storeEntryLocked(key, cached)
+			bucket.invalidateLocked(key, policy, nil)
+			count++
 		}
-		matches := event.Reset || cached.shared.key == event.Key || matchesQueryTags(cached.shared.tags, event.Tags)
-		duplicate := event.ID != "" && cached.shared.lastID == event.ID
-		if !matches || duplicate {
-			continue
-		}
-		cached.shared.lastID = event.ID
-		c.entries[key] = cached
-		c.invalidateLocked(key, policy, nil)
-		count++
-	}
+	})
 	return count, nil
 }
 
 // applySharedKey preserves the existing exact-local-key helper while suppressing its broadcast receipt.
-func (c *Client) applySharedKey(key any, event SharedInvalidation, policy InvalidateOptions) error {
+func (c *clientBucket) applySharedKey(key any, event SharedInvalidation, policy InvalidateOptions) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if c.closed {
+	if c.owner.closed {
 		return ErrClosed
 	}
-	cached, exists := c.entries[key]
+	cached := c.entryLocked(key)
+	_, exists := c.entries[key]
 	if !exists || (event.ID != "" && cached.shared.lastID == event.ID) {
 		return nil
 	}
 	cached.shared.lastID = event.ID
-	c.entries[key] = cached
+	c.storeEntryLocked(key, cached)
 	c.invalidateLocked(key, policy, nil)
 	return nil
 }

@@ -16,6 +16,10 @@
   <p><a href="#features">Features</a> · <a href="#install">Install</a></p>
 </div>
 
+![main versus concurrent-cache-candidates: eight-worker Get, Set, and grouped workflow](assets/cache-8-worker-benchmarks.svg)
+
+[Benchmark setup and limitations](#eight-worker-cached-operations)
+
 ## When to use soroi
 
 Use soroi when your Go application needs to coordinate data loading and
@@ -188,6 +192,39 @@ go run .
 See the [shared cache guide](docs/shared-cache.en-US.md) and [shared invalidation guide](docs/shared-invalidation.en-US.md) for setup, expected output, and API contracts.
 
 ## Reproducible benchmarks
+
+### Eight-worker cached operations
+
+The chart compares **main ([`80738c3`](https://github.com/Waterkyuu/soroi/commit/80738c390ab00e51477ba39f9c4874f67833a882))**
+with **concurrent-cache-candidates ([`d8fa236`](https://github.com/Waterkyuu/soroi/commit/d8fa236bb62d23cb2bb2dbcbf0e2e5afc6569949))**,
+using identical public API workloads. Main keeps its original implementation;
+the candidate includes the 64-bucket and subsequent cache optimizations.
+
+| Workload | main | Candidate | Paired cost change | Exploratory 95% interval |
+| --- | ---: | ---: | ---: | --- |
+| Get | 374.75 | 28.38 | -92.37% | [-92.50%, -92.28%] |
+| Set | 305.00 | 36.16 | -88.11% | [-88.35%, -87.23%] |
+| Grouped workflow | 3328.00 | 381.30 | -88.59% | [-89.04%, -87.48%] |
+
+Get and Set are in ns/op; the grouped workflow is in ns/workflow. Lower is better.
+Values are medians; changes are medians of paired candidate/main ratios and may
+differ from dividing the two displayed medians. These are aggregate throughput
+costs under eight concurrent workers, not single-request latency or P95/P99.
+Each chart panel uses its own scale, starting at zero.
+
+The complete cached workflow performs `Set → Get → Update → Fetch` and checks
+the final grouped notification. Eight workers own eight two-key groups, created
+before timing, using the same fixed keys in both versions. The cache is populated;
+no source loader performs I/O. Get and changing-value Set use disjoint worker key ranges.
+
+Measured on Apple M3 Pro, macOS 14.6, Go 1.27.1, with `GOMAXPROCS=8`, 1,024 cached
+keys, capacity limits disabled, and 20 alternating paired runs of 2 seconds per
+variant and workload (2026-11-12). The host ran on battery power with desktop apps
+active. These three workloads do not establish the regression limit for every
+feature or configuration, and macOS results do not establish Linux performance.
+
+[Method, source identities, uncertainty, and raw results](https://github.com/Waterkyuu/soroi-performance-diagnostics/blob/e4519e5537b147c02e19ccffaa37862068a93a9a/experiments/main_candidate_readme/RESULTS.md)
+are maintained in the separate diagnostics repository (repository access required).
 
 The [business workload guide](docs/business-benchmarks.en-US.md) measures hot-key
 expiration, Redis outages, downstream deadlines, and batch reads. It includes

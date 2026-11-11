@@ -40,17 +40,31 @@ type Stats struct {
 func (c *Client) Stats() Stats {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	state := c.stats
-	for _, cached := range c.entries {
-		if cached.hasData || cached.err != nil {
-			state.CacheEntries++
+	var state Stats
+	c.forEachBucketLocked(func(bucket *clientBucket) {
+		state.CacheHits += bucket.stats.CacheHits + bucket.readHits.Load()
+		state.CacheMisses += bucket.stats.CacheMisses
+		state.MergedRequests += bucket.stats.MergedRequests
+		state.Loads += bucket.stats.Loads
+		state.LoadSuccesses += bucket.stats.LoadSuccesses
+		state.LoadFailures += bucket.stats.LoadFailures
+		state.LoadCancellations += bucket.stats.LoadCancellations
+		state.Retries += bucket.stats.Retries
+		state.TotalLoadDuration += bucket.stats.TotalLoadDuration
+		state.LRUEvictions += bucket.stats.LRUEvictions
+		state.GCCollections += bucket.stats.GCCollections
+		state.AgeExpirations += bucket.stats.AgeExpirations
+		for _, cached := range bucket.entries {
+			if cached.hasData || cached.err != nil {
+				state.CacheEntries++
+			}
 		}
-	}
+	})
 	return state
 }
 
 // recordLookupLocked records one fresh-cache decision without counting later retries of the same caller.
-func (c *Client) recordLookupLocked(fresh bool) {
+func (c *clientBucket) recordLookupLocked(fresh bool) {
 	if fresh {
 		c.stats.CacheHits++
 		return

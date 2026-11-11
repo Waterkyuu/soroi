@@ -38,8 +38,12 @@ type QueriesHandle[V any] struct {
 }
 
 // queriesGroup owns raw subscriptions independently of the chosen public output type.
+// Its members can live in different buckets. Publishing a complete ordered snapshot may
+// therefore read several owners, including groups reached recursively through expiration
+// notifications. group_locks.go precomputes the full connected lock set for those writes.
 type queriesGroup struct {
-	// client serializes admission, state reads, publications, and subscription release.
+	// client supplies the all-bucket lock for admission, Snapshot, and release; ordinary
+	// publications use the connected bucket lock set already acquired by their writer.
 	client *Client
 	// members preserves input order, captured policies, and construction failures.
 	members []queriesMember
@@ -59,6 +63,8 @@ type queriesGroup struct {
 type queriesMember struct {
 	// spec retains the captured identity, result type, and loading policy.
 	spec querySpec
+	// bucket retains this member's storage owner across every group publication.
+	bucket *clientBucket
 	// observer is registered only if validation succeeds.
 	observer *subscription
 	// err retains construction failures independently of later cache changes.
@@ -106,7 +112,15 @@ func QueriesWithCombine[V any](
 	return &QueriesHandle[V]{group: group, updates: updates, combine: combine}
 }
 
-// newQueriesGroup captures external configuration before atomically admitting the ordered subscriptions.
+// newQueriesGroup is called by Queries and QueriesWithCombine to register definitions in order.
+// It returns one group containing each admitted subscription or that definition's error.
+// For definitions of A and B it publishes an initial [snapshot(A), snapshot(B)] before return.
+// All bucket locks cover registration and topology changes, so no writer can publish using
+// a half-installed group. User configuration is resolved before locking because it can reenter APIs.
+//
+// Admission only adds connections: existing A-B and C-D components plus a new B-C group
+// become A-B-C-D. Unrelated components are unchanged. Removal can split a component, so
+// the final member's close callback deliberately keeps the original full-array rebuild.
 func newQueriesGroup(client *Client, definitions []QuerySpec) *queriesGroup {
 	group := &queriesGroup{
 		client:  client,
@@ -124,6 +138,7 @@ func newQueriesGroup(client *Client, definitions []QuerySpec) *queriesGroup {
 		// Shared configuration can call an application-owned store's InvalidationScope method.
 		// Resolve it before locking, allowing diagnostics to reenter Client APIs safely.
 		member.spec = definition.querySpec(client.options)
+		member.bucket = client.bucketFor(member.spec.key)
 	}
 	client.mu.Lock()
 	defer client.mu.Unlock()
@@ -132,22 +147,39 @@ func newQueriesGroup(client *Client, definitions []QuerySpec) *queriesGroup {
 		if member.err != nil {
 			continue
 		}
+		// These callbacks are stored now and invoked by publication/release later. During
+		// construction initialized=false suppresses publication of an incomplete member list.
 		member.observer = &subscription{
 			publish: func(Snapshot[any]) {
-				group.publishLocked()
+				member.bucket.publishGroupLocked(group)
 			},
 			close: func() {
+				member.bucket.groupRefs--
 				group.remaining--
 				if group.remaining == 0 {
 					group.closed = true
 					close(group.updates)
+					delete(client.groups, group)
+					// Removing a bridge can split several buckets. Recompute from all live groups
+					// under the existing all-bucket lock instead of guessing which links survive.
+					client.rebuildGroupLocksLocked()
 				}
 			},
 		}
-		member.err = client.subscribeLocked(member.spec, member.observer)
+		member.err = member.bucket.subscribeLocked(member.spec, member.observer)
 		if member.err == nil {
+			member.bucket.groupRefs++
 			group.remaining++
 		}
+	}
+	if group.remaining > 0 {
+		if client.groups == nil {
+			client.groups = make(map[*queriesGroup]struct{})
+		}
+		client.groups[group] = struct{}{}
+		// Every admitted member is known now. Merge only the components joined by this group
+		// before allowing its initial publication or releasing any bucket lock.
+		client.addGroupLocksLocked(group)
 	}
 	group.initialized = true
 	group.publishLocked()
@@ -179,7 +211,7 @@ func (h *QueriesHandle[V]) Close() {
 	}
 	for _, member := range group.members {
 		if member.err == nil {
-			group.client.unsubscribeLocked(member.spec.key, member.observer)
+			member.bucket.unsubscribeLocked(member.spec.key, member.observer)
 		}
 	}
 }
@@ -199,7 +231,7 @@ func (g *queriesGroup) snapshotLocked() []Snapshot[any] {
 			results[i] = Snapshot[any]{Status: Error, Stale: true, Err: member.err}
 			continue
 		}
-		results[i] = g.client.getSnapshotLocked(member.spec.key, member.spec.typ, member.spec.request.options)
+		results[i] = member.bucket.getSnapshotLocked(member.spec.key, member.spec.typ, member.spec.request.options)
 	}
 	return results
 }

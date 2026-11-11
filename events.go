@@ -271,6 +271,7 @@ func (c *Client) SubscribeEvents(options EventOptions) (*EventSubscription, erro
 		c.eventSubscriptions[s.key] = make(map[*EventSubscription]struct{})
 	}
 	c.eventSubscriptions[s.key][s] = struct{}{}
+	c.eventCount.Add(1)
 	return s, nil
 }
 
@@ -291,6 +292,7 @@ func (s *EventSubscription) Close() {
 		return
 	}
 	delete(subscriptions, s)
+	c.eventCount.Add(-1)
 	if len(subscriptions) == 0 {
 		delete(c.eventSubscriptions, s.key)
 	}
@@ -299,9 +301,11 @@ func (s *EventSubscription) Close() {
 
 // emitEventLocked stamps and publishes without running application callbacks or blocking queries.
 func (c *Client) emitEventLocked(event Event) {
-	if len(c.eventSubscriptions) == 0 {
+	if !c.hasEvents() {
 		return
 	}
+	c.eventMu.Lock()
+	defer c.eventMu.Unlock()
 	c.eventSequence++
 	event.Sequence, event.Time = c.eventSequence, c.options.Clock()
 	if event.Kind == EventClientClosed {

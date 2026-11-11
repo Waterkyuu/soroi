@@ -1,0 +1,365 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi/benchmarks/cache_comparison
+cpu: Apple M3 Pro
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Soroi     	  822680	       220.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Soroi     	  836965	       222.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Soroi     	  827522	       222.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Soroi     	  815247	       228.9 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Soroi     	  775304	       231.7 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Soroi-4   	  526796	       338.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Soroi-4   	  530431	       339.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Soroi-4   	  520995	       339.6 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Soroi-4   	  528996	       339.2 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Soroi-4   	  528303	       338.7 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Otter     	 5725508	        30.54 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Otter     	 5896194	        30.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Otter     	 5907465	        30.48 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Otter     	 5889024	        30.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Otter     	 5903655	        30.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Otter-4   	22491565	         8.022 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Otter-4   	21448040	         7.974 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Otter-4   	22215934	         7.953 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Otter-4   	22535797	         7.950 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Read/Otter-4   	22236978	         7.960 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Soroi    	  935996	       195.8 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Soroi    	  957446	       195.8 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Soroi    	  961174	       193.9 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Soroi    	  956514	       193.8 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Soroi    	  968761	       194.3 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Soroi-4  	  691952	       265.2 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Soroi-4  	  663848	       262.1 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Soroi-4  	  703192	       264.0 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Soroi-4  	  665782	       263.0 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Soroi-4  	  692618	       265.4 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Otter    	 3872216	        45.66 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Otter    	 3947130	        45.54 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Otter    	 3915561	        45.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Otter    	 3958232	        45.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Otter    	 3963716	        45.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Otter-4  	14814865	        11.90 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Otter-4  	14999061	        12.16 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Otter-4  	14789556	        11.93 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Otter-4  	14909044	        11.98 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Fetch/Otter-4  	14840821	        11.91 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Soroi    	  959190	       182.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Soroi    	  987744	       191.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Soroi    	 1000000	       179.9 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Soroi    	 1000000	       179.8 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Soroi    	 1000000	       180.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Soroi-4  	  661845	       265.6 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Soroi-4  	  670620	       264.6 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Soroi-4  	  673168	       264.3 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Soroi-4  	  679159	       264.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Soroi-4  	  672049	       265.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Otter    	 2015938	        89.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Otter    	 2012397	        89.33 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Otter    	 1974085	        89.33 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Otter    	 2013604	        89.46 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Otter    	 2036475	        88.18 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Otter-4  	  949867	       194.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Otter-4  	  927456	       205.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Otter-4  	  920068	       204.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Otter-4  	  897549	       195.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Write/Otter-4  	  925508	       198.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Soroi    	  836656	       227.7 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Soroi    	  793068	       226.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Soroi    	  804708	       225.7 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Soroi    	  795301	       225.2 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Soroi    	  795169	       225.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Soroi-4  	  537472	       332.7 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Soroi-4  	  543156	       332.6 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Soroi-4  	  539379	       333.3 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Soroi-4  	  538545	       333.8 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Soroi-4  	  537285	       334.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Otter    	 5155696	        35.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Otter    	 5132396	        35.01 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Otter    	 5148740	        35.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Otter    	 5153002	        34.89 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Otter    	 5159989	        35.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Otter-4  	13091940	        13.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Otter-4  	12461992	        14.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Otter-4  	12928750	        13.87 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Otter-4  	11793063	        14.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1/Mixed/Otter-4  	12976519	        13.65 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Soroi           	  730407	       246.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Soroi           	  738586	       243.8 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Soroi           	  730902	       243.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Soroi           	  737427	       242.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Soroi           	  745470	       241.9 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Soroi-4         	  490975	       365.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Soroi-4         	  494058	       367.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Soroi-4         	  487298	       365.8 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Soroi-4         	  495151	       367.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Soroi-4         	  489085	       366.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Otter           	 5593854	        31.72 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Otter           	 5698756	        31.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Otter           	 5653909	        31.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Otter           	 5635544	        31.59 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Otter           	 5613079	        31.85 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Otter-4         	21213804	         8.403 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Otter-4         	21293584	         8.312 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Otter-4         	21434950	         8.293 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Otter-4         	20726880	         8.603 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Read/Otter-4         	20685296	         8.263 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Soroi          	  905260	       204.2 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Soroi          	  964436	       204.7 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Soroi          	  908936	       205.2 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Soroi          	  902160	       204.4 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Soroi          	  895762	       204.0 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Soroi-4        	  602997	       293.6 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Soroi-4        	  610358	       293.0 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Soroi-4        	  618795	       297.8 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Soroi-4        	  634100	       289.5 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Soroi-4        	  607312	       298.0 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Otter          	 3751351	        47.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Otter          	 3769941	        47.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Otter          	 3772803	        47.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Otter          	 3802545	        48.07 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Otter          	 3753906	        48.12 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Otter-4        	13722430	        13.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Otter-4        	14366572	        12.65 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Otter-4        	14410616	        12.55 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Otter-4        	14196982	        12.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Fetch/Otter-4        	14355546	        12.40 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Soroi          	  951226	       189.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Soroi          	  954463	       189.7 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Soroi          	  948325	       189.2 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Soroi          	  959380	       188.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Soroi          	  935469	       188.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Soroi-4        	  615594	       282.6 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Soroi-4        	  653802	       263.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Soroi-4        	  722020	       271.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Soroi-4        	  640132	       283.3 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Soroi-4        	  622450	       282.7 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Otter          	 1962742	        92.23 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Otter          	 1942992	        93.93 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Otter          	 1944531	        92.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Otter          	 1949654	        92.90 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Otter          	 1940928	        92.83 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Otter-4        	 5692359	        31.73 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Otter-4        	 5707618	        31.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Otter-4        	 5696322	        31.94 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Otter-4        	 5628913	        31.67 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Write/Otter-4        	 5704046	        31.27 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Soroi          	  742930	       243.2 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Soroi          	  738712	       242.9 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Soroi          	  743749	       242.6 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Soroi          	  741706	       242.6 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Soroi          	  742420	       242.9 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Soroi-4        	  495060	       361.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Soroi-4        	  496174	       360.9 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Soroi-4        	  494182	       361.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Soroi-4        	  499432	       361.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Soroi-4        	  495394	       360.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Otter          	 4978873	        36.37 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Otter          	 4912395	        36.22 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Otter          	 4920402	        36.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Otter          	 4905840	        36.96 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Otter          	 4898913	        36.59 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Otter-4        	16321903	        10.92 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Otter-4        	16422296	        11.27 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Otter-4        	16492702	        10.99 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Otter-4        	16332207	        11.09 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=0/Keys=1024/Mixed/Otter-4        	15935960	        11.12 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Soroi           	  688237	       260.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Soroi           	  694588	       260.6 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Soroi           	  694321	       259.9 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Soroi           	  688248	       260.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Soroi           	  692872	       259.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Soroi-4         	  479275	       374.6 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Soroi-4         	  481036	       373.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Soroi-4         	  478234	       374.3 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Soroi-4         	  483231	       372.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Soroi-4         	  482314	       371.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Otter           	 5719536	        30.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Otter           	 5895823	        30.50 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Otter           	 5896040	        30.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Otter           	 5887266	        30.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Otter           	 5891529	        30.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Otter-4         	22212508	         7.966 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Otter-4         	22012515	         7.949 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Otter-4         	22047229	         7.948 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Otter-4         	22304028	         7.955 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Read/Otter-4         	22503516	         7.953 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Soroi          	  842647	       219.4 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Soroi          	  847640	       220.8 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Soroi          	  847507	       219.0 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Soroi          	  829922	       221.2 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Soroi          	  835428	       220.5 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Soroi-4        	  655260	       280.9 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Soroi-4        	  629223	       269.6 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Soroi-4        	  666090	       271.0 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Soroi-4        	  652626	       271.7 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Soroi-4        	  655011	       277.6 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Otter          	 3861690	        45.70 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Otter          	 3914521	        45.60 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Otter          	 3931671	        45.71 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Otter          	 3935410	        45.71 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Otter          	 3935278	        45.65 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Otter-4        	14885874	        11.96 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Otter-4        	15038221	        11.90 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Otter-4        	14872396	        11.87 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Otter-4        	15112609	        11.89 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Fetch/Otter-4        	14918877	        11.87 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Soroi          	  879926	       204.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Soroi          	  880590	       204.6 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Soroi          	  881937	       204.2 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Soroi          	  885535	       205.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Soroi          	  882874	       204.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Soroi-4        	  595450	       297.7 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Soroi-4        	  607329	       296.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Soroi-4        	  597171	       294.7 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Soroi-4        	  598686	       295.2 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Soroi-4        	  602191	       293.9 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Otter          	 2016196	        89.26 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Otter          	 2013786	        89.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Otter          	 2019754	        89.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Otter          	 2015931	        89.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Otter          	 2007894	        89.29 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Otter-4        	  952317	       194.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Otter-4        	  949178	       194.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Otter-4        	  914149	       192.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Otter-4        	  904068	       199.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Write/Otter-4        	  832802	       195.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Soroi          	  669933	       257.8 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Soroi          	  703479	       256.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Soroi          	  695338	       256.2 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Soroi          	  700899	       256.6 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Soroi          	  695988	       257.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Soroi-4        	  482180	       358.2 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Soroi-4        	  537981	       354.2 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Soroi-4        	  487094	       365.2 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Soroi-4        	  497769	       366.8 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Soroi-4        	  487782	       362.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Otter          	 5088062	        35.18 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Otter          	 5143616	        34.99 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Otter          	 5134909	        35.00 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Otter          	 5112915	        36.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Otter          	 5153955	        35.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Otter-4        	13052265	        17.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Otter-4        	12824508	        13.84 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Otter-4        	12584552	        13.68 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Otter-4        	12655928	        14.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1/Mixed/Otter-4        	12656569	        13.74 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Soroi        	  658315	       274.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Soroi        	  657193	       280.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Soroi        	  654742	       273.9 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Soroi        	  657663	       273.7 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Soroi        	  661186	       273.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Soroi-4      	  450562	       405.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Soroi-4      	  437618	       406.3 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Soroi-4      	  445981	       406.3 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Soroi-4      	  445497	       406.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Soroi-4      	  441000	       402.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Otter        	 5620315	        31.69 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Otter        	 5641814	        31.68 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Otter        	 5678270	        31.47 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Otter        	 5620872	        32.00 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Otter        	 5657004	        31.72 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Otter-4      	21263191	         8.278 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Otter-4      	21268844	         8.395 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Otter-4      	20756456	         8.364 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Otter-4      	21570339	         8.312 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Read/Otter-4      	20962833	         8.428 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Soroi       	  791338	       237.6 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Soroi       	  797474	       242.0 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Soroi       	  802450	       242.4 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Soroi       	  800029	       241.1 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Soroi       	  805038	       240.5 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Soroi-4     	  520620	       356.8 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Soroi-4     	  491595	       353.7 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Soroi-4     	  487066	       353.9 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Soroi-4     	  486398	       353.9 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Soroi-4     	  497185	       354.0 ns/op	      25 B/op	       2 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Otter       	 3741250	        47.68 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Otter       	 3806214	        47.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Otter       	 3772483	        47.09 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Otter       	 3816550	        47.42 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Otter       	 3795442	        47.37 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Otter-4     	14185981	        12.45 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Otter-4     	14379246	        12.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Otter-4     	14251168	        12.60 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Otter-4     	14223345	        12.33 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Fetch/Otter-4     	14191712	        12.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Soroi       	  825860	       217.3 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Soroi       	  822997	       216.9 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Soroi       	  824835	       216.9 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Soroi       	  830002	       216.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Soroi       	  828585	       216.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Soroi-4     	  536451	       322.3 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Soroi-4     	  557109	       322.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Soroi-4     	  547257	       322.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Soroi-4     	  553158	       321.8 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Soroi-4     	  563497	       320.7 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Otter       	 1952218	        91.46 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Otter       	 1969470	        91.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Otter       	 1963680	        91.47 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Otter       	 1954585	        91.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Otter       	 1970872	        91.70 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Otter-4     	 5744152	        32.12 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Otter-4     	 5738004	        31.65 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Otter-4     	 5673728	        31.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Otter-4     	 5673124	        31.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Write/Otter-4     	 5682676	        31.78 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Soroi       	  660772	       271.0 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Soroi       	  667098	       269.9 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Soroi       	  662688	       270.4 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Soroi       	  664472	       270.3 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Soroi       	  668047	       269.6 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Soroi-4     	  452786	       398.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Soroi-4     	  446584	       398.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Soroi-4     	  450327	       398.5 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Soroi-4     	  448616	       398.1 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Soroi-4     	  450694	       399.2 ns/op	       1 B/op	       1 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Otter       	 4822278	        36.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Otter       	 4929678	        36.07 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Otter       	 4961854	        36.23 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Otter       	 4998206	        36.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Otter       	 4956196	        36.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Otter-4     	16015540	        10.80 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Otter-4     	16036408	        11.25 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Otter-4     	16348092	        11.03 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Otter-4     	16336717	        10.45 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheAccess/Capacity=1024/Keys=1024/Mixed/Otter-4     	16438167	        10.60 ns/op	       0 B/op	       0 allocs/op
+BenchmarkColdBurst/Soroi                                       	    4587	     37500 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1904 B/op	      34 allocs/op
+BenchmarkColdBurst/Soroi                                       	    4824	     37395 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1904 B/op	      34 allocs/op
+BenchmarkColdBurst/Soroi                                       	    4827	     37414 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1904 B/op	      34 allocs/op
+BenchmarkColdBurst/Soroi                                       	    4796	     37415 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1904 B/op	      34 allocs/op
+BenchmarkColdBurst/Soroi                                       	    4822	     37430 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1904 B/op	      34 allocs/op
+BenchmarkColdBurst/Soroi-4                                     	    4400	     39986 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1938 B/op	      41 allocs/op
+BenchmarkColdBurst/Soroi-4                                     	    4454	     39623 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1934 B/op	      41 allocs/op
+BenchmarkColdBurst/Soroi-4                                     	    4467	     40121 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1936 B/op	      41 allocs/op
+BenchmarkColdBurst/Soroi-4                                     	    4484	     40156 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1934 B/op	      40 allocs/op
+BenchmarkColdBurst/Soroi-4                                     	    4406	     40685 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1938 B/op	      41 allocs/op
+BenchmarkColdBurst/Otter                                       	    6122	     29503 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1144 B/op	      16 allocs/op
+BenchmarkColdBurst/Otter                                       	    6120	     29261 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1144 B/op	      16 allocs/op
+BenchmarkColdBurst/Otter                                       	    6166	     29086 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1144 B/op	      16 allocs/op
+BenchmarkColdBurst/Otter                                       	    6201	     29149 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1144 B/op	      16 allocs/op
+BenchmarkColdBurst/Otter                                       	    6178	     29230 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1144 B/op	      16 allocs/op
+BenchmarkColdBurst/Otter-4                                     	    4719	     37693 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1152 B/op	      16 allocs/op
+BenchmarkColdBurst/Otter-4                                     	    4798	     37640 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1147 B/op	      16 allocs/op
+BenchmarkColdBurst/Otter-4                                     	    4783	     37644 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1145 B/op	      16 allocs/op
+BenchmarkColdBurst/Otter-4                                     	    4748	     37566 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1146 B/op	      16 allocs/op
+BenchmarkColdBurst/Otter-4                                     	    4759	     37430 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1148 B/op	      16 allocs/op
+BenchmarkRedisBurst/Soroi                                      	    5260	     29424 ns/op	         1.000 loads/burst	         8.000 reads/burst	    2120 B/op	      47 allocs/op
+BenchmarkRedisBurst/Soroi                                      	    6520	     29553 ns/op	         1.000 loads/burst	         8.000 reads/burst	    2120 B/op	      47 allocs/op
+BenchmarkRedisBurst/Soroi                                      	    6640	     29596 ns/op	         1.000 loads/burst	         8.000 reads/burst	    2120 B/op	      47 allocs/op
+BenchmarkRedisBurst/Soroi                                      	    6849	     29377 ns/op	         1.000 loads/burst	         8.000 reads/burst	    2120 B/op	      47 allocs/op
+BenchmarkRedisBurst/Soroi                                      	    6916	     29478 ns/op	         1.000 loads/burst	         8.000 reads/burst	    2120 B/op	      47 allocs/op
+BenchmarkRedisBurst/Soroi-4                                    	    5071	     34092 ns/op	         1.000 loads/burst	         8.000 reads/burst	    2133 B/op	      47 allocs/op
+BenchmarkRedisBurst/Soroi-4                                    	    5151	     34565 ns/op	         1.000 loads/burst	         8.000 reads/burst	    2134 B/op	      47 allocs/op
+BenchmarkRedisBurst/Soroi-4                                    	    4932	     34670 ns/op	         1.000 loads/burst	         8.000 reads/burst	    2133 B/op	      47 allocs/op
+BenchmarkRedisBurst/Soroi-4                                    	    5124	     34057 ns/op	         1.000 loads/burst	         8.000 reads/burst	    2132 B/op	      47 allocs/op
+BenchmarkRedisBurst/Soroi-4                                    	    5086	     34552 ns/op	         1.000 loads/burst	         8.000 reads/burst	    2131 B/op	      47 allocs/op
+BenchmarkRedisBurst/Otter                                      	    6541	     28440 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1360 B/op	      22 allocs/op
+BenchmarkRedisBurst/Otter                                      	    6338	     28461 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1360 B/op	      22 allocs/op
+BenchmarkRedisBurst/Otter                                      	    6354	     28275 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1360 B/op	      22 allocs/op
+BenchmarkRedisBurst/Otter                                      	    6285	     28360 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1360 B/op	      22 allocs/op
+BenchmarkRedisBurst/Otter                                      	    6264	     28353 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1360 B/op	      22 allocs/op
+BenchmarkRedisBurst/Otter-4                                    	    5456	     32189 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1362 B/op	      22 allocs/op
+BenchmarkRedisBurst/Otter-4                                    	    5550	     32338 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1361 B/op	      22 allocs/op
+BenchmarkRedisBurst/Otter-4                                    	    5590	     32047 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1362 B/op	      22 allocs/op
+BenchmarkRedisBurst/Otter-4                                    	    5564	     31970 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1362 B/op	      22 allocs/op
+BenchmarkRedisBurst/Otter-4                                    	    5638	     32077 ns/op	         1.000 loads/burst	         8.000 reads/burst	    1362 B/op	      22 allocs/op
+PASS

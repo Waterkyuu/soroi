@@ -15,6 +15,10 @@
   <p><a href="#功能">功能</a> · <a href="#安装">安装</a></p>
 </div>
 
+![main 与 concurrent-cache-candidates 的八并发 Get、Set 和完整组工作流对比](assets/cache-8-worker-benchmarks.svg)
+
+[查看测试条件与限制](#八并发缓存操作)
+
 ## 什么时候使用 soroi
 
 当 Go 应用需要协调数据加载与同步时，可以使用 soroi：复用缓存结果、合并并发请求、批量读取，或在写入后刷新关联查询。
@@ -158,6 +162,34 @@ go run .
 配置、预期输出与 API 契约见[共享缓存文档](docs/shared-cache.zh-CN.md)和[共享失效文档](docs/shared-invalidation.zh-CN.md)。
 
 ## 可复现的 benchmark
+
+### 八并发缓存操作
+
+图中直接比较 **main（[`80738c3`](https://github.com/Waterkyuu/soroi/commit/80738c390ab00e51477ba39f9c4874f67833a882)）**
+与 **concurrent-cache-candidates（[`d8fa236`](https://github.com/Waterkyuu/soroi/commit/d8fa236bb62d23cb2bb2dbcbf0e2e5afc6569949)）**，
+双方使用完全相同的公共 API 工作负载。main 保持原有实现；候选包含 64 桶及后续缓存优化。
+
+| 场景 | main | 候选 | 配对耗时变化 | 探索性 95% 区间 |
+| --- | ---: | ---: | ---: | --- |
+| Get | 374.75 | 28.38 | -92.37% | [-92.50%, -92.28%] |
+| Set | 305.00 | 36.16 | -88.11% | [-88.35%, -87.23%] |
+| 完整组工作流 | 3328.00 | 381.30 | -88.59% | [-89.04%, -87.48%] |
+
+Get、Set 单位为 ns/op，完整组工作流为 ns/次，越低越好。数值为中位数；
+变化取各对候选/main 比值的中位数，因此不一定等于表中两列中位数直接相除。
+这是八个并发工作者的平均分摊耗时，不是单请求延迟或 P95/P99；各子图独立刻度，均从零开始。
+
+完整缓存流程执行 `Set → Get → Update → Fetch`，并核对最终组通知。
+8 个工作者各拥有一个双 key 组，组在计时前建立，两版使用相同的固定 key。
+数据已预置，计时期间没有实际源加载 I/O；Get 和变化值 Set 使用互不重叠的工作者 key 范围。
+
+测量环境：Apple M3 Pro、macOS 14.6、Go 1.27.1、`GOMAXPROCS=8`，
+1,024 个预置 key、关闭容量限制；每版每项 20 次，每次 2 秒，两版交替配对执行（2026-11-12）。
+主机为电池供电，桌面应用仍在活动。三项结果不能证明所有功能和配置均满足回退限制，
+本机 macOS 数据也不能代替 Linux 实机性能证据。
+
+[方法、源码身份、不确定性及原始结果](https://github.com/Waterkyuu/soroi-performance-diagnostics/blob/e4519e5537b147c02e19ccffaa37862068a93a9a/experiments/main_candidate_readme/RESULTS.md)
+保存在独立诊断仓库，需要该仓库的访问权限。
 
 [业务场景基准](docs/business-benchmarks.zh-CN.md) 测量热点过期、Redis 故障、下游超时和批量读取，
 包含回源次数、P95/P99 延迟、成功与拒绝数量、内存分配，以及附带负载条件的实测记录。

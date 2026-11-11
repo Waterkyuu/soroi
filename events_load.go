@@ -21,9 +21,9 @@ func (pending *flight) event(key any, kind EventKind) Event {
 }
 
 // joinLoadLocked records a join to one operation independently of aggregate Stats counting.
-func (c *Client) joinLoadLocked(key any, pending *flight, request queryRequest) {
+func (c *clientBucket) joinLoadLocked(key any, pending *flight, request queryRequest) {
 	pending.joined++
 	event := pending.event(key, EventLoadJoined)
-	event.Trigger, event.Reason = request.trigger, loadReason(c.entries[key])
-	c.emitEventLocked(event)
+	event.Trigger, event.Reason = request.trigger, loadReason(c.entryLocked(key))
+	c.owner.emitEventLocked(event)
 }
