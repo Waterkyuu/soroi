@@ -156,7 +156,7 @@ func TestSharedWatcherResync(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(watch.Close)
-	if !Get[int](c, d.Key).Stale {
+	if !GetState[int](c, d.Key).Stale {
 		t.Fatal("startup did not repair the pre-subscription gap")
 	}
 	if _, err := d.Fetch(context.Background(), c); err != nil {
@@ -169,7 +169,7 @@ func TestSharedWatcherResync(t *testing.T) {
 	t.Cleanup(diagnostic.Close)
 	store.emit(SharedInvalidation{Reset: true, Err: errors.New("connection lost")})
 	waitSharedEvent(t, diagnostic.Events(), d.Key)
-	if !Get[int](c, d.Key).Stale || Get[int](c, "unrelated").Stale {
+	if !GetState[int](c, d.Key).Stale || GetState[int](c, "unrelated").Stale {
 		t.Fatal("resync crossed its source scope")
 	}
 }
@@ -388,7 +388,7 @@ func TestSharedTagsLocalSelection(t *testing.T) {
 		store,
 		[]string{"tenant:42:users"},
 	); !errors.Is(err, failure) ||
-		Get[int](c, d.Key).Stale {
+		GetState[int](c, d.Key).Stale {
 		t.Fatalf("failure = %v", err)
 	}
 	store.tagErr = nil
@@ -404,7 +404,7 @@ func TestSharedTagsLocalSelection(t *testing.T) {
 	); err != nil {
 		t.Fatal(err)
 	}
-	if !Get[int](c, d.Key).Stale || Get[int](c, "tenant:99").Stale {
+	if !GetState[int](c, d.Key).Stale || GetState[int](c, "tenant:99").Stale {
 		t.Fatal("tag selection crossed scope or used AND")
 	}
 }
@@ -469,7 +469,7 @@ func TestSharedRemoteFenceKeepsLocalResultStale(t *testing.T) {
 	if err := <-done; err != nil {
 		t.Fatal(err)
 	}
-	if state := Get[int](c, d.Key); !state.HasData || !state.Stale || state.Data != 7 {
+	if state := GetState[int](c, d.Key); !state.HasData || !state.Stale || state.Data != 7 {
 		t.Fatalf("remote conflict = %+v", state)
 	}
 }

@@ -65,7 +65,7 @@ func TestSharedCacheDiagnostics(t *testing.T) {
 				if err := d.InvalidateShared(context.Background(), client); !errors.Is(err, cause) {
 					t.Fatalf("invalidation error = %v", err)
 				}
-				if Get[int](client, d.Key).Stale {
+				if GetState[int](client, d.Key).Stale {
 					t.Fatal("failed invalidation changed local freshness")
 				}
 			} else {
@@ -252,7 +252,7 @@ func TestSharedCacheDiagnosticConflict(t *testing.T) {
 		t.Fatalf("conflicting source result = %d, %v", value, err)
 	}
 	stats := d.Shared.Stats()
-	if stats.LastError != nil || stats.WriteConflicts != 1 || !Get[int](client, d.Key).Stale {
+	if stats.LastError != nil || stats.WriteConflicts != 1 || !GetState[int](client, d.Key).Stale {
 		t.Fatalf("conflict diagnostic or freshness changed: %+v", stats)
 	}
 }

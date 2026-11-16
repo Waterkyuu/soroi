@@ -138,7 +138,7 @@ func TestSharedCacheReuse(t *testing.T) {
 	if value, err := d.Fetch(ctx, c2); err != nil || value != 1 {
 		t.Fatalf("shared = %d, %v", value, err)
 	}
-	state := Get[int](c2, d.Key)
+	state := GetState[int](c2, d.Key)
 	if !state.ExpiresAt.Equal(time.Unix(0, now1.Load()).Add(time.Minute)) ||
 		!state.UpdatedAt.Equal(time.Unix(0, now2.Load())) {
 		t.Fatalf("restored timestamps = %+v", state)
@@ -212,7 +212,7 @@ func TestSharedInvalidationFencesOldLoad(t *testing.T) {
 	if stats := d.Shared.Stats(); stats.WriteConflicts != 1 || stats.Writes != 0 {
 		t.Fatalf("old write = %+v", stats)
 	}
-	if !Get[int](c, d.Key).Stale {
+	if !GetState[int](c, d.Key).Stale {
 		t.Fatal("invalidated old load became fresh locally")
 	}
 	d.Fetcher = func(context.Context) (int, error) { return 2, nil }
@@ -251,7 +251,7 @@ func TestSharedCacheFailures(t *testing.T) {
 				if err := d.InvalidateShared(context.Background(), c); !errors.Is(err, failure) {
 					t.Fatal(err)
 				}
-				if Get[int](c, d.Key).Stale {
+				if GetState[int](c, d.Key).Stale {
 					t.Fatal("failed remote invalidation changed local state")
 				}
 			}
@@ -270,7 +270,7 @@ func TestSharedCacheLocalWrites(t *testing.T) {
 	if err := Update(c1, d.Key, func(int) (int, error) { return 9, nil }); err != nil {
 		t.Fatal(err)
 	}
-	if state := Get[int](
+	if state := GetState[int](
 		c1,
 		d.Key,
 	); state.Data != 9 ||
@@ -392,7 +392,7 @@ func TestSharedCacheRecordBoundaries(t *testing.T) {
 				if _, err := definition.Fetch(context.Background(), c2); err != nil {
 					t.Fatal(err)
 				}
-				if state := Get[*int](c2, "nil"); !state.HasData || state.Data != nil || shared.Stats().Hits != 1 {
+				if state := GetState[*int](c2, "nil"); !state.HasData || state.Data != nil || shared.Stats().Hits != 1 {
 					t.Fatalf("cached nil = %+v, %+v", state, shared.Stats())
 				}
 				return
@@ -467,7 +467,7 @@ func TestSharedCacheCloseCancelsRead(t *testing.T) {
 	if err := <-done; !errors.Is(err, context.Canceled) {
 		t.Fatal(err)
 	}
-	if state := Get[int](c, d.Key); state.HasData || !errors.Is(state.Err, ErrClosed) {
+	if state := GetState[int](c, d.Key); state.HasData || !errors.Is(state.Err, ErrClosed) {
 		t.Fatalf("closed = %+v", state)
 	}
 }
@@ -525,11 +525,11 @@ func TestSharedCacheSourceFailureAndMaxAge(t *testing.T) {
 	if _, err := d.Fetch(context.Background(), c2); !errors.Is(err, failure) {
 		t.Fatal(err)
 	}
-	if state := Get[int](c2, d.Key); !state.HasData || state.Data != 7 || !state.Stale {
+	if state := GetState[int](c2, d.Key); !state.HasData || state.Data != 7 || !state.Stale {
 		t.Fatalf("stale fallback = %+v", state)
 	}
 	now.Store(int64(90 * time.Second))
-	if state := Get[int](c2, d.Key); state.HasData {
+	if state := GetState[int](c2, d.Key); state.HasData {
 		t.Fatalf("age boundary = %+v", state)
 	}
 	// Failed source results never replace the remote record with an error or zero-value fallback.
@@ -565,7 +565,7 @@ func TestSharedCacheFailedRefreshDoesNotResurrect(t *testing.T) {
 			t.Fatalf("invalidated record reused after failure: %v", err)
 		}
 	}
-	if state := Get[int](c, d.Key); !state.Stale || state.Data != 7 || !errors.Is(state.Err, failure) {
+	if state := GetState[int](c, d.Key); !state.Stale || state.Data != 7 || !errors.Is(state.Err, failure) {
 		t.Fatalf("failed refresh state = %+v", state)
 	}
 }
@@ -588,7 +588,11 @@ func TestSharedCacheZeroClock(t *testing.T) {
 	if _, err := d.Fetch(context.Background(), b); err != nil {
 		t.Fatal(err)
 	}
-	if state := Get[int](b, d.Key); !state.ExpiresAt.Equal(time.Time{}.Add(time.Minute)) || d.Shared.Stats().Hits != 1 {
+	if state := GetState[int](
+		b,
+		d.Key,
+	); !state.ExpiresAt.Equal(time.Time{}.Add(time.Minute)) ||
+		d.Shared.Stats().Hits != 1 {
 		t.Fatalf("zero source clock = %+v, %+v", state, d.Shared.Stats())
 	}
 }

@@ -466,7 +466,7 @@ func TestRedisRemoteMembershipPropagation(t *testing.T) {
 	if _, err := d.Fetch(ctx, client); err != nil {
 		t.Fatal(err)
 	}
-	if soroi.Get[int](client, d.Key).Stale {
+	if soroi.GetState[int](client, d.Key).Stale {
 		t.Fatal("membership registration invalidated its own fresh load")
 	}
 	h := d.Query(client)
