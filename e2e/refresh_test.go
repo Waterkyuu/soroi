@@ -200,7 +200,7 @@ func TestHTTPMutationRefreshFollowup(t *testing.T) {
 			for nextDiagnosticEvent(t, events).Kind != soroi.EventInvalidated {
 			}
 			// Read under the public Client lock after the invalidation event has been emitted.
-			_ = client.Get("users")
+			_ = client.GetState("users")
 			var outcome httpMutationResult
 			if wait {
 				if mutation.Snapshot().Status != soroi.Pending {
@@ -289,7 +289,7 @@ func TestHTTPInvalidateAndWaitResults(t *testing.T) {
 			failures := 0
 			for index, key := range []any{"user:42", "users"} {
 				result := results[index]
-				state := client.Get(key)
+				state := client.GetState(key)
 				if result.Key != key || state.Fetching || !state.HasData {
 					t.Fatalf("unfinished target: result=%+v state=%+v", result, state)
 				}

@@ -150,7 +150,7 @@ func TestHTTPDiagnosticLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	first.Snapshot()
-	soroi.Get[user](client, "user:42")
+	soroi.GetState[user](client, "user:42")
 	select {
 	case event := <-events.Events():
 		t.Fatalf("key filtering or passive reads produced %+v", event)

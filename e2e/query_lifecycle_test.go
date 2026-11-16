@@ -219,7 +219,7 @@ func TestSharedClientMutation(t *testing.T) {
 	if err := soroi.Set(client, "user:42", []user{}); !errors.Is(err, soroi.ErrTypeMismatch) {
 		t.Fatalf("wrong local type = %v", err)
 	}
-	if soroi.Get[user](client, "user:42").Data.Name != "Bob" {
+	if soroi.GetState[user](client, "user:42").Data.Name != "Bob" {
 		t.Fatal("rejected update damaged detail cache")
 	}
 }
@@ -249,7 +249,7 @@ func TestDeferredPredicateInvalidation(t *testing.T) {
 		api.count("/users/42") != 1 || api.count("/users") != 1 {
 		t.Fatal("deferred invalidation issued HTTP work")
 	}
-	if soroi.Get[settings](client, "settings").Stale {
+	if soroi.GetState[settings](client, "settings").Stale {
 		t.Fatal("predicate invalidated unrelated type")
 	}
 	updated, err := soroi.Fetch(
@@ -427,13 +427,13 @@ func TestHTTPCancellation(t *testing.T) {
 			case <-time.After(3 * time.Second):
 				t.Fatal("server request was not canceled")
 			}
-			if action == "set" && soroi.Get[user](client, "user").Data.Name != "local" {
+			if action == "set" && soroi.GetState[user](client, "user").Data.Name != "local" {
 				t.Fatal("local value overwritten")
 			}
-			if action == "remove" && soroi.Get[int](client, "user").Data != 42 {
+			if action == "remove" && soroi.GetState[int](client, "user").Data != 42 {
 				t.Fatal("new type overwritten")
 			}
-			if action == "close" && !errors.Is(soroi.Get[user](client, "user").Err, soroi.ErrClosed) {
+			if action == "close" && !errors.Is(soroi.GetState[user](client, "user").Err, soroi.ErrClosed) {
 				t.Fatal("closed client still readable")
 			}
 		})
@@ -478,7 +478,7 @@ func TestPublicCacheOperations(t *testing.T) {
 		t.Fatal(err)
 	}
 	now = now.Add(time.Minute)
-	if !soroi.Get[settings](client, "settings").Stale {
+	if !soroi.GetState[settings](client, "settings").Stale {
 		t.Fatal("absolute expiry boundary not respected")
 	}
 	if _, err := soroi.FetchWithExpiry(
@@ -490,11 +490,11 @@ func TestPublicCacheOperations(t *testing.T) {
 		t.Fatalf("expired load = %v, calls=%d", err, calls)
 	}
 	client.Remove("settings")
-	if state := soroi.Get[settings](client, "settings"); state.HasData || state.Status != soroi.Idle {
+	if state := soroi.GetState[settings](client, "settings"); state.HasData || state.Status != soroi.Idle {
 		t.Fatalf("remove = %+v", state)
 	}
 	client.Clear()
-	if soroi.Get[[]user](client, "users").HasData {
+	if soroi.GetState[[]user](client, "users").HasData {
 		t.Fatal("clear retained cached list")
 	}
 	client.Close()

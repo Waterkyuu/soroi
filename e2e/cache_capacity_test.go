@@ -39,7 +39,7 @@ func TestHTTPCapacityEviction(t *testing.T) {
 	); err != nil {
 		t.Fatal(err)
 	}
-	if soroi.Get[[]user](client, "users").HasData || !soroi.Get[settings](client, "settings").HasData {
+	if soroi.GetState[[]user](client, "users").HasData || !soroi.GetState[settings](client, "settings").HasData {
 		t.Fatal("capacity did not evict the least recently used HTTP result")
 	}
 	if _, err := soroi.Fetch(
@@ -78,7 +78,7 @@ func TestHTTPCapacityEviction(t *testing.T) {
 	if updated, err := detail.Refetch(context.Background()); err != nil || updated.Name != "Alice" {
 		t.Fatalf("refetch evicted detail = %+v, %v", updated, err)
 	}
-	if api.count("/users/42") != 2 || soroi.Get[[]user](client, "users").HasData {
+	if api.count("/users/42") != 2 || soroi.GetState[[]user](client, "users").HasData {
 		t.Fatal("refetch did not respect capacity")
 	}
 }

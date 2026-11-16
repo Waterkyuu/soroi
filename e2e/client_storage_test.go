@@ -25,7 +25,11 @@ func TestClientConcurrentStorage(t *testing.T) {
 					t.Error(err)
 					return
 				}
-				if state := soroi.Get[int](client, key); state.Err != nil || !state.HasData || state.Data != value {
+				if state := soroi.GetState[int](
+					client,
+					key,
+				); state.Err != nil || !state.HasData ||
+					state.Data != value {
 					t.Errorf("read = %+v", state)
 					return
 				}
@@ -58,7 +62,7 @@ func TestClientConcurrentStorage(t *testing.T) {
 		t.Fatal(err)
 	}
 	for worker := 0; worker < 32; worker++ {
-		if state := soroi.Get[int](client, fmt.Sprintf("worker:%d", worker)); !state.HasData || !state.Stale {
+		if state := soroi.GetState[int](client, fmt.Sprintf("worker:%d", worker)); !state.HasData || !state.Stale {
 			t.Fatalf("global invalidation = %+v", state)
 		}
 	}

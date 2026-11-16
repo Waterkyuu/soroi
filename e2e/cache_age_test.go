@@ -98,7 +98,7 @@ func TestHTTPMaxAgeDuringRefresh(t *testing.T) {
 	}
 	close(release)
 	state = await(t, detail, func(s soroi.Snapshot[user]) bool { return s.Data.Name == "Bob" && !s.Fetching })
-	if state.Err != nil || calls.Load() != 1 || soroi.Get[settings](client, "settings").HasData {
+	if state.Err != nil || calls.Load() != 1 || soroi.GetState[settings](client, "settings").HasData {
 		t.Fatalf("HTTP completion did not preserve work and enforce capacity = %+v", state)
 	}
 }
