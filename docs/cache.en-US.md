@@ -50,11 +50,17 @@ These policies provide client defaults. [Per-consumer options](query-options.en-
 
 Configure [execution budgets](execution.en-US.md) to limit active loader attempts and queued loads. Queue time is included in the overall timeout.
 
-## `Client.Get`: inspect by key without a result type
+## Read cache values with `Get`
 
-`client.Get(key)` returns `Snapshot[any]` containing the actual cached value and shared query state. No result type is required or checked. `Data` preserves its dynamic type; accessing concrete fields or methods requires a Go type assertion. Invalid keys return `ErrInvalidKey`, and closed clients return `ErrClosed` through `Snapshot.Err`.
+Use `soroi.Get[V](client, key)` to read a value of the expected type `V`. Use `client.Get(key)` to read the value as `any`. Both return `(value, ok)`. The presence flag distinguishes a cached zero or nil from an unavailable value.
 
-The following complete program reads the same cache through both APIs. Save it as `main.go` in a Go module that imports soroi and run `go run .`.
+A retained value remains readable after `StaleTime`. A missing or invalid key, a closed client, and a typed read with an incompatible result type all return a zero value and `ok=false`. Use `GetState` for detailed errors and freshness.
+
+## Inspect query state with `GetState`
+
+Use `soroi.GetState[V](client, key)` for a typed `Snapshot[V]` or `client.GetState(key)` for `Snapshot[any]`. The snapshot includes data presence, freshness, loading status, errors, and timestamps. A typed mismatch reports `ErrTypeMismatch`; invalid keys and closed clients report `ErrInvalidKey` and `ErrClosed` through the snapshot error.
+
+The following complete program reads a greeting and inspects its state. Save it as `main.go` in a Go module that imports soroi and run `go run .`.
 
 ```go
 package main
@@ -66,45 +72,30 @@ import (
 	"github.com/Waterkyuu/soroi"
 )
 
-// main reads cached state with and without specifying a result type.
+// main reads a cached value and inspects its query state.
 func main() {
 	client := soroi.NewClient(soroi.Options{StaleTime: time.Minute})
 	defer client.Close()
 	if err := soroi.Set(client, "greeting", "hello"); err != nil {
 		panic(err)
 	}
-	state := client.Get("greeting")
-	if state.HasData {
-		fmt.Println("cached:", state.Data)
+
+	if value, ok := soroi.Get[string](client, "greeting"); ok {
+		fmt.Println("cached:", value)
 	}
-	typed := soroi.Get[string](client, "greeting")
-	if typed.HasData {
-		fmt.Println("typed:", typed.Data)
-	}
+	state := soroi.GetState[string](client, "greeting")
+	fmt.Println("has data:", state.HasData)
 }
 ```
 
-Expected output:
+Expected output
 
 ```text
 cached: hello
-typed: hello
+has data: true
 ```
 
-Both APIs inspect without starting a request or creating a subscription. An unknown key returns `Idle`, `HasData: false`, and `Data: nil` from `Client.Get`; reading it does not bind a result type. `HasData` distinguishes missing data from cached nils or zero values. Reads use Client freshness defaults, enforce `MaxAge`, update LRU recency, and restart inactive retention. Reading expired data may notify existing query handles of its removal. Use handle `Updates()` for ongoing notifications.
-
-Cached data remains shared and read-only. Untyped reads do not change the key's type binding or relax type checks for writes, typed reads, or subscriptions.
-
-## `Get[V]`: inspect without requesting
-
-```go
-state := soroi.Get[string](client, "greeting")
-if state.HasData {
-	fmt.Println(state.Data)
-}
-```
-
-Use `soroi.Get[V]` when the result type is known and a typed `Snapshot[V]` is needed. The explicit type is necessary because there is no fetcher to infer it from. Incompatible static result types return `ErrTypeMismatch`; untyped `Client.Get` does not perform this check. Unlike an untyped read, a typed read of missing data returns the zero value of `V`. Both APIs otherwise have the same cache inspection and lifecycle behavior.
+Both reads enforce `MaxAge`, update LRU recency, and restart inactive retention when configured. Reading data beyond `MaxAge` may notify existing handles of its removal. Neither read starts a request, subscribes, nor binds a missing key to a type. The returned data is shared and read-only.
 
 ## `Set`: install local data
 
@@ -244,19 +235,19 @@ func main() {
 	if err := soroi.Set(client, "b", "second"); err != nil {
 		panic(err)
 	}
-	_ = soroi.Get[string](client, "a")
+	_, _ = soroi.Get[string](client, "a")
 	if err := soroi.Set(client, "c", "third"); err != nil {
 		panic(err)
 	}
 	fmt.Println(
 		"retained:",
-		soroi.Get[string](client, "a").HasData,
-		soroi.Get[string](client, "b").HasData,
-		soroi.Get[string](client, "c").HasData,
+		soroi.GetState[string](client, "a").HasData,
+		soroi.GetState[string](client, "b").HasData,
+		soroi.GetState[string](client, "c").HasData,
 	)
 	now = now.Add(10 * time.Minute)
-	fmt.Println("over age:", soroi.Get[string](client, "a").HasData,
-		soroi.Get[string](client, "c").HasData)
+	fmt.Println("over age:", soroi.GetState[string](client, "a").HasData,
+		soroi.GetState[string](client, "c").HasData)
 }
 ```
 
@@ -313,7 +304,7 @@ Released handle `Snapshot()` can still inspect a compatible shared cache; `SetEn
 ## Error handling
 
 ```go
-state := soroi.Get[int](client, "greeting")
+state := soroi.GetState[int](client, "greeting")
 if errors.Is(state.Err, soroi.ErrTypeMismatch) {
 	// Use this key's declared result type or select a different key.
 }
@@ -327,9 +318,9 @@ if errors.Is(state.Err, soroi.ErrTypeMismatch) {
 | `ErrInvalidKey` | Nil or non-comparable key |
 | `ErrNoFetcher` | Query construction without a fetcher, or a required load without a loader |
 
-`Query` always requires a non-nil fetcher. `Fetch[V]` and `FetchWithExpiry[V]` may accept nil when fresh data already exists; stale or missing data returns `ErrNoFetcher`. Use `Client.Get` for inspection without a result type, or `Get[V]` for typed inspection.
+`Query` always requires a non-nil fetcher. `Fetch[V]` and `FetchWithExpiry[V]` may accept nil when fresh data already exists; stale or missing data returns `ErrNoFetcher`. Use `Client.GetState` for state inspection without a result type, or `GetState[V]` for typed inspection.
 
-Static and dynamic types differ: `Get[any]` checks that the key is bound to `any`; it is not equivalent to `Client.Get`, which accepts any existing result type. A `Query[any]` key is bound to `any`. Use `Set[any]` for that key; an inferred concrete string in `Set` binds as `string` and conflicts. Ordinary business queries should use concrete types.
+Static and dynamic types differ: `Get[any]` and `GetState[any]` require the key to be bound to `any`. The corresponding Client methods accept any existing result type. A `Query[any]` key is bound to `any`. Use `Set[any]` for that key; an inferred concrete string in `Set` binds as `string` and conflicts. Ordinary business queries should use concrete types.
 
 ## Verification
 

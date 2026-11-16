@@ -50,11 +50,17 @@ defer client.Close()
 
 通过[执行预算](execution.zh-CN.md)限制活动加载尝试和排队数量，排队时间计入整体超时。
 
-## `Client.Get`：按键读取，无需指定结果类型
+## 用 `Get` 读取缓存值
 
-`client.Get(key)` 返回 `Snapshot[any]`，包含实际缓存值和共享查询状态，无需指定或检查结果类型。`Data` 保留动态类型；访问具体类型的字段或方法时，需要使用 Go 类型断言。非法键通过 `Snapshot.Err` 返回 `ErrInvalidKey`，已关闭客户端返回 `ErrClosed`。
+使用 `soroi.Get[V](client, key)` 读取预期类型为 `V` 的值，或使用 `client.Get(key)` 将值按 `any` 读取。两种方式都返回 `(value, ok)`。通过 `ok` 可以区分已缓存的零值或 nil 与不可读的值。
 
-以下完整程序通过两种 API 读取同一份缓存。将代码保存为已导入 soroi 的 Go 模块中的 `main.go`，运行 `go run .`。
+超过 `StaleTime` 后，仍保留在缓存中的值可以读取。键缺失或非法、客户端已关闭，或者带类型读取时类型不匹配，均返回零值和 `ok=false`。需要查看错误或新鲜度时，使用 `GetState`。
+
+## 用 `GetState` 读取查询状态
+
+使用 `soroi.GetState[V](client, key)` 读取 `Snapshot[V]`，或使用 `client.GetState(key)` 读取 `Snapshot[any]`。快照包含数据是否存在、新鲜度、加载状态、错误及时间戳。带类型读取时类型不匹配会返回 `ErrTypeMismatch`；键非法或客户端已关闭时，快照的错误字段分别返回 `ErrInvalidKey` 和 `ErrClosed`。
+
+以下完整程序读取一条缓存问候语并查看其状态。将程序保存为已导入 soroi 的 Go 模块中的 `main.go`，运行 `go run .`。
 
 ```go
 package main
@@ -66,45 +72,30 @@ import (
 	"github.com/Waterkyuu/soroi"
 )
 
-// main reads cached state with and without specifying a result type.
+// main reads a cached value and inspects its query state.
 func main() {
 	client := soroi.NewClient(soroi.Options{StaleTime: time.Minute})
 	defer client.Close()
 	if err := soroi.Set(client, "greeting", "hello"); err != nil {
 		panic(err)
 	}
-	state := client.Get("greeting")
-	if state.HasData {
-		fmt.Println("cached:", state.Data)
+
+	if value, ok := soroi.Get[string](client, "greeting"); ok {
+		fmt.Println("cached:", value)
 	}
-	typed := soroi.Get[string](client, "greeting")
-	if typed.HasData {
-		fmt.Println("typed:", typed.Data)
-	}
+	state := soroi.GetState[string](client, "greeting")
+	fmt.Println("has data:", state.HasData)
 }
 ```
 
-预期输出：
+预期输出
 
 ```text
 cached: hello
-typed: hello
+has data: true
 ```
 
-两种 API 都不启动请求、不建立订阅。未知键在 `Client.Get` 中返回 `Idle`、`HasData: false` 和 `Data: nil`；读取不会绑定结果类型。`HasData` 用于区分缺失数据与已缓存的 nil 或零值。读取使用客户端默认新鲜期，执行 `MaxAge` 检查，更新 LRU 使用顺序，并重新计算闲置保留期。读取发现超龄数据时，可能通知已有查询对象数据已被移除。持续更新通知使用查询对象的 `Updates()`。
-
-缓存值仍是共享的只读数据。无类型读取不会改变键的类型绑定，也不会放宽写入、类型化读取或订阅的类型检查。
-
-## `Get[V]`：读取缓存状态
-
-```go
-state := soroi.Get[string](client, "greeting")
-if state.HasData {
-	fmt.Println(state.Data)
-}
-```
-
-已知结果类型且需要类型化的 `Snapshot[V]` 时，使用 `soroi.Get[V]`。显式写 `[string]` 是因为没有加载函数可供推断结果类型。静态结果类型不兼容时返回 `ErrTypeMismatch`；无类型读取 `Client.Get` 不执行此检查。与无类型读取不同，类型化读取在数据缺失时返回 `V` 的零值。两种 API 的其他缓存读取和生命周期行为一致。
+两种读取都会执行已启用的 `MaxAge` 检查、更新 LRU 使用顺序并续期闲置保留时间。读取发现数据超过 `MaxAge` 时，可能通知现有查询句柄值已被移除。读取不会启动请求、创建订阅或为缺失键绑定类型。返回的数据为共享的只读数据。
 
 ## `Set`：直接安装本地数据
 
@@ -246,19 +237,19 @@ func main() {
 	if err := soroi.Set(client, "b", "second"); err != nil {
 		panic(err)
 	}
-	_ = soroi.Get[string](client, "a")
+	_, _ = soroi.Get[string](client, "a")
 	if err := soroi.Set(client, "c", "third"); err != nil {
 		panic(err)
 	}
 	fmt.Println(
 		"retained:",
-		soroi.Get[string](client, "a").HasData,
-		soroi.Get[string](client, "b").HasData,
-		soroi.Get[string](client, "c").HasData,
+		soroi.GetState[string](client, "a").HasData,
+		soroi.GetState[string](client, "b").HasData,
+		soroi.GetState[string](client, "c").HasData,
 	)
 	now = now.Add(10 * time.Minute)
-	fmt.Println("over age:", soroi.Get[string](client, "a").HasData,
-		soroi.Get[string](client, "c").HasData)
+	fmt.Println("over age:", soroi.GetState[string](client, "a").HasData,
+		soroi.GetState[string](client, "c").HasData)
 }
 ```
 
@@ -315,7 +306,7 @@ client.Close() // Cancel all work and close all query channels permanently.
 ## 错误处理
 
 ```go
-state := soroi.Get[int](client, "greeting")
+state := soroi.GetState[int](client, "greeting")
 if errors.Is(state.Err, soroi.ErrTypeMismatch) {
 	// Use this key's declared result type or select a different key.
 }
@@ -329,9 +320,9 @@ if errors.Is(state.Err, soroi.ErrTypeMismatch) {
 | `ErrInvalidKey` | 键为 nil，或包含不能比较的值 |
 | `ErrNoFetcher` | 创建查询没有加载函数，或需要请求却没有加载函数 |
 
-`Query` 始终需要非 nil 加载函数。`Fetch[V]` 和 `FetchWithExpiry[V]` 可以传 nil 来读取**已有新鲜缓存**；缺失或过期时返回 `ErrNoFetcher`。无需指定结果类型的状态读取使用 `Client.Get`，类型化读取使用 `Get[V]`。
+`Query` 始终需要非 nil 加载函数。`Fetch[V]` 和 `FetchWithExpiry[V]` 可以传 nil 来读取**已有新鲜缓存**；缺失或过期时返回 `ErrNoFetcher`。无需指定结果类型的状态读取使用 `Client.GetState`，类型化状态读取使用 `GetState[V]`。
 
-静态类型与动态值不同：`Get[any]` 要求键绑定的静态类型是 `any`，不等同于可读取任意已有结果类型的 `Client.Get`。`Query[any]` 的键绑定的是 `any`，对它写数据应使用 `Set[any]`；直接传入具体字符串的 `Set` 会推断为 `string`，因此产生类型冲突。正常业务应使用具体类型。
+静态类型与动态值不同：`Get[any]` 和 `GetState[any]` 要求键绑定的静态类型是 `any`。对应的 Client 方法支持读取任意已绑定的结果类型。`Query[any]` 的键绑定的是 `any`，对它写数据应使用 `Set[any]`；直接传入具体字符串的 `Set` 会推断为 `string`，因此产生类型冲突。正常业务应使用具体类型。
 
 ## 验证
 

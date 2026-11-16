@@ -274,6 +274,22 @@ func Prefetch[V any](
 	return definition.Prefetch(ctx, client)
 }
 
+// Get returns the retained cache value and whether it is available. The value
+// retains its dynamic type and may be stale. A missing value, an invalid key, or
+// a closed client returns (nil, false). Use GetState for freshness and errors.
+func (c *Client) Get(key any) (any, bool) {
+	return c.bucketFor(key).getValue(key, nil)
+}
+
+// Get returns a retained typed cache value and whether it is available, without
+// starting a request. Stale values remain readable until removed or expired
+// by MaxAge. An unavailable value or incompatible result type returns the
+// zero value of V and false. Use GetState for freshness and errors.
+func Get[V any](client *Client, key any) (V, bool) {
+	value, ok := client.bucketFor(key).getValue(key, reflect.TypeFor[V]())
+	return typedValue[V](value), ok
+}
+
 // GetState reads cached state without requiring a result type, starting a request, or creating a subscription.
 // Data retains its dynamic type; use HasData to distinguish missing data from a cached nil or zero value.
 // Reads use Client freshness defaults and restart inactive retention without binding an unused key.
@@ -293,14 +309,21 @@ func GetState[V any](client *Client, key any) Snapshot[V] {
 	return typedSnapshot[V](client.bucketFor(key).getSnapshot(key, reflect.TypeFor[V](), client.options))
 }
 
-// Get reads cached state without requiring a result type.
-func (c *Client) Get(key any) Snapshot[any] {
-	return c.GetState(key)
-}
+// getValue applies cache retention and returns the value without projecting query state.
+func (c *clientBucket) getValue(key any, typ reflect.Type) (any, bool) {
+	if c.concurrentReads() {
+		c.mu.RLock()
+		defer c.mu.RUnlock()
+	} else {
+		c.mu.Lock()
+		defer c.mu.Unlock()
+	}
 
-// Get reads a typed snapshot of cached state.
-func Get[V any](client *Client, key any) Snapshot[V] {
-	return GetState[V](client, key)
+	cached, err := c.readEntryLocked(key, typ)
+	if err != nil || cached == nil || !cached.hasData {
+		return nil, false
+	}
+	return cached.value, true
 }
 
 // getSnapshot reads shared state using one consumer's freshness without changing another consumer's policy.
@@ -327,27 +350,32 @@ func (c *clientBucket) getSnapshot(key any, typ reflect.Type, options Options) S
 // before maintenance so a rejected type cannot expire or otherwise change another query.
 // The admitted entry pointer avoids a second map lookup only while it still names live storage.
 func (c *clientBucket) getSnapshotLocked(key any, typ reflect.Type, options Options) Snapshot[any] {
-	cached, err := c.checkedEntryLocked(key, typ)
+	cached, err := c.readEntryLocked(key, typ)
 	if err != nil {
 		return Snapshot[any]{Status: Error, Stale: true, Err: err}
-	}
-	if c.expireDataLocked(key) {
-		c.notifyLocked(key)
-	}
-	c.touchCapacityLocked(key)
-	c.touchGCLocked(key)
-	// Expiration or retention work above may remove the record, release its type binding,
-	// or publish changes that perform more maintenance. Never return data through a pointer
-	// to that removed node. With all such policies disabled, admission's pointer is still
-	// protected by this uninterrupted lock scope and the second map lookup can be skipped.
-	if c.owner.options.MaxAge > 0 || c.owner.options.GCTime > 0 || c.owner.options.MaxEntries > 0 {
-		cached = c.entries[key]
 	}
 	if cached == nil {
 		return c.entrySnapshotLocked(key, entry{}, time.Time{}, false)
 	}
 	expiresAt, fresh := c.entryFreshnessLocked(*cached, options.StaleTime)
 	return c.entrySnapshotLocked(key, *cached, expiresAt, fresh)
+}
+
+// readEntryLocked validates a read before applying maintenance. The caller holds
+// exclusive protection when maintenance is enabled and uses the returned node
+// only under the same lock.
+func (c *clientBucket) readEntryLocked(key any, typ reflect.Type) (*entry, error) {
+	cached, err := c.checkedEntryLocked(key, typ)
+	if err != nil || !c.readNeedsMaintenance() {
+		return cached, err
+	}
+	if c.expireDataLocked(key) {
+		c.notifyLocked(key)
+	}
+	c.touchCapacityLocked(key)
+	c.touchGCLocked(key)
+	// Maintenance can remove the admitted record or release its type binding.
+	return c.entries[key], nil
 }
 
 // Set installs a typed local result, cancels older loads, and notifies all compatible handles.
@@ -521,8 +549,13 @@ func (c *clientBucket) fetch(
 
 // concurrentReads excludes policies whose cache access mutates capacity, retention, or data age.
 func (c *clientBucket) concurrentReads() bool {
-	return c.owner.concurrentClock && c.owner.options.MaxEntries <= 0 && c.owner.options.GCTime <= 0 &&
-		c.owner.options.MaxAge <= 0
+	return c.owner.concurrentClock && !c.readNeedsMaintenance()
+}
+
+// readNeedsMaintenance identifies reads that can change cached data or retention.
+func (c *clientBucket) readNeedsMaintenance() bool {
+	options := &c.owner.options
+	return options.MaxEntries > 0 || options.GCTime > 0 || options.MaxAge > 0
 }
 
 // fetchReadOnly is the optional fresh-hit path called by fetch before taking a write lock.
