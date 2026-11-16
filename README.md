@@ -61,7 +61,8 @@ For simple local values that only need expiration, a TTL cache may be sufficient
   loading with `Disable` and `SetEnabled`.
 - **Explicit reads and prefetching.** Wait for fresh data with `Fetch`, warm
   the cache with `Prefetch`, or preserve an absolute freshness deadline with `FetchWithExpiry`.
-- **Cache policies and lifecycle.** Configure freshness, inactive-state GC,
+- **Cache policies and lifecycle.** Read retained values with `Get` or inspect full state with
+  `GetState`. Configure freshness, inactive-state GC,
   LRU capacity, and maximum data age; cancel loads, remove results, and close owned resources.
 - **Atomic cache updates.** Install typed data with `Set` or transform
   existing data with `Update`, rejecting concurrent changes instead of overwriting them.

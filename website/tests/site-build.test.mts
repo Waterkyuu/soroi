@@ -148,6 +148,10 @@ test("Go search results resolve to published sections and public source declarat
 	assert.ok(index.some((record) => record.title === "NewBatcher"));
 	assert.ok(index.some((record) => record.title === "Query"));
 	for (const declaration of [
+		"Get",
+		"GetState",
+		"Client.Get",
+		"Client.GetState",
 		"InfiniteQuery",
 		"InfiniteData",
 		"PageContext",
@@ -188,6 +192,7 @@ test("Go search results resolve to published sections and public source declarat
 	for (const locale of ["en", "zh-CN"]) {
 		const prefix = locale === "en" ? "" : "zh-CN/";
 		for (const [slug, declaration] of [
+			["cache", "GetState"],
 			["infinite-queries", "FetchNextPage"],
 			["queries", "QueriesWithCombine"],
 			["query-filters", "QueryFilter"],

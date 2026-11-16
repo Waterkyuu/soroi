@@ -52,6 +52,13 @@ go get github.com/Waterkyuu/soroi@v0.3.1
 升级后运行应用自身的测试。参考已安装版本对应 Git tag 下的源码注释和功能文档；`main` 和在线文档站可能包含
 尚未发布的改动。
 
+## 迁移缓存读取
+
+原来从 `Get` 返回值读取快照字段的代码，请改用 `soroi.GetState[V](client, key)`
+或 `client.GetState(key)`。这两个入口返回原来的快照。只需要读取值时，使用
+`value, ok := soroi.Get[V](client, key)` 或 `value, ok := client.Get(key)`，
+并在使用值前检查 `ok`。
+
 ## 从 cacheq 迁移到 soroi
 
 `v0.3.1` 将项目改名为 `soroi`。虽然版本号是 patch，本次发布仍会修改模块路径、

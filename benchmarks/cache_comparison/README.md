@@ -30,7 +30,8 @@ of Linux performance.
   measure admission quality, eviction hit ratios, or memory-pressure behavior.
 - `Keys=1` reads a shared hot key; `Keys=1024` cycles through the populated
   working set with worker-specific offsets. Each case shares one cache instance.
-- `Read` compares typed `soroi.Get` with `Otter.GetIfPresent`. Soroi also returns
+- `Read` compares typed `soroi.GetState` with `Otter.GetIfPresent`. Historical
+  revisions exposed the same snapshot read as `soroi.Get`. Soroi also returns
   query state, validates the result type, and evaluates consumer freshness.
   These richer semantics are part of the measured cost, not equivalent output.
 - `Fetch` compares `soroi.Fetch` with `Otter.Get`, using real one-hour clocks

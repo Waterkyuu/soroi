@@ -61,6 +61,13 @@ After upgrading, run your application's tests. Read source comments and guides
 at the installed version's Git tag; `main` and the website may contain unreleased
 changes.
 
+## Migrating cache reads
+
+Use `soroi.GetState[V](client, key)` or `client.GetState(key)` wherever older
+code reads fields from a `Get` result. These APIs return the same snapshots.
+For a value-only read, use `value, ok := soroi.Get[V](client, key)` or
+`value, ok := client.Get(key)`, and check `ok` before using the value.
+
 ## Migrating from cacheq to soroi
 
 Version `v0.3.1` renames the project to `soroi`. This release intentionally changes
