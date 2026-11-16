@@ -51,7 +51,7 @@ func newAccessCache(b *testing.B, library string, capacity int, countStats bool,
 		}
 		return accessCache{
 			read: func(i int) (uint64, bool) {
-				state := soroi.Get[uint64](client, boxed[i])
+				state := soroi.GetState[uint64](client, boxed[i])
 				return state.Data, state.HasData && state.Err == nil && !state.Stale
 			},
 			fetch: func(i int) (uint64, error) { return soroi.Fetch(context.Background(), client, boxed[i], loader) },

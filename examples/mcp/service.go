@@ -136,7 +136,7 @@ func (s *service) scopedServer(principal string) *mcp.Server {
 				return nil, err
 			}
 			// Use the effective cache deadline, including MaxAge, instead of issuing a new TTL on a hit.
-			deadline := soroi.Get[resourceValue](s.cache, key).ExpiresAt
+			deadline := soroi.GetState[resourceValue](s.cache, key).ExpiresAt
 			if value.expiresAt.Before(deadline) {
 				deadline = value.expiresAt
 			}

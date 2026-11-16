@@ -59,7 +59,7 @@ func TestHTTPStatsSharedRetry(t *testing.T) {
 		t.Fatal(err)
 	}
 	first.Snapshot()
-	soroi.Get[user](client, "user")
+	soroi.GetState[user](client, "user")
 	state := client.Stats()
 	if calls.Load() != 2 || state.Loads != 1 || state.Retries != 1 || state.LoadSuccesses != 1 ||
 		state.LoadFailures != 0 || state.CacheHits != 1 || state.CacheMisses != 2 || state.CacheEntries != 1 {

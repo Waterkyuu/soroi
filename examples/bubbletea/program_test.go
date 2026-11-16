@@ -157,7 +157,7 @@ func TestProgramRefreshLifecycle(t *testing.T) {
 	if !correctOutcomes {
 		t.Fatalf("terminal actions did not match shared query work: %+v", stats)
 	}
-	if err := soroi.Get[[]task](client, "tasks").Err; !errors.Is(err, soroi.ErrClosed) {
+	if err := soroi.GetState[[]task](client, "tasks").Err; !errors.Is(err, soroi.ErrClosed) {
 		t.Fatalf("program did not release its client: %v", err)
 	}
 }
@@ -217,7 +217,7 @@ func TestProgramStartupFailure(t *testing.T) {
 	if err == nil {
 		t.Fatal("canceled startup succeeded")
 	}
-	if err := soroi.Get[[]task](client, "tasks").Err; !errors.Is(err, soroi.ErrClosed) {
+	if err := soroi.GetState[[]task](client, "tasks").Err; !errors.Is(err, soroi.ErrClosed) {
 		t.Fatalf("startup failure did not release the client: %v", err)
 	}
 }
