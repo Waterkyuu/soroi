@@ -468,7 +468,7 @@ func TestGCRetentionBoundary(t *testing.T) {
 					t.Fatalf("remaining retention = %v", delay)
 				}
 			}
-			state := Get[string](client, "a")
+			state := GetState[string](client, "a")
 			if want := elapsed < time.Minute; state.HasData != want {
 				t.Fatalf(
 					"state after %v = %+v; want data = %v",
@@ -491,7 +491,7 @@ func TestGCDisabled(t *testing.T) {
 			client, scheduler := newGCClient(t, retention)
 			Set(client, "a", "cached")
 			scheduler.now.Add(int64(24 * time.Hour))
-			if state := Get[string](client, "a"); !state.HasData || !state.Stale {
+			if state := GetState[string](client, "a"); !state.HasData || !state.Stale {
 				t.Fatalf("disabled cleanup = %+v", state)
 			}
 			if count := scheduler.count(); count != 0 {
@@ -527,7 +527,7 @@ func TestGCUseRestartsRetention(t *testing.T) {
 				)
 				handle.Close()
 			case "snapshot":
-				Get[string](client, "a")
+				GetState[string](client, "a")
 			case "set":
 				Set(client, "a", "updated")
 			case "invalidate":
@@ -539,12 +539,12 @@ func TestGCUseRestartsRetention(t *testing.T) {
 			}
 			scheduler.now.Add(int64(30 * time.Second))
 			previous.callback()
-			if state := Get[string](client, "a"); !state.HasData {
+			if state := GetState[string](client, "a"); !state.HasData {
 				t.Fatal("a stopped callback deleted reused data")
 			}
 			scheduler.now.Add(int64(time.Minute))
 			scheduler.latest(t).callback()
-			if state := Get[string](client, "a"); state.HasData {
+			if state := GetState[string](client, "a"); state.HasData {
 				t.Fatalf("unused data was retained: %+v", state)
 			}
 		})
@@ -576,7 +576,7 @@ func TestGCSubscriptions(t *testing.T) {
 	<-second
 	scheduler.now.Add(int64(time.Hour))
 	previous.callback()
-	if state := Get[string](client, "a"); !state.HasData {
+	if state := GetState[string](client, "a"); !state.HasData {
 		t.Fatal("cleanup deleted subscribed data")
 	}
 	if !previous.stopped.Load() || scheduler.count() != 1 {
@@ -593,7 +593,7 @@ func TestGCSubscriptions(t *testing.T) {
 	}
 	scheduler.now.Add(int64(time.Minute))
 	current.callback()
-	if state := Get[string](client, "a"); state.HasData {
+	if state := GetState[string](client, "a"); state.HasData {
 		t.Fatalf("unsubscribed data was retained: %+v", state)
 	}
 }
@@ -632,7 +632,7 @@ func TestGCLoads(t *testing.T) {
 			}()
 			<-started
 			previous.callback()
-			if state := Get[string](client, "a"); !state.HasData || !state.Fetching || state.Data != "old" {
+			if state := GetState[string](client, "a"); !state.HasData || !state.Fetching || state.Data != "old" {
 				t.Fatalf("loading data = %+v", state)
 			}
 			if !previous.stopped.Load() || scheduler.count() != 1 {
@@ -665,7 +665,7 @@ func TestGCLoads(t *testing.T) {
 			}
 			scheduler.now.Add(int64(time.Minute))
 			current.callback()
-			if state := Get[string](client, "a"); state.HasData || state.Err != nil || state.Status != Idle {
+			if state := GetState[string](client, "a"); state.HasData || state.Err != nil || state.Status != Idle {
 				t.Fatalf("completed load remained cached: %+v", state)
 			}
 		})
@@ -687,7 +687,7 @@ func TestGCInitialLoad(t *testing.T) {
 	}
 	scheduler.now.Add(int64(time.Minute))
 	scheduler.latest(t).callback()
-	if state := Get[string](client, "a"); state.HasData {
+	if state := GetState[string](client, "a"); state.HasData {
 		t.Fatalf("initial load remained cached: %+v", state)
 	}
 	value, err := Fetch(
@@ -720,7 +720,7 @@ func TestGCInitialFailure(t *testing.T) {
 	}
 	scheduler.now.Add(int64(time.Minute))
 	scheduler.latest(t).callback()
-	if state := Get[string](client, "a"); state.Err != nil || state.Status != Idle {
+	if state := GetState[string](client, "a"); state.Err != nil || state.Status != Idle {
 		t.Fatalf("initial failure remained cached: %+v", state)
 	}
 }
@@ -734,10 +734,10 @@ func TestGCKeyIsolation(t *testing.T) {
 	Set(client, "b", "second")
 	scheduler.now.Add(int64(30 * time.Second))
 	first.callback()
-	if state := Get[string](client, "a"); state.HasData {
+	if state := GetState[string](client, "a"); state.HasData {
 		t.Fatalf("expired key = %+v", state)
 	}
-	if state := Get[string](client, "b"); !state.HasData || state.Data != "second" {
+	if state := GetState[string](client, "b"); !state.HasData || state.Data != "second" {
 		t.Fatalf("independent key = %+v", state)
 	}
 }
@@ -763,7 +763,7 @@ func TestGCRemovalStopsTimers(t *testing.T) {
 			Set(client, "a", "new")
 			scheduler.now.Add(int64(time.Minute))
 			previous.callback()
-			state := Get[string](client, "a")
+			state := GetState[string](client, "a")
 			if action == "close" {
 				if state.HasData || !errors.Is(state.Err, ErrClosed) || scheduler.count() != 1 {
 					t.Fatalf("cleanup after close = %+v", state)
@@ -819,9 +819,9 @@ func Example_cacheFreshness() {
 	})
 	defer client.Close()
 	Set(client, "models", "available")
-	fmt.Println(Get[string](client, "models").Stale)
+	fmt.Println(GetState[string](client, "models").Stale)
 	now = now.Add(time.Hour)
-	fmt.Println(Get[string](client, "models").Stale)
+	fmt.Println(GetState[string](client, "models").Stale)
 	// Output:
 	// false
 	// true

@@ -17,7 +17,7 @@ func TestCapacityLRU(t *testing.T) {
 			Set(c, "b", 2)
 			switch use {
 			case "get":
-				Get[int](c, "a")
+				GetState[int](c, "a")
 			case "fetch":
 				if _, err := Fetch[int](context.Background(), c, "a", nil); err != nil {
 					t.Fatal(err)
@@ -31,7 +31,7 @@ func TestCapacityLRU(t *testing.T) {
 				c.Invalidate("a", InvalidateOptions{Refetch: RefetchNone})
 			}
 			Set(c, "c", 3)
-			if Get[int](c, "b").HasData || !Get[int](c, "a").HasData || !Get[int](c, "c").HasData {
+			if GetState[int](c, "b").HasData || !GetState[int](c, "a").HasData || !GetState[int](c, "c").HasData {
 				t.Fatal("capacity did not evict only the least recently used result")
 			}
 		})
@@ -46,7 +46,7 @@ func TestCapacityDisabled(t *testing.T) {
 			Set(c, i, i)
 		}
 		for i := 0; i < 3; i++ {
-			if state := Get[int](c, i); !state.HasData || state.Data != i {
+			if state := GetState[int](c, i); !state.HasData || state.Data != i {
 				t.Fatalf("limit %d, key %d = %+v", limit, i, state)
 			}
 		}
@@ -73,7 +73,7 @@ func TestCapacitySubscription(t *testing.T) {
 	if value, err := query.Refetch(context.Background()); value != 3 || err != nil {
 		t.Fatalf("refetch after eviction = %d, %v", value, err)
 	}
-	if Get[string](c, "b").HasData {
+	if GetState[string](c, "b").HasData {
 		t.Fatal("refetch exceeded capacity")
 	}
 }
@@ -99,7 +99,7 @@ func TestCapacityActiveLoad(t *testing.T) {
 	}()
 	<-started
 	Set(c, "b", "second")
-	if state := Get[int](c, "a"); state.HasData || !state.Fetching || state.Status != Pending {
+	if state := GetState[int](c, "a"); state.HasData || !state.Fetching || state.Status != Pending {
 		t.Fatalf("evicted refresh = %+v", state)
 	}
 	if err := Set(c, "a", "wrong type"); !errors.Is(err, ErrTypeMismatch) {
@@ -109,7 +109,7 @@ func TestCapacityActiveLoad(t *testing.T) {
 	if err := <-finished; err != nil {
 		t.Fatal(err)
 	}
-	if state := Get[int](c, "a"); !state.HasData || state.Data != 2 || Get[string](c, "b").HasData {
+	if state := GetState[int](c, "a"); !state.HasData || state.Data != 2 || GetState[string](c, "b").HasData {
 		t.Fatalf("completed refresh = %+v", state)
 	}
 }
@@ -126,11 +126,11 @@ func TestCapacityErrors(t *testing.T) {
 		"b",
 		func(context.Context) (string, error) { return "", failure },
 	)
-	if !errors.Is(err, failure) || Get[int](c, "a").HasData {
+	if !errors.Is(err, failure) || GetState[int](c, "a").HasData {
 		t.Fatalf("cached failure did not consume capacity: %v", err)
 	}
 	Set(c, "c", true)
-	if state := Get[string](c, "b"); state.Err != nil || state.Status != Idle {
+	if state := GetState[string](c, "b"); state.Err != nil || state.Status != Idle {
 		t.Fatalf("evicted failure = %+v", state)
 	}
 	if err := Set(c, "b", 2); err != nil {
@@ -162,7 +162,7 @@ func TestCapacityRemoval(t *testing.T) {
 				t.Fatal("capacity eviction retained a cleanup timer")
 			}
 			old.callback()
-			if Get[int](c, "a").HasData || Get[int](c, "b").HasData || !Get[int](c, "c").HasData {
+			if GetState[int](c, "a").HasData || GetState[int](c, "b").HasData || !GetState[int](c, "c").HasData {
 				t.Fatal("discarded capacity records affected later cache state")
 			}
 		})
@@ -178,7 +178,7 @@ func TestCapacityHandleClose(t *testing.T) {
 	Set(c, "b", 2)
 	query.Close()
 	Set(c, "c", 3)
-	if Get[int](c, "a").HasData || !Get[int](c, "b").HasData || !Get[int](c, "c").HasData {
+	if GetState[int](c, "a").HasData || !GetState[int](c, "b").HasData || !GetState[int](c, "c").HasData {
 		t.Fatal("closing a handle changed recency without reading its data")
 	}
 }

@@ -27,7 +27,7 @@ func TestMaxAgeBoundary(t *testing.T) {
 			now.Store(int64(time.Minute - time.Nanosecond))
 			switch action {
 			case "get":
-				Get[string](c, "a")
+				GetState[string](c, "a")
 			case "fetch":
 				if _, err := Fetch[string](context.Background(), c, "a", nil); err != nil {
 					t.Fatal(err)
@@ -35,11 +35,11 @@ func TestMaxAgeBoundary(t *testing.T) {
 			case "invalidate":
 				c.Invalidate("a", InvalidateOptions{Refetch: RefetchNone})
 			}
-			if state := Get[string](c, "a"); !state.HasData || state.Data != "old" {
+			if state := GetState[string](c, "a"); !state.HasData || state.Data != "old" {
 				t.Fatalf("before deadline = %+v", state)
 			}
 			now.Add(1)
-			state := Get[string](c, "a")
+			state := GetState[string](c, "a")
 			if state.HasData || state.Data != "" || !state.Stale || state.Status != Idle {
 				t.Fatalf("at deadline = %+v", state)
 			}
@@ -64,7 +64,7 @@ func TestMaxAgeDisabled(t *testing.T) {
 		c, now := newAgeClient(t, Options{MaxAge: age})
 		Set(c, "a", 1)
 		now.Store(int64(24 * time.Hour))
-		if state := Get[int](c, "a"); !state.HasData || state.Data != 1 || !state.Stale {
+		if state := GetState[int](c, "a"); !state.HasData || state.Data != 1 || !state.Stale {
 			t.Fatalf("disabled age %v = %+v", age, state)
 		}
 	}
@@ -75,11 +75,11 @@ func TestMaxAgeStaleData(t *testing.T) {
 	c, now := newAgeClient(t, Options{StaleTime: time.Minute, MaxAge: 5 * time.Minute})
 	Set(c, "a", 1)
 	now.Store(int64(time.Minute))
-	if state := Get[int](c, "a"); !state.Stale || !state.HasData || state.Data != 1 {
+	if state := GetState[int](c, "a"); !state.Stale || !state.HasData || state.Data != 1 {
 		t.Fatalf("stale but usable = %+v", state)
 	}
 	now.Store(int64(5 * time.Minute))
-	if state := Get[int](c, "a"); state.HasData || state.Data != 0 {
+	if state := GetState[int](c, "a"); state.HasData || state.Data != 0 {
 		t.Fatalf("over-age stale data = %+v", state)
 	}
 }
@@ -116,14 +116,14 @@ func TestMaxAgeFailedRefresh(t *testing.T) {
 	if _, err := Fetch(context.Background(), c, "a", fetch); !errors.Is(err, failure) {
 		t.Fatal(err)
 	}
-	if state := Get[string](c, "a"); !state.HasData || state.Data != "old" || !errors.Is(state.Err, failure) {
+	if state := GetState[string](c, "a"); !state.HasData || state.Data != "old" || !errors.Is(state.Err, failure) {
 		t.Fatalf("failed refresh before deadline = %+v", state)
 	}
 	now.Store(int64(time.Minute))
 	if _, err := Fetch(context.Background(), c, "a", fetch); !errors.Is(err, failure) {
 		t.Fatal(err)
 	}
-	if state := Get[string](c, "a"); state.HasData || state.Data != "" || !errors.Is(state.Err, failure) {
+	if state := GetState[string](c, "a"); state.HasData || state.Data != "" || !errors.Is(state.Err, failure) {
 		t.Fatalf("failed refresh at deadline = %+v", state)
 	}
 }
@@ -154,7 +154,7 @@ func TestMaxAgeRefreshCompletion(t *testing.T) {
 			}()
 			<-started
 			now.Store(int64(time.Minute))
-			if state := Get[string](c, "a"); state.HasData || state.Data != "" || !state.Fetching {
+			if state := GetState[string](c, "a"); state.HasData || state.Data != "" || !state.Fetching {
 				t.Fatalf("expired data during refresh = %+v", state)
 			}
 			if outcome == "cancel" {
@@ -163,7 +163,7 @@ func TestMaxAgeRefreshCompletion(t *testing.T) {
 				close(release)
 			}
 			err := <-finished
-			state := Get[string](c, "a")
+			state := GetState[string](c, "a")
 			switch outcome {
 			case "success":
 				if err != nil || !state.HasData || state.Data != "new" {
@@ -197,11 +197,11 @@ func TestMaxAgeRenewal(t *testing.T) {
 				t.Fatal(err)
 			}
 			now.Store(int64(time.Minute))
-			if state := Get[string](c, "a"); !state.HasData || state.Data != "new" {
+			if state := GetState[string](c, "a"); !state.HasData || state.Data != "new" {
 				t.Fatalf("renewed data = %+v", state)
 			}
 			now.Store(int64(90 * time.Second))
-			if state := Get[string](c, "a"); state.HasData {
+			if state := GetState[string](c, "a"); state.HasData {
 				t.Fatalf("renewed deadline = %+v", state)
 			}
 		})
@@ -224,11 +224,11 @@ func TestMaxAgeExplicitExpiry(t *testing.T) {
 				t.Fatal(err)
 			}
 			deadline := min(expiry, time.Minute)
-			if state := Get[string](c, "a"); !state.ExpiresAt.Equal(time.Unix(0, int64(deadline))) {
+			if state := GetState[string](c, "a"); !state.ExpiresAt.Equal(time.Unix(0, int64(deadline))) {
 				t.Fatalf("bounded freshness = %+v", state)
 			}
 			now.Store(int64(time.Minute))
-			if state := Get[string](c, "a"); state.HasData || !errors.Is(state.Err, failure) {
+			if state := GetState[string](c, "a"); state.HasData || !errors.Is(state.Err, failure) {
 				t.Fatalf("expired explicit result = %+v", state)
 			}
 		}

@@ -43,7 +43,7 @@ func TestBucketIndependentWrites(t *testing.T) {
 			otherDone <- err
 			return
 		}
-		if state := Get[int](client, other); !state.HasData || state.Data != 42 {
+		if state := GetState[int](client, other); !state.HasData || state.Data != 42 {
 			otherDone <- fmt.Errorf("read = %+v", state)
 			return
 		}
@@ -98,7 +98,7 @@ func TestBucketEqualKeys(t *testing.T) {
 		if err := Set(client, pair[0], i+1); err != nil {
 			t.Fatal(err)
 		}
-		if state := Get[int](client, pair[1]); !state.HasData || state.Data != i+1 {
+		if state := GetState[int](client, pair[1]); !state.HasData || state.Data != i+1 {
 			t.Fatalf("equivalent key lookup = %+v", state)
 		}
 	}
@@ -116,13 +116,14 @@ func TestBucketSingleOwner(t *testing.T) {
 	Set(client, first, 1)
 	Set(client, other, 2)
 	client.Clear()
-	if Get[int](client, first).HasData || Get[int](client, other).HasData || client.Stats().CacheEntries != 0 {
+	if GetState[int](client, first).HasData || GetState[int](client, other).HasData ||
+		client.Stats().CacheEntries != 0 {
 		t.Fatal("Clear left state in an internal bucket")
 	}
 	Set(client, first, 3)
 	Set(client, other, 4)
 	client.Close()
-	if Get[int](client, first).Err != ErrClosed || Get[int](client, other).Err != ErrClosed {
+	if GetState[int](client, first).Err != ErrClosed || GetState[int](client, other).Err != ErrClosed {
 		t.Fatal("Close did not close the entire Client")
 	}
 }
@@ -200,7 +201,7 @@ func TestBucketUpdateRecreation(t *testing.T) {
 		}
 		return value + 1, nil
 	})
-	if err != ErrUpdateConflict || Get[int](client, key).Data != 10 || client.bucketFor(key) != bucket {
+	if err != ErrUpdateConflict || GetState[int](client, key).Data != 10 || client.bucketFor(key) != bucket {
 		t.Fatalf("recreated state lost conflict or ownership: %v", err)
 	}
 }

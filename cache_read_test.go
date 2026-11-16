@@ -13,14 +13,18 @@ func TestCachedNilLifecycle(t *testing.T) {
 	client := NewClient(Options{StaleTime: time.Hour})
 	t.Cleanup(client.Close)
 	ctx := context.Background()
-	if state := Get[int](client, "value"); state.Status != Idle || state.HasData || !state.Stale || state.Err != nil {
+	if state := GetState[int](
+		client,
+		"value",
+	); state.Status != Idle || state.HasData || !state.Stale ||
+		state.Err != nil {
 		t.Fatalf("missing value = %+v", state)
 	}
 	// Inspecting an absent key must not bind it to int or prevent a later cached nil pointer.
 	if err := Set[*int](client, "value", nil); err != nil {
 		t.Fatal(err)
 	}
-	state := Get[*int](client, "value")
+	state := GetState[*int](client, "value")
 	if state.Status != Success || !state.HasData || state.Data != nil || state.Stale || state.Err != nil {
 		t.Fatalf("cached nil = %+v", state)
 	}
@@ -36,7 +40,7 @@ func TestCachedNilLifecycle(t *testing.T) {
 	if err := client.Invalidate("value", InvalidateOptions{Refetch: RefetchNone}); err != nil {
 		t.Fatal(err)
 	}
-	state = Get[*int](client, "value")
+	state = GetState[*int](client, "value")
 	if !state.HasData || state.Data != nil || !state.Stale || state.Err != nil {
 		t.Fatalf("invalidated nil = %+v", state)
 	}
@@ -48,7 +52,7 @@ func TestCachedNilLifecycle(t *testing.T) {
 	if err := client.Remove("value"); err != nil {
 		t.Fatal(err)
 	}
-	if state := Get[*int](client, "value"); state.Status != Idle || state.HasData || state.Err != nil {
+	if state := GetState[*int](client, "value"); state.Status != Idle || state.HasData || state.Err != nil {
 		t.Fatalf("removed value = %+v", state)
 	}
 	if value, err := Fetch(
@@ -61,7 +65,7 @@ func TestCachedNilLifecycle(t *testing.T) {
 		t.Fatalf("recreated value = %d, %v", value, err)
 	}
 	client.Close()
-	if state := Get[int](client, "value"); state.HasData || !errors.Is(state.Err, ErrClosed) {
+	if state := GetState[int](client, "value"); state.HasData || !errors.Is(state.Err, ErrClosed) {
 		t.Fatalf("closed read = %+v", state)
 	}
 	if _, err := Fetch[int](ctx, client, "value", nil); !errors.Is(err, ErrClosed) {
@@ -84,7 +88,7 @@ func TestCachedSnapshotPublication(t *testing.T) {
 			defer workers.Done()
 			<-start
 			for range 300 {
-				state := Get[int](client, "value")
+				state := GetState[int](client, "value")
 				validValue := state.HasData && state.Data >= 1 && state.Data <= 301
 				validState := state.Status == Success && !state.Stale && !state.Fetching && state.Err == nil
 				if !validValue || !validState || !state.ExpiresAt.Equal(state.UpdatedAt.Add(time.Hour)) {
@@ -112,7 +116,7 @@ func TestCachedSnapshotPublication(t *testing.T) {
 	}()
 	close(start)
 	workers.Wait()
-	if state := Get[int](client, "value"); state.Data != 301 || !state.HasData || state.Stale {
+	if state := GetState[int](client, "value"); state.Data != 301 || !state.HasData || state.Stale {
 		t.Fatalf("final publication = %+v", state)
 	}
 	if stats := client.Stats(); stats.CacheHits != 1200 || stats.CacheMisses != 0 || stats.Loads != 0 {

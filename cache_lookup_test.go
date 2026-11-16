@@ -28,13 +28,13 @@ func TestSingleLookupMaintenance(t *testing.T) {
 			}
 			now = installed.Add(2 * time.Minute)
 			// Admission failure must not trigger maintenance or lose the original value's type.
-			if s := soroi.Get[string](client, "key"); !errors.Is(s.Err, soroi.ErrTypeMismatch) || s.HasData {
+			if s := soroi.GetState[string](client, "key"); !errors.Is(s.Err, soroi.ErrTypeMismatch) || s.HasData {
 				t.Fatalf("type mismatch = %+v", s)
 			}
 			if got := client.Stats().AgeExpirations; got != 0 {
 				t.Fatalf("rejected read expired data: %d", got)
 			}
-			s := soroi.Get[int](client, "key")
+			s := soroi.GetState[int](client, "key")
 			if s.HasData || !s.Stale || s.Err != nil || s.Status != soroi.Idle || s.Fetching {
 				t.Fatalf("expired read = %+v", s)
 			}
@@ -48,7 +48,7 @@ func TestSingleLookupMaintenance(t *testing.T) {
 				if err := soroi.Set(client, "key", "replacement"); err != nil {
 					t.Fatalf("released binding rejected a new type: %v", err)
 				}
-				if got := soroi.Get[string](client, "key"); got.Data != "replacement" || !got.HasData {
+				if got := soroi.GetState[string](client, "key"); got.Data != "replacement" || !got.HasData {
 					t.Fatalf("replacement = %+v", got)
 				}
 			} else {
