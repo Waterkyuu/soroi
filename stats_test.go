@@ -39,7 +39,7 @@ func TestStatsCacheDecisions(t *testing.T) {
 		QueryOptions{Disable: true},
 	)
 	t.Cleanup(disabled.Close)
-	Get[int](c, "a")
+	GetState[int](c, "a")
 	disabled.Snapshot()
 	if state := c.Stats(); state.CacheHits != 0 || state.CacheMisses != 0 || state.CacheEntries != 1 {
 		t.Fatalf("passive reads = %+v", state)
@@ -363,8 +363,8 @@ func TestStatsCleanup(t *testing.T) {
 	if previous.stopped.Load() || scheduler.count() != 1 {
 		t.Fatal("inspection changed cache retention")
 	}
-	Get[int](c, "a")
-	Get[int](c, "a")
+	GetState[int](c, "a")
+	GetState[int](c, "a")
 	previous.callback()
 	if state := c.Stats(); state.AgeExpirations != 1 || state.GCCollections != 0 || state.CacheEntries != 0 {
 		t.Fatalf("age cleanup = %+v", state)

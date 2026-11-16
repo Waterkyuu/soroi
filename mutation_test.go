@@ -98,10 +98,15 @@ func TestMutationSynchronization(t *testing.T) {
 		}
 		awaitState(t, list.Updates(), func(s Snapshot[[]int]) bool { return s.HasData && !s.Fetching })
 	}
-	if calls.Load() != 2 || Get[int](c, "detail").Data != 2 || !Get[int](c, "summary").Stale {
-		t.Fatalf("calls=%d detail=%+v summary=%+v", calls.Load(), Get[int](c, "detail"), Get[int](c, "summary"))
+	if calls.Load() != 2 || GetState[int](c, "detail").Data != 2 || !GetState[int](c, "summary").Stale {
+		t.Fatalf(
+			"calls=%d detail=%+v summary=%+v",
+			calls.Load(),
+			GetState[int](c, "detail"),
+			GetState[int](c, "summary"),
+		)
 	}
-	if Get[int](c, "other-tenant").Stale {
+	if GetState[int](c, "other-tenant").Stale {
 		t.Fatal("unrelated query invalidated")
 	}
 	if state := <-h.Updates(); state.Status != Success || !state.HasData || state.Data != 2 {
@@ -144,7 +149,7 @@ func TestMutationSyncFailure(t *testing.T) {
 	})
 	t.Cleanup(h.Close)
 	result, err := h.Mutate(context.Background(), 1)
-	if err != nil || !errors.Is(result.SyncErr, failure) || !Get[int](c, "list").Stale {
+	if err != nil || !errors.Is(result.SyncErr, failure) || !GetState[int](c, "list").Stale {
 		t.Fatalf("synchronization = %+v, %v", result, err)
 	}
 	state := h.Snapshot()
@@ -244,7 +249,7 @@ func TestMutationLateSuccess(t *testing.T) {
 				if !errors.Is(result.SyncErr, ErrClosed) {
 					t.Fatal(result.SyncErr)
 				}
-			} else if result.SyncErr != nil || Get[int](c, "key").Data != 42 {
+			} else if result.SyncErr != nil || GetState[int](c, "key").Data != 42 {
 				t.Fatalf("late synchronization = %+v", result)
 			}
 		})

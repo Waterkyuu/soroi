@@ -79,7 +79,7 @@ func TestEventsLocalWrite(t *testing.T) {
 	if err := c.Remove("absent"); err != nil {
 		t.Fatal(err)
 	}
-	if state := Get[int](c, "a"); state.Data != 7 || state.Err != nil {
+	if state := GetState[int](c, "a"); state.Data != 7 || state.Err != nil {
 		t.Fatalf("retained local value = %+v", state)
 	}
 	select {
@@ -185,7 +185,7 @@ func TestEventsRemovalCauses(t *testing.T) {
 				c.Clear()
 			}
 			removed := receiveTestEvent(t, s.Events())
-			if removed.Kind != EventCacheRemoved || removed.Reason != reason || Get[int](c, "a").HasData {
+			if removed.Kind != EventCacheRemoved || removed.Reason != reason || GetState[int](c, "a").HasData {
 				t.Fatalf("removal = %+v", removed)
 			}
 			_, err := Fetch(
@@ -217,14 +217,14 @@ func TestEventsMaxAge(t *testing.T) {
 	Set(c, "a", 7)
 	s := subscribeTestEvents(t, c, EventOptions{Key: "a"})
 	now = now.Add(time.Minute)
-	if state := Get[int](c, "a"); state.HasData {
+	if state := GetState[int](c, "a"); state.HasData {
 		t.Fatalf("over-age state = %+v", state)
 	}
 	removed := receiveTestEvent(t, s.Events())
 	if removed.Kind != EventCacheRemoved || removed.Reason != ReasonMaxAge {
 		t.Fatalf("age removal = %+v", removed)
 	}
-	Get[int](c, "a")
+	GetState[int](c, "a")
 	_, err := Fetch(context.Background(), c, "a", func(context.Context) (int, error) { return 9, nil })
 	if err != nil {
 		t.Fatal(err)

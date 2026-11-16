@@ -205,7 +205,7 @@ func TestEventsSharing(t *testing.T) {
 	if end.Kind != EventLoadFinished || end.Joined != 3 || end.Trigger != TriggerQuery || end.LoadID != start.LoadID {
 		t.Fatalf("shared completion = %+v", end)
 	}
-	Get[int](c, "a")
+	GetState[int](c, "a")
 	third.Snapshot()
 	select {
 	case event := <-s.Events():
@@ -327,7 +327,7 @@ func TestEventsDiscardedResult(t *testing.T) {
 				discard.LoadID != start.LoadID {
 				t.Fatalf("completion = %+v; discard = %+v", end, discard)
 			}
-			if tc.reason == ReasonSet && Get[int](c, "a").Data != 99 {
+			if tc.reason == ReasonSet && GetState[int](c, "a").Data != 99 {
 				t.Fatal("detached result overwrote local data")
 			}
 		})

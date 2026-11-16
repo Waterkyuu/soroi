@@ -78,7 +78,7 @@ func TestRevisionInterleavings(t *testing.T) {
 				} else if !errors.Is(updateErr, soroi.ErrUpdateConflict) {
 					t.Fatalf("lost intervening change: %v", updateErr)
 				}
-				state := soroi.Get[uint64](client, "target")
+				state := soroi.GetState[uint64](client, "target")
 				if !state.HasData || state.Data != want {
 					t.Fatalf("unexpected final data: %+v", state)
 				}
@@ -117,7 +117,7 @@ func TestRevisionParallelValues(t *testing.T) {
 		}
 		workers.Wait()
 		for worker := 0; worker < 32; worker++ {
-			value := soroi.Get[uint64](client, fmt.Sprintf("worker:%d", worker))
+			value := soroi.GetState[uint64](client, fmt.Sprintf("worker:%d", worker))
 			if !value.HasData || value.Data != 100 {
 				t.Fatalf("lost committed updates: %+v", value)
 			}

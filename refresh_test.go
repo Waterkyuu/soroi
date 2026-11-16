@@ -49,7 +49,7 @@ func awaitInvalidation(t *testing.T, c *Client, events *EventSubscription) {
 	for {
 		event := receiveTestEvent(t, events.Events())
 		if event.Kind == EventInvalidated {
-			_ = c.Get(event.Key)
+			_ = c.GetState(event.Key)
 			return
 		}
 	}
@@ -122,7 +122,7 @@ func TestInvalidateAndWaitValidation(t *testing.T) {
 	Set(c, "key", 1)
 	for _, target := range []any{nil, []int{1}, []any{"key", []int{1}}, (func(any) bool)(nil)} {
 		results, err := c.InvalidateAndWait(context.Background(), target)
-		if results != nil || !errors.Is(err, ErrInvalidKey) || Get[int](c, "key").Stale {
+		if results != nil || !errors.Is(err, ErrInvalidKey) || GetState[int](c, "key").Stale {
 			t.Fatalf("invalid target %T: results=%+v err=%v", target, results, err)
 		}
 	}
@@ -132,7 +132,7 @@ func TestInvalidateAndWaitValidation(t *testing.T) {
 		ctx,
 		"key",
 	); !errors.Is(err, context.Canceled) ||
-		Get[int](c, "key").Stale {
+		GetState[int](c, "key").Stale {
 		t.Fatalf("pre-canceled invalidation = %v", err)
 	}
 	results, err := c.InvalidateAndWait(context.Background(), []any{})
@@ -401,13 +401,13 @@ func TestInvalidateAndWaitPredicate(t *testing.T) {
 	)
 	t.Cleanup(q.Close)
 	results, err := c.InvalidateAndWait(context.Background(), func(key any) bool {
-		_ = c.Get(key)
+		_ = c.GetState(key)
 		return key == "selected"
 	}, InvalidateOptions{Refetch: RefetchNone, RefetchAfterLoad: true})
 	if err != nil || len(results) != 1 || results[0].Key != "selected" || results[0].Refreshed {
 		t.Fatalf("predicate results = %+v, %v", results, err)
 	}
-	if !q.Snapshot().Stale || Get[bool](c, "other").Stale {
+	if !q.Snapshot().Stale || GetState[bool](c, "other").Stale {
 		t.Fatal("predicate changed the wrong keys")
 	}
 }
