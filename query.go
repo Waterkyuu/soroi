@@ -274,28 +274,38 @@ func Prefetch[V any](
 	return definition.Prefetch(ctx, client)
 }
 
-// Get reads cached state without requiring a result type, starting a request, or creating a subscription.
+// GetState reads cached state without requiring a result type, starting a request, or creating a subscription.
 // Data retains its dynamic type; use HasData to distinguish missing data from a cached nil or zero value.
 // Reads use Client freshness defaults and restart inactive retention without binding an unused key.
 // Invalid keys and closed clients return errors; existing result type bindings remain unchanged.
-func (c *Client) Get(key any) Snapshot[any] {
+func (c *Client) GetState(key any) Snapshot[any] {
 	return c.bucketFor(key).getSnapshot(key, nil, c.options)
 }
 
-// Get reads typed cached state without starting a request or binding a previously unused key.
+// GetState reads typed cached state without starting a request or binding a previously unused key.
 // Incompatible result types return ErrTypeMismatch instead of panicking or exposing another query's data.
-// Use Client.Get to inspect cached state without specifying or checking a result type.
-// For example, after Set(client, "balance", 100), Get[int](client, "balance") returns a
+// Use Client.GetState to inspect cached state without specifying or checking a result type.
+// For example, after Set(client, "balance", 100), GetState[int](client, "balance") returns a
 // Snapshot[int] with Data=100 and HasData=true; it does not invoke an application loader.
 // The call routes once, locks that owner, validates and looks up the entry once, projects
 // its state, then unlocks. Maintenance policies can require an exclusive lock and a reload.
-func Get[V any](client *Client, key any) Snapshot[V] {
+func GetState[V any](client *Client, key any) Snapshot[V] {
 	return typedSnapshot[V](client.bucketFor(key).getSnapshot(key, reflect.TypeFor[V](), client.options))
+}
+
+// Get reads cached state without requiring a result type.
+func (c *Client) Get(key any) Snapshot[any] {
+	return c.GetState(key)
+}
+
+// Get reads a typed snapshot of cached state.
+func Get[V any](client *Client, key any) Snapshot[V] {
+	return GetState[V](client, key)
 }
 
 // getSnapshot reads shared state using one consumer's freshness without changing another consumer's policy.
 // A nil result type skips type matching while preserving key validation and cache lifecycle behavior.
-// Get, Client.Get, and QueryHandle.Snapshot call this after selecting the owner. key identifies
+// GetState, Client.GetState, and QueryHandle.Snapshot call this after selecting the owner. key identifies
 // the record and options supplies this consumer's freshness policy; the returned Snapshot
 // contains a copy of state metadata plus the shared immutable data reference.
 // A default-policy hit can share a read lock. Capacity, age cleanup, inactive retention,
