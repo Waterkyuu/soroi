@@ -134,7 +134,7 @@ go func() {
 | `EventLocalWrite` | `local_write` | `Set` 成功写入本地值 |
 | `EventClientClosed` | `client_closed` | Client 关闭；向所有订阅广播，包括指定 key 的订阅 |
 
-`Get` 和 `Snapshot` 不产生缓存命中事件，但在发现数据超过 `MaxAge` 时会产生删除事件。被拒绝的 API 调用、删除不存在的 key 或空的类型绑定，不产生事件。存活的句柄可以在 `Remove` 或 `Clear` 后保留类型绑定；在重新写入数据或错误之前，重复执行这两种操作不会再次产生删除事件。
+`Get`、`GetState` 和 `Snapshot` 不产生缓存命中事件，但在发现数据超过 `MaxAge` 时会产生删除事件。被拒绝的 API 调用、删除不存在的 key 或空的类型绑定，不产生事件。存活的句柄可以在 `Remove` 或 `Clear` 后保留类型绑定；在重新写入数据或错误之前，重复执行这两种操作不会再次产生删除事件。
 
 ## 操作来源与原因
 

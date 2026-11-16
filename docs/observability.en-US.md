@@ -96,7 +96,7 @@ if completed > 0 {
 
 ## Counting boundaries
 
-`Get`, handle `Snapshot()`, disabled query construction, and invalid or already-canceled calls do not count as cache decisions. A fresh fallback containing an error is still a cache hit. Creating an enabled query over stale data counts as a miss even if the old value remains visible. Explicit `Refetch` and invalidation refreshes count as loads but do not add hits or misses.
+`Get`, `GetState`, handle `Snapshot()`, disabled query construction, and invalid or already-canceled calls do not count as cache decisions. A fresh fallback containing an error is still a cache hit. Creating an enabled query over stale data counts as a miss even if the old value remains visible. Explicit `Refetch` and invalidation refreshes count as loads but do not add hits or misses.
 
 In-progress work contributes to `Loads`, but its outcome and duration appear only after completion. Detached or canceled operations remain included even when their result is not installed. Already-started work can finish updating counters after `Close`. Manual `Remove` and `Clear` do not increment cleanup-cause counters.
 

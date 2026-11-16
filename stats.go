@@ -35,7 +35,7 @@ type Stats struct {
 }
 
 // Stats returns a coherent copy without reading query data, changing recency, or running cleanup.
-// Get, Snapshot, disabled queries, and forced refreshes do not contribute cache hit or miss decisions.
+// Get, GetState, Snapshot, disabled queries, and forced refreshes do not contribute cache hit or miss decisions.
 // Loads still in progress contribute to Loads but not completed outcomes or TotalLoadDuration.
 func (c *Client) Stats() Stats {
 	c.mu.Lock()
