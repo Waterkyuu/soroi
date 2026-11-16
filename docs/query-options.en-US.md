@@ -236,7 +236,7 @@ Automatic refresh after invalidation uses the oldest still-enabled handle's conf
 
 ## Cache policy limits
 
-`StaleTime` changes ordinary cache freshness decisions without enabling polling. Without a positive `RefetchInterval`, passing time does not automatically publish notifications or start requests; `Snapshot()` reevaluates state when read. `Get` and calls to `Fetch` or `Prefetch` with omitted or empty options use Client freshness defaults.
+`StaleTime` changes ordinary cache freshness decisions without enabling polling. Without a positive `RefetchInterval`, passing time does not automatically publish notifications or start requests; `Snapshot()` reevaluates state when read. `GetState` and calls to `Fetch` or `Prefetch` with omitted or empty options use Client freshness defaults.
 
 Explicit invalidation and failed refreshes that install no new data make ordinary cached data stale for all queries. Absolute deadlines returned through `FetchWithExpiry` are unaffected by `StaleTime` overrides, including explicitly cached fallback data and errors.
 

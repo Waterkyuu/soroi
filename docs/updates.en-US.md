@@ -36,7 +36,7 @@ func main() {
 	if err := soroi.Set(client, "users", []User{{ID: 42, Name: "Alice"}}); err != nil {
 		panic(err)
 	}
-	before := soroi.Get[[]User](client, "users")
+	before := soroi.GetState[[]User](client, "users")
 
 	err := soroi.Update(client, "users", func(users []User) ([]User, error) {
 		next := slices.Clone(users)
@@ -50,7 +50,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	after := soroi.Get[[]User](client, "users")
+	after := soroi.GetState[[]User](client, "users")
 	fmt.Println("before:", before.Data[0].Name)
 	fmt.Println("after:", after.Data[0].Name)
 }

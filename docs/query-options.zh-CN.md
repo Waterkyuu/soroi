@@ -236,7 +236,7 @@ options := soroi.QueryOptions{
 
 ## 缓存策略限制
 
-`StaleTime` 只调整普通缓存的新鲜度判断，不触发轮询。未配置正数 `RefetchInterval` 时，时间经过不会自动发送通知或启动请求；`Snapshot()` 在读取时重新判断状态。`Get` 和省略配置或传入空配置的 `Fetch`、`Prefetch` 使用 Client 默认新鲜期。
+`StaleTime` 只调整普通缓存的新鲜度判断，不触发轮询。未配置正数 `RefetchInterval` 时，时间经过不会自动发送通知或启动请求；`Snapshot()` 在读取时重新判断状态。`GetState` 和省略配置或传入空配置的 `Fetch`、`Prefetch` 使用 Client 默认新鲜期。
 
 显式失效和未写入新数据的刷新失败，会使普通缓存对所有查询变旧。`FetchWithExpiry` 返回的绝对截止时间不受 `StaleTime` 覆盖影响，包括显式缓存的兜底数据和错误。
 
