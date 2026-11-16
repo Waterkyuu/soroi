@@ -59,16 +59,16 @@ func main() {
 	}); err != nil {
 		panic(err)
 	}
-	fmt.Println("detail stale:", soroi.Get[string](client, detailKey).Stale)
-	fmt.Println("list stale:", soroi.Get[[]string](client, listKey).Stale)
-	fmt.Println("other tenant stale:", soroi.Get[string](client, otherKey).Stale)
+	fmt.Println("detail stale:", soroi.GetState[string](client, detailKey).Stale)
+	fmt.Println("list stale:", soroi.GetState[[]string](client, listKey).Stale)
+	fmt.Println("other tenant stale:", soroi.GetState[string](client, otherKey).Stale)
 
 	if err := client.Remove(filter); err != nil {
 		panic(err)
 	}
-	fmt.Println("detail retained:", soroi.Get[string](client, detailKey).HasData)
-	fmt.Println("list retained:", soroi.Get[[]string](client, listKey).HasData)
-	fmt.Println("other tenant data:", soroi.Get[string](client, otherKey).Data)
+	fmt.Println("detail retained:", soroi.GetState[string](client, detailKey).HasData)
+	fmt.Println("list retained:", soroi.GetState[[]string](client, listKey).HasData)
+	fmt.Println("other tenant data:", soroi.GetState[string](client, otherKey).Data)
 }
 ```
 

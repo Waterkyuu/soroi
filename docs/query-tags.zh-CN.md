@@ -85,7 +85,11 @@ func main() {
 	fmt.Println("refreshed:", len(results))
 	fmt.Println("detail:", detail.Snapshot().Data.Name)
 	fmt.Println("list:", list.Snapshot().Data[0].Name)
-	fmt.Println("other tenant:", soroi.Get[User](client, otherDefinition.Key).Data.Name)
+	otherUser, ok := soroi.Get[User](client, otherDefinition.Key)
+	if !ok {
+		panic("missing other tenant")
+	}
+	fmt.Println("other tenant:", otherUser.Name)
 
 	if err := client.Remove(filter); err != nil {
 		panic(err)

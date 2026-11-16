@@ -72,7 +72,11 @@ func main() {
 	}
 
 	after := users.Snapshot().Data
-	fmt.Println("detail:", soroi.Get[User](client, "user:42").Data.Name)
+	detailValue, ok := soroi.Get[User](client, "user:42")
+	if !ok {
+		panic("missing user detail")
+	}
+	fmt.Println("detail:", detailValue.Name)
 	fmt.Println("list:", after[0].Name)
 }
 ```
