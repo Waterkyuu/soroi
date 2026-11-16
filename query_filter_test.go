@@ -63,7 +63,7 @@ func TestQueryFilterSelection(t *testing.T) {
 					t.Fatal(err)
 				}
 				for _, key := range []string{"a", "b"} {
-					state := Get[int](c, key)
+					state := GetState[int](c, key)
 					switch operation {
 					case "invalidate":
 						if state.Stale != tc.selected[key] || state.Data != 1 {
@@ -117,7 +117,7 @@ func TestQueryFilterValidation(t *testing.T) {
 			if err := applyFilterOperation(c, operation, target); !errors.Is(err, ErrInvalidKey) {
 				t.Fatalf("%s(%T) = %v", operation, target, err)
 			}
-			if state := Get[int](c, "a"); state.Stale || !state.HasData || state.Data != 1 {
+			if state := GetState[int](c, "a"); state.Stale || !state.HasData || state.Data != 1 {
 				t.Fatalf("invalid %s changed data: %+v", operation, state)
 			}
 			c.Close()
@@ -174,7 +174,7 @@ func TestQueryFilterPredicate(t *testing.T) {
 			seen := make(map[any]int)
 			filter := QueryFilter{Keys: []any{"a", "b", "a", "missing"}, Predicate: func(key any) bool {
 				seen[key]++
-				_ = Get[int](c, "a")
+				_ = GetState[int](c, "a")
 				if err := Set(c, "added", 2); err != nil {
 					t.Fatal(err)
 				}
@@ -189,7 +189,7 @@ func TestQueryFilterPredicate(t *testing.T) {
 			if seen["a"] != 1 || seen["b"] != 1 || seen["missing"] != 0 || seen["added"] != 0 {
 				t.Fatalf("predicate calls = %v", seen)
 			}
-			if state := Get[int](c, "added"); state.Stale || !state.HasData {
+			if state := GetState[int](c, "added"); state.Stale || !state.HasData {
 				t.Fatalf("new key affected: %+v", state)
 			}
 			if err := c.Cancel(QueryFilter{Predicate: func(key any) bool {

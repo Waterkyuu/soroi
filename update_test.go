@@ -20,7 +20,7 @@ func TestUpdateConcurrent(t *testing.T) {
 		go func() {
 			results <- Update(c, "counter", func(value int) (int, error) {
 				// Reentrant reads prove that application callbacks do not hold the Client lock.
-				_ = Get[int](c, "counter")
+				_ = GetState[int](c, "counter")
 				entered <- struct{}{}
 				<-release
 				return value + 1, nil
@@ -34,13 +34,13 @@ func TestUpdateConcurrent(t *testing.T) {
 	if first == nil {
 		first, second = second, first
 	}
-	if !errors.Is(first, ErrUpdateConflict) || second != nil || Get[int](c, "counter").Data != 1 {
-		t.Fatalf("overlapping updates = %v, %v, %+v", first, second, Get[int](c, "counter"))
+	if !errors.Is(first, ErrUpdateConflict) || second != nil || GetState[int](c, "counter").Data != 1 {
+		t.Fatalf("overlapping updates = %v, %v, %+v", first, second, GetState[int](c, "counter"))
 	}
 	if err := Update(c, "counter", func(value int) (int, error) { return value + 1, nil }); err != nil {
 		t.Fatal(err)
 	}
-	if Get[int](c, "counter").Data != 2 {
+	if GetState[int](c, "counter").Data != 2 {
 		t.Fatal("explicit retry did not preserve both increments")
 	}
 }
@@ -82,8 +82,8 @@ func TestUpdateConflicts(t *testing.T) {
 				}
 				return value + 10, nil
 			})
-			if !errors.Is(err, ErrUpdateConflict) || Get[int](c, "key").Data == 11 {
-				t.Fatalf("conflict = %v, state = %+v", err, Get[int](c, "key"))
+			if !errors.Is(err, ErrUpdateConflict) || GetState[int](c, "key").Data == 11 {
+				t.Fatalf("conflict = %v, state = %+v", err, GetState[int](c, "key"))
 			}
 		})
 	}
@@ -114,7 +114,7 @@ func TestUpdateValidation(t *testing.T) {
 	if err := Update(c, "key", func(int) (int, error) { return 99, failure }); !errors.Is(err, failure) {
 		t.Fatal(err)
 	}
-	if Get[int](c, "key").Data != 7 {
+	if GetState[int](c, "key").Data != 7 {
 		t.Fatal("failed callback changed cache")
 	}
 	if err := Update(

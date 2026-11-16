@@ -291,7 +291,7 @@ func TestQueryTagsSnapshot(t *testing.T) {
 		}
 		return true
 	}})
-	if err != nil || Get[int](c, "a").HasData || !Get[int](c, "b").HasData {
+	if err != nil || GetState[int](c, "a").HasData || !GetState[int](c, "b").HasData {
 		t.Fatalf("tag snapshot included later registration: %v", err)
 	}
 	if !selectedTagKeys(t, c, QueryFilter{Tags: []string{"users"}})["b"] {
@@ -311,7 +311,7 @@ func TestQueryTagsMaxAge(t *testing.T) {
 		t.Fatal(err)
 	}
 	now.Store(int64(time.Minute))
-	if Get[int](c, "key").HasData {
+	if GetState[int](c, "key").HasData {
 		t.Fatal("over-age data remained available")
 	}
 	if !selectedTagKeys(t, c, QueryFilter{Tags: []string{"users"}})["key"] {

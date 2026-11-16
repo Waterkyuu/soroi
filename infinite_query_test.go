@@ -417,7 +417,7 @@ func TestInfiniteQueryAgeAndLocalUpdates(t *testing.T) {
 	); err != nil {
 		t.Fatal(err)
 	}
-	if Get[InfiniteData[infiniteTestPage, int]](client, "tasks").Data.Pages[0].Value != 42 {
+	if GetState[InfiniteData[infiniteTestPage, int]](client, "tasks").Data.Pages[0].Value != 42 {
 		t.Fatal("ordinary cache operations did not update the sequence")
 	}
 	now = now.Add(time.Minute)

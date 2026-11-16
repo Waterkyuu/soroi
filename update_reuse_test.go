@@ -33,7 +33,7 @@ func TestUpdateReuseSameBucket(t *testing.T) {
 		}
 		return value + 10, nil
 	})
-	if err != nil || calls != 1 || Get[int](c, "target").Data != 110 || Get[int](c, other).Data != 7 {
+	if err != nil || calls != 1 || GetState[int](c, "target").Data != 110 || GetState[int](c, other).Data != 7 {
 		t.Fatalf("unrelated write rejected update: calls=%d error=%v", calls, err)
 	}
 }
@@ -60,7 +60,7 @@ func TestUpdateReuseTypeRebinding(t *testing.T) {
 				}
 				return value + 10, nil
 			})
-			if !errors.Is(err, ErrUpdateConflict) || calls != 1 || Get[string](c, "target").Data != "replacement" {
+			if !errors.Is(err, ErrUpdateConflict) || calls != 1 || GetState[string](c, "target").Data != "replacement" {
 				t.Fatalf("rebound node was not preserved: calls=%d error=%v", calls, err)
 			}
 		})
@@ -106,7 +106,7 @@ func TestUpdateReuseNilAndFailure(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if Get[any](c, "nil").Data != 110 {
+	if GetState[any](c, "nil").Data != 110 {
 		t.Fatal("nil data was treated as missing")
 	}
 	panicked := false
