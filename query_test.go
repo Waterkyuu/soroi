@@ -374,7 +374,7 @@ func TestQueryDisabledRetention(t *testing.T) {
 	observer.Close()
 	scheduler.now.Add(int64(time.Minute))
 	scheduler.latest(t).callback()
-	if state := Get[string](client, "users"); state.HasData {
+	if state := GetState[string](client, "users"); state.HasData {
 		t.Fatalf("closed observer retained unused data: %+v", state)
 	}
 }
@@ -496,7 +496,7 @@ func TestTypeMismatch(t *testing.T) {
 	if err := Set(c, "user", []testUser{}); !errors.Is(err, ErrTypeMismatch) {
 		t.Fatalf("set mismatch = %v", err)
 	}
-	if state := Get[[]testUser](c, "user"); state.HasData || !errors.Is(state.Err, ErrTypeMismatch) {
+	if state := GetState[[]testUser](c, "user"); state.HasData || !errors.Is(state.Err, ErrTypeMismatch) {
 		t.Fatalf("get mismatch = %+v", state)
 	}
 	var calls atomic.Int32
@@ -522,7 +522,7 @@ func TestTypeMismatch(t *testing.T) {
 		t.Fatalf("fetch mismatch = %v", err)
 	}
 	wrong.Close()
-	if Get[testUser](c, "user").Data.Name != "Alice" || calls.Load() != 0 {
+	if GetState[testUser](c, "user").Data.Name != "Alice" || calls.Load() != 0 {
 		t.Fatal("rejected operations changed existing query")
 	}
 }
@@ -592,7 +592,7 @@ func TestLiveHandleTypeBinding(t *testing.T) {
 			if err := Set(c, "user", 42); err != nil {
 				t.Fatal(err)
 			}
-			if Get[int](c, "user").Data != 42 {
+			if GetState[int](c, "user").Data != 42 {
 				t.Fatal("unused removed key could not be rebound")
 			}
 			if _, err := handle.Refetch(context.Background()); !errors.Is(err, ErrQueryClosed) {
@@ -611,7 +611,7 @@ func TestNilAndInterfaceResults(t *testing.T) {
 		"pointer",
 		func(context.Context) (*testUser, error) { return nil, nil },
 	)
-	if pointer != nil || err != nil || !Get[*testUser](c, "pointer").HasData {
+	if pointer != nil || err != nil || !GetState[*testUser](c, "pointer").HasData {
 		t.Fatalf("nil pointer = %v, %v", pointer, err)
 	}
 	value, err := Fetch[any](
@@ -620,23 +620,23 @@ func TestNilAndInterfaceResults(t *testing.T) {
 		"interface",
 		func(context.Context) (any, error) { return nil, nil },
 	)
-	if value != nil || err != nil || !Get[any](c, "interface").HasData {
+	if value != nil || err != nil || !GetState[any](c, "interface").HasData {
 		t.Fatalf("nil interface = %v, %v", value, err)
 	}
 	if err := Set[any](c, "interface", "text"); err != nil {
 		t.Fatal(err)
 	}
-	if Get[any](c, "interface").Data != "text" {
+	if GetState[any](c, "interface").Data != "text" {
 		t.Fatal("interface value was not retained")
 	}
 	if err := Set(c, "interface", "text"); !errors.Is(err, ErrTypeMismatch) {
 		t.Fatalf("static interface mismatch = %v", err)
 	}
 	Set(c, "zero", 0)
-	if !Get[int](c, "zero").HasData {
+	if !GetState[int](c, "zero").HasData {
 		t.Fatal("zero value treated as missing")
 	}
-	if state := Get[int](c, "unused"); state.Status != Idle {
+	if state := GetState[int](c, "unused"); state.Status != Idle {
 		t.Fatalf("unused read = %+v", state)
 	}
 	if err := Set(c, "unused", "different"); err != nil {
@@ -667,7 +667,7 @@ func TestInvalidKeys(t *testing.T) {
 		if err := Set(c, key, 1); !errors.Is(err, ErrInvalidKey) {
 			t.Fatalf("invalid set = %v", err)
 		}
-		if state := Get[int](c, key); !errors.Is(state.Err, ErrInvalidKey) {
+		if state := GetState[int](c, key); !errors.Is(state.Err, ErrInvalidKey) {
 			t.Fatalf("invalid get = %+v", state)
 		}
 		if err := Update(c, key, func(int) (int, error) {
@@ -713,7 +713,7 @@ func TestInvalidKeys(t *testing.T) {
 		if err := c.Remove(QueryFilter{Keys: []any{"safe", key}}); !errors.Is(err, ErrInvalidKey) {
 			t.Fatalf("invalid filter = %v", err)
 		}
-		if Get[int](c, "safe").Stale {
+		if GetState[int](c, "safe").Stale {
 			t.Fatal("invalid batch partially invalidated data")
 		}
 	}
@@ -835,10 +835,10 @@ func TestSetAndRemovePreventLateWrites(t *testing.T) {
 			if err := <-finished; !errors.Is(err, context.Canceled) {
 				t.Fatalf("detached result = %v", err)
 			}
-			if action == "set" && Get[string](c, "user").Data != "local" {
+			if action == "set" && GetState[string](c, "user").Data != "local" {
 				t.Fatal("set overwritten")
 			}
-			if action == "remove" && Get[int](c, "user").Data != 42 {
+			if action == "remove" && GetState[int](c, "user").Data != 42 {
 				t.Fatal("rebound key overwritten")
 			}
 		})
@@ -861,7 +861,7 @@ func TestInvalidateDeferred(t *testing.T) {
 	if state := handle.Snapshot(); !state.Stale || state.Data != "cached" || state.Fetching || calls.Load() != 0 {
 		t.Fatalf("deferred = %+v", state)
 	}
-	if !Get[[]string](c, "users").Stale {
+	if !GetState[[]string](c, "users").Stale {
 		t.Fatal("second type was not invalidated")
 	}
 	if value, err := Fetch(
@@ -925,17 +925,18 @@ func TestInvalidatePredicate(t *testing.T) {
 	seen := make(map[any]int)
 	if err := c.Invalidate(func(candidate any) bool {
 		seen[candidate]++
-		Get[int](c, "unrelated")
+		GetState[int](c, "unrelated")
 		Set(c, "added", true)
 		c.Remove("removed")
 		return candidate != "unrelated"
 	}, InvalidateOptions{Refetch: RefetchNone}); err != nil {
 		t.Fatal(err)
 	}
-	if !Get[[]string](c, key).Stale || !Get[string](c, "users:42").Stale || Get[int](c, "unrelated").Stale {
+	if !GetState[[]string](c, key).Stale || !GetState[string](c, "users:42").Stale ||
+		GetState[int](c, "unrelated").Stale {
 		t.Fatal("predicate selected wrong typed keys")
 	}
-	if seen["added"] != 0 || Get[bool](c, "added").Stale {
+	if seen["added"] != 0 || GetState[bool](c, "added").Stale {
 		t.Fatal("predicate included newly added key")
 	}
 	foundRemoved := false
@@ -1008,7 +1009,7 @@ func TestInvalidateTargets(t *testing.T) {
 				stale[key] = true
 			}
 			for _, key := range keys {
-				state := Get[int](c, key)
+				state := GetState[int](c, key)
 				if state.Stale != stale[key] || !state.HasData || state.Data != 7 {
 					t.Fatalf("key %v = %+v", key, state)
 				}
@@ -1157,7 +1158,7 @@ func TestPrefetchAndCancel(t *testing.T) {
 	if err := <-finished; !errors.Is(err, context.Canceled) {
 		t.Fatalf("cancel = %v", err)
 	}
-	if state := Get[int](c, "active"); state.Fetching || state.HasData {
+	if state := GetState[int](c, "active"); state.Fetching || state.HasData {
 		t.Fatalf("cancel state = %+v", state)
 	}
 }

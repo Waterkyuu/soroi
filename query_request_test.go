@@ -49,7 +49,7 @@ func TestConcurrentCachedReads(t *testing.T) {
 			<-start
 			for range 100 {
 				value, err := Fetch(context.Background(), client, "cached", loader)
-				if err != nil || value != 42 || Get[int](client, "cached").Data != 42 {
+				if err != nil || value != 42 || GetState[int](client, "cached").Data != 42 {
 					t.Errorf("concurrent cached fetch = %d, %v", value, err)
 					return
 				}

@@ -62,7 +62,7 @@ func TestSharedQueryOptions(t *testing.T) {
 			if err := Prefetch(context.Background(), c, "user", load, options); err != nil || calls != 2 {
 				t.Fatalf("prefetch ignored shared freshness: %v, calls=%d", err, calls)
 			}
-			if !Get[int](c, "user").Stale {
+			if !GetState[int](c, "user").Stale {
 				t.Fatal("consumer policy changed Client defaults")
 			}
 		})
@@ -98,8 +98,8 @@ func TestPrefetchOptionsSelection(t *testing.T) {
 			if tc.cached {
 				want, wantCalls = 1, 0
 			}
-			if err != nil || Get[int](c, "user").Data != want || calls != wantCalls {
-				t.Fatalf("prefetch = %+v, %v, calls=%d", Get[int](c, "user"), err, calls)
+			if err != nil || GetState[int](c, "user").Data != want || calls != wantCalls {
+				t.Fatalf("prefetch = %+v, %v, calls=%d", GetState[int](c, "user"), err, calls)
 			}
 		})
 	}
@@ -210,7 +210,7 @@ func TestQueryOptionsFreshness(t *testing.T) {
 		}
 	}
 	now.Store(int64(time.Minute))
-	if !Get[int](c, "users").Stale || slow.Snapshot().Stale {
+	if !GetState[int](c, "users").Stale || slow.Snapshot().Stale {
 		t.Fatal("consumer freshness leaked into Client defaults")
 	}
 	if err := slow.SetEnabled(true); err != nil {
@@ -238,7 +238,7 @@ func TestQueryOptionsFreshness(t *testing.T) {
 	}
 	fastState = awaitState(t, fast.Updates(), func(s Snapshot[int]) bool { return s.Data == 9 })
 	slowState = awaitState(t, slow.Updates(), func(s Snapshot[int]) bool { return s.Data == 9 })
-	if !fastState.Stale || slowState.Stale || Get[int](c, "users").Stale {
+	if !fastState.Stale || slowState.Stale || GetState[int](c, "users").Stale {
 		t.Fatal("local writes did not preserve independent freshness")
 	}
 }
@@ -313,7 +313,7 @@ func TestImperativeOptionsFreshness(t *testing.T) {
 	if err != nil || value != 3 || calls != 3 {
 		t.Fatalf("zero freshness = %d, %v; calls=%d", value, err, calls)
 	}
-	if Get[int](c, "users").Stale {
+	if GetState[int](c, "users").Stale {
 		t.Fatal("the last caller's zero freshness changed Client freshness")
 	}
 	value, err = Fetch[int](context.Background(), c, "users", nil, QueryOptions{StaleTime: &hour})
@@ -369,7 +369,7 @@ func TestQueryOptionsZeroClock(t *testing.T) {
 	hour := time.Hour
 	handle := Query(c, "users", func(context.Context) (int, error) { return 8, nil }, QueryOptions{StaleTime: &hour})
 	t.Cleanup(handle.Close)
-	if handle.Snapshot().Stale || !Get[int](c, "users").Stale {
+	if handle.Snapshot().Stale || !GetState[int](c, "users").Stale {
 		t.Fatal("a zero installation deadline was mistaken for explicit invalidation")
 	}
 	if err := c.Invalidate("users", InvalidateOptions{Refetch: RefetchNone}); err != nil {
@@ -506,7 +506,7 @@ func TestQueryOptionsTimeout(t *testing.T) {
 					)
 				case "prefetch":
 					err = Prefetch(context.Background(), c, "users", fetch, QueryOptions{Timeout: tc.timeout})
-					deadline = Get[time.Time](c, "users").Data
+					deadline = GetState[time.Time](c, "users").Data
 				case "query":
 					handle := Query(c, "users", fetch, QueryOptions{Disable: true, Timeout: tc.timeout})
 					t.Cleanup(handle.Close)

@@ -51,7 +51,7 @@ func TestQueryTypeMismatchFormatting(t *testing.T) {
 				go func() {
 					switch operation {
 					case "get":
-						done <- Get[string](c, key).Err
+						done <- GetState[string](c, key).Err
 					case "set":
 						done <- Set(c, key, "wrong")
 					case "update":
@@ -80,7 +80,7 @@ func TestQueryTypeMismatchFormatting(t *testing.T) {
 					if !errors.Is(err, ErrTypeMismatch) {
 						t.Fatalf("mismatch error = %v", err)
 					}
-					if state := Get[int](c, key); state.Data != 42 || state.Err != nil {
+					if state := GetState[int](c, key); state.Data != 42 || state.Err != nil {
 						t.Fatalf("mismatch changed cached data: %+v", state)
 					}
 				case <-time.After(3 * time.Second):

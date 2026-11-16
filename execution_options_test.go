@@ -54,7 +54,7 @@ func TestExecutionOptions(t *testing.T) {
 					value, err = Fetch(context.Background(), c, "key", load, options)
 				case "prefetch":
 					err = Prefetch(context.Background(), c, "key", load, options)
-					value = Get[int](c, "key").Data
+					value = GetState[int](c, "key").Data
 				case "query":
 					options.Disable = true
 					h := Query(c, "key", load, options)

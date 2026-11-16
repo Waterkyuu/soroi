@@ -58,7 +58,7 @@ func TestQueryOptionCounts(t *testing.T) {
 				} else if err != nil {
 					t.Fatal(err)
 				}
-				if state := Get[int](c, "key"); state.Data != 7 || state.Stale {
+				if state := GetState[int](c, "key"); state.Data != 7 || state.Stale {
 					t.Fatalf("cache changed = %+v", state)
 				}
 			})
@@ -155,7 +155,7 @@ func TestInvalidationOptionCounts(t *testing.T) {
 				if !errors.Is(err, ErrTooManyOptions) {
 					t.Fatalf("configuration error = %v", err)
 				}
-				if state := Get[int](c, definition.Key); state.Stale || state.Data != 7 {
+				if state := GetState[int](c, definition.Key); state.Stale || state.Data != 7 {
 					t.Fatalf("cache changed = %+v", state)
 				}
 				after, readErr := backend.Read(ctx, definition.Shared.options.Key)
