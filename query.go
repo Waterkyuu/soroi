@@ -315,6 +315,16 @@ func (c *clientBucket) getValue(key any, typ reflect.Type) (any, bool) {
 		c.mu.RLock()
 		defer c.mu.RUnlock()
 	} else {
+		options := &c.owner.options
+		touchesRetention := options.MaxEntries > 0 || options.GCTime > 0
+		if c.owner.concurrentClock && !touchesRetention {
+			if value, ok, done := c.getValueReadOnly(key, typ); done {
+				return value, ok
+			}
+		}
+
+		// A concurrent write may have replaced an over-age value after RUnlock.
+		// Revalidate the current entry and its age before changing cached state.
 		c.mu.Lock()
 		defer c.mu.Unlock()
 	}
@@ -324,6 +334,20 @@ func (c *clientBucket) getValue(key any, typ reflect.Type) (any, bool) {
 		return nil, false
 	}
 	return cached.value, true
+}
+
+// getValueReadOnly returns done=false when a confirmed value needs an exclusive age check.
+func (c *clientBucket) getValueReadOnly(key any, typ reflect.Type) (value any, ok, done bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	cached, err := c.checkedEntryLocked(key, typ)
+	if err != nil || cached == nil || !cached.hasData {
+		return nil, false, true
+	}
+	if c.overMaxAgeLocked(cached.updatedAt) {
+		return nil, false, false
+	}
+	return cached.value, true, true
 }
 
 // getSnapshot reads shared state using one consumer's freshness without changing another consumer's policy.
