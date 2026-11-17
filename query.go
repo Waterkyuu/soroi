@@ -315,16 +315,14 @@ func (c *clientBucket) getValue(key any, typ reflect.Type) (any, bool) {
 		c.mu.RLock()
 		defer c.mu.RUnlock()
 	} else {
-		options := &c.owner.options
-		touchesRetention := options.MaxEntries > 0 || options.GCTime > 0
-		if c.owner.concurrentClock && !touchesRetention {
+		if c.owner.concurrentClock && c.owner.options.MaxEntries <= 0 {
 			if value, ok, done := c.getValueReadOnly(key, typ); done {
 				return value, ok
 			}
 		}
 
-		// A concurrent write may have replaced an over-age value after RUnlock.
-		// Revalidate the current entry and its age before changing cached state.
+		// A concurrent write may replace the entry or its idle task after RUnlock.
+		// Revalidate the current entry before changing its age or retention state.
 		c.mu.Lock()
 		defer c.mu.Unlock()
 	}
@@ -336,16 +334,23 @@ func (c *clientBucket) getValue(key any, typ reflect.Type) (any, bool) {
 	return cached.value, true
 }
 
-// getValueReadOnly returns done=false when a confirmed value needs an exclusive age check.
+// getValueReadOnly renews existing idle tasks and returns done=false when age
+// cleanup or a new idle task needs an exclusive lock.
 func (c *clientBucket) getValueReadOnly(key any, typ reflect.Type) (value any, ok, done bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	cached, err := c.checkedEntryLocked(key, typ)
-	if err != nil || cached == nil || !cached.hasData {
+	if err != nil || cached == nil {
 		return nil, false, true
 	}
-	if c.overMaxAgeLocked(cached.updatedAt) {
+	if cached.hasData && c.overMaxAgeLocked(cached.updatedAt) {
 		return nil, false, false
+	}
+	if !c.touchGCReadLocked(key) {
+		return nil, false, false
+	}
+	if !cached.hasData {
+		return nil, false, true
 	}
 	return cached.value, true, true
 }
