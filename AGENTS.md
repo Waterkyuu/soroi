@@ -62,6 +62,21 @@ reference Task targets that are absent from `Taskfile.yml`.
    rerun the check. If the failure is demonstrably unrelated to the current commit,
    leave unrelated code untouched and report the failure clearly.
 
+## Performance optimization commits
+
+- For every performance optimization, record the measured impact in the Git
+  commit body. Name the benchmark and workload, then give the baseline and
+  optimized values with units and the absolute or percentage change.
+- Run the same workload under the same conditions before and after the change.
+  Identify relevant settings such as worker count and sample count. Report
+  material regressions and state when the measurements show no clear improvement.
+
+Example commit-body bullet from the GCTime benchmark:
+
+```text
+- BenchmarkAtomicHotKey/Soroi/Get/GCTime (one key, 1 worker, median of 6 samples): 66.08 to 42.90 ns/op, down 35.1%.
+```
+
 ## Code organization
 
 - Place code in the package that owns the behavior. Do not use an unrelated file
