@@ -16,13 +16,20 @@ type gcTask struct {
 	stop func()
 }
 
-// recordAccess renews the idle window. A later reader can finish first, so
-// publication only moves the latest access forward.
-func (task *gcTask) recordAccess(now time.Time) {
+// retiredGCOffset marks a task that can no longer accept renewals.
+const retiredGCOffset = -1
+
+// recordAccess renews this task unless removal or collection has retired it.
+// A reader that ran later may already have published a newer time.
+func (task *gcTask) recordAccess(now time.Time) bool {
 	offset := int64(now.Sub(task.startedAt))
-	for previous := task.accessOffset.Load(); offset > previous; previous = task.accessOffset.Load() {
-		if task.accessOffset.CompareAndSwap(previous, offset) {
-			return
+	for {
+		previous := task.accessOffset.Load()
+		if previous == retiredGCOffset {
+			return false
+		}
+		if offset <= previous || task.accessOffset.CompareAndSwap(previous, offset) {
+			return true
 		}
 	}
 }
@@ -31,20 +38,6 @@ func (task *gcTask) recordAccess(now time.Time) {
 func scheduleGC(delay time.Duration, cleanup func()) func() {
 	timer := time.AfterFunc(delay, cleanup)
 	return func() { timer.Stop() }
-}
-
-// touchGCReadLocked records an access under the bucket read lock. It returns
-// false when an idle record needs a new task under exclusive protection.
-// The caller uses the default concurrent clock and holds a live entry.
-func (c *clientBucket) touchGCReadLocked(key any) bool {
-	if c.owner.options.GCTime <= 0 {
-		return true
-	}
-	if task := c.gcTasks[key]; task != nil {
-		task.recordAccess(c.owner.options.Clock())
-		return true
-	}
-	return len(c.observers[key]) > 0 || c.pending[key] != nil
 }
 
 // touchGCLocked renews retention and releases empty, unowned bindings when capacity limiting is enabled.
@@ -88,6 +81,9 @@ func (c *clientBucket) touchGCLocked(key any) {
 		c.gcTasks = make(map[any]*gcTask)
 	}
 	c.gcTasks[key] = task
+	if cached.published != nil {
+		cached.published.task.Store(task)
+	}
 	task.stop = c.owner.gcAfterFunc(options.GCTime, func() { c.collectGC(key, task) })
 }
 
@@ -100,11 +96,18 @@ func (c *clientBucket) collectGC(key any, task *gcTask) {
 	if c.gcTasks[key] != task {
 		return
 	}
-	lastAccess := task.startedAt.Add(time.Duration(task.accessOffset.Load()))
-	deadline := lastAccess.Add(c.owner.options.GCTime)
-	if remaining := deadline.Sub(c.owner.options.Clock()); remaining > 0 {
-		task.stop = c.owner.gcAfterFunc(remaining, func() { c.collectGC(key, task) })
-		return
+	for {
+		offset := task.accessOffset.Load()
+		lastAccess := task.startedAt.Add(time.Duration(offset))
+		deadline := lastAccess.Add(c.owner.options.GCTime)
+		if remaining := deadline.Sub(c.owner.options.Clock()); remaining > 0 {
+			task.stop = c.owner.gcAfterFunc(remaining, func() { c.collectGC(key, task) })
+			return
+		}
+		// A Get can renew the deadline even while the collector owns the bucket.
+		if task.accessOffset.CompareAndSwap(offset, retiredGCOffset) {
+			break
+		}
 	}
 	delete(c.gcTasks, key)
 	if len(c.observers[key]) == 0 && c.pending[key] == nil {
@@ -116,7 +119,11 @@ func (c *clientBucket) collectGC(key any, task *gcTask) {
 // stopGCLocked detaches a key's cleanup before stopping its timer.
 func (c *clientBucket) stopGCLocked(key any) {
 	if task := c.gcTasks[key]; task != nil {
+		task.accessOffset.Store(retiredGCOffset)
 		delete(c.gcTasks, key)
+		if cached := c.entries[key]; cached != nil && cached.published != nil {
+			cached.published.task.Store(nil)
+		}
 		task.stop()
 	}
 }
