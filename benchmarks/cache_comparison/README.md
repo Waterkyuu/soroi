@@ -75,6 +75,9 @@ when recording performance; use race detection for correctness checks separately
 
 See [recorded results and limitations](RESULTS.md) for measured changes.
 
+The [atomic single-key benchmark](ATOMIC_VALUE_RESULTS.md) records the
+experimental value read path and its write overhead.
+
 ### Reproduce both revisions with the same harness
 
 From this directory, export the baseline source and use an alternate module

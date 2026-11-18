@@ -1,0 +1,80 @@
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkAtomicHotKey/Soroi/Get/Pure           	11829912	        19.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/Pure           	12337296	        19.46 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/Pure           	12353065	        19.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/Pure-8         	59855971	         3.355 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/Pure-8         	61413790	         4.686 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/Pure-8         	61563448	         4.776 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/Pure           	 2312853	       110.2 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/Pure           	 2240467	       110.1 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/Pure           	 2197129	       108.4 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/Pure-8         	 1000000	       240.5 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/Pure-8         	 1206462	       241.5 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/Pure-8         	 1000000	       241.6 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/MaxAge         	 4792658	        50.22 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/MaxAge         	 4794162	        50.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/MaxAge         	 4800075	        50.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/MaxAge-8       	28518099	         8.543 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/MaxAge-8       	26647790	        11.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/MaxAge-8       	25964774	        10.78 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/MaxAge         	 2218998	       110.1 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/MaxAge         	 2186523	       110.9 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/MaxAge         	 2158226	       116.0 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/MaxAge-8       	 1000000	       244.4 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/MaxAge-8       	 1000000	       210.5 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/MaxAge-8       	 1000000	       246.9 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/GCTime         	 4931823	        48.40 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/GCTime         	 4974836	        48.28 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/GCTime         	 4996516	        48.58 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/GCTime-8       	 2740965	        81.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/GCTime-8       	 2858569	        80.67 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/GCTime-8       	 2852640	        80.72 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/GCTime         	 1475106	       165.7 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/GCTime         	 1467205	       164.7 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/GCTime         	 1463496	       166.0 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/GCTime-8       	  962019	       237.5 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/GCTime-8       	  963177	       236.5 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/GCTime-8       	 1000000	       238.8 ns/op	      64 B/op	       1 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkAtomicHotKey/Soroi/Get/Pure           	12252477	        19.55 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/Pure           	12285692	        19.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/Pure           	12334257	        19.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/Pure-8         	68987818	         3.370 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/Pure-8         	61475409	         4.983 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/Pure-8         	61652407	         4.626 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/Pure           	 2338108	       105.7 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/Pure           	 2298772	       105.4 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/Pure           	 2296485	       104.9 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/Pure-8         	 1000000	       203.3 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/Pure-8         	 1000000	       236.6 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/Pure-8         	 1000000	       242.1 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/MaxAge         	 4926348	        48.90 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/MaxAge         	 4913098	        48.90 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/MaxAge         	 4900146	        48.86 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/MaxAge-8       	26454174	        10.27 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/MaxAge-8       	25670280	        10.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/MaxAge-8       	28740934	        10.85 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/MaxAge         	 2243352	       109.4 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/MaxAge         	 2216422	       109.5 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/MaxAge         	 2207304	       110.2 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/MaxAge-8       	 1000000	       203.3 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/MaxAge-8       	  989996	       244.4 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/MaxAge-8       	  991086	       246.8 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/GCTime         	 5097556	        47.15 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/GCTime         	 5062267	        47.89 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/GCTime         	 5016608	        47.22 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/GCTime-8       	 2938016	        86.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/GCTime-8       	 2745297	        80.37 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Get/GCTime-8       	 2748088	        81.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/GCTime         	 1499181	       163.3 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/GCTime         	 1471810	       162.4 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/GCTime         	 1483083	       163.4 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/GCTime-8       	 1000000	       238.0 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/GCTime-8       	 1000000	       236.8 ns/op	      64 B/op	       1 allocs/op
+BenchmarkAtomicHotKey/Soroi/Set/GCTime-8       	 1000000	       236.0 ns/op	      64 B/op	       1 allocs/op
+PASS
