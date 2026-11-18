@@ -64,10 +64,14 @@ type Client struct {
 	// closed prevents new work after resource release. Close writes it while holding every
 	// bucket exclusively; key operations can therefore inspect it under their own bucket lock.
 	closed bool
+	// publicationPhase is odd during Clear and remains odd after Close.
+	publicationPhase atomic.Uint64
 }
 
 // entry retains one typed result, including stale data and the latest load error.
 type entry struct {
+	// published points to this key binding’s optional result slot under the bucket lock.
+	published *valueSlot
 	// tags retains the union of labels registered for this key until its query state is released.
 	tags []string
 	// revision stores this entry's latest bucket-issued change number. Update captures it
@@ -299,6 +303,11 @@ func (c *Client) Remove(target any) error {
 func (c *Client) Clear() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	if c.closed {
+		return
+	}
+	c.publicationPhase.Add(1)
+	defer c.publicationPhase.Add(1)
 	c.forEachBucketLocked(func(bucket *clientBucket) {
 		for key := range bucket.pending {
 			bucket.cancelLocked(key, ReasonClear)
@@ -320,6 +329,7 @@ func (c *Client) Close() {
 	if c.closed {
 		return
 	}
+	c.publicationPhase.Add(1)
 	c.closed = true
 	c.cancel()
 	c.forEachBucketLocked(func(bucket *clientBucket) {
@@ -335,6 +345,11 @@ func (c *Client) Close() {
 			}
 		}
 		clear(bucket.observers)
+		for key, cached := range bucket.entries {
+			if cached.published != nil {
+				bucket.published.Delete(key)
+			}
+		}
 		clear(bucket.entries)
 		bucket.clearGCLocked()
 	})
@@ -708,6 +723,9 @@ func (c *clientBucket) discardLocked(key any, reason EventReason) {
 	if len(c.observers[key]) > 0 || c.pending[key] != nil {
 		c.storeEntryLocked(key, entry{typ: cached.typ, tags: cached.tags, shared: cached.shared})
 	} else {
+		if node := c.entries[key]; node != nil && node.published != nil {
+			c.published.Delete(key)
+		}
 		delete(c.entries, key)
 	}
 	// Live handles keep empty type bindings after removal. Repeated Remove or Clear

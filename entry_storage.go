@@ -19,15 +19,19 @@ func (c *clientBucket) entryLocked(key any) entry {
 // Readers can safely dereference the node only while holding this bucket's lock.
 func (c *clientBucket) storeEntryLocked(key any, value entry) {
 	if cached := c.entries[key]; cached != nil {
+		value.published = cached.published
 		*cached = value
+		c.publishValueLocked(key, cached)
 		return
 	}
 	// Allocating inside the miss branch keeps the value parameter off the heap on overwrites.
 	cached := new(entry)
 	*cached = value
+	cached.published = nil
 	// Empty buckets remain allocation-free until their first binding or result.
 	if c.entries == nil {
 		c.entries = make(map[any]*entry)
 	}
 	c.entries[key] = cached
+	c.publishValueLocked(key, cached)
 }

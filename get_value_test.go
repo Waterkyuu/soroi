@@ -2,7 +2,6 @@ package soroi
 
 import (
 	"context"
-	"runtime"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -227,24 +226,16 @@ func TestGetMaxAgeRechecksReplacement(t *testing.T) {
 	write := make(chan error, 1)
 	go func() { write <- Set(client, "key", "replacement") }()
 
-	// The age check holds a read lock. A failed TryRLock means Set is waiting
-	// for that reader and will acquire the writer lock before the cleanup can.
-	bucket := client.bucketFor("key")
-	deadline := time.NewTimer(3 * time.Second)
-	defer deadline.Stop()
-	for bucket.mu.raw.TryRLock() {
-		bucket.mu.raw.RUnlock()
-		select {
-		case <-deadline.C:
-			t.Fatal("Set did not queue behind the age check")
-		default:
-			runtime.Gosched()
+	// The new value can be installed while the atomic reader is checking its old record.
+	select {
+	case err := <-write:
+		if err != nil {
+			t.Fatal(err)
 		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("Set waited for the old age check")
 	}
 	releaseCheck()
-	if err := <-write; err != nil {
-		t.Fatal(err)
-	}
 	if !<-read || client.Stats().AgeExpirations != 0 {
 		t.Fatal("age cleanup discarded or missed the replacement")
 	}
