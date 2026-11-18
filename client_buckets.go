@@ -43,8 +43,6 @@ type clientBucket struct {
 	pending map[any]*flight
 	// observers owns live consumers and is allocated on the first subscription.
 	observers map[any]map[*subscription]struct{}
-	// gcTasks owns optional inactive-retention timers.
-	gcTasks map[any]*gcTask
 	// pollTasks owns optional polling timers.
 	pollTasks map[any]*pollTask
 	// groupRefs counts admitted member positions, not distinct groups or distinct keys.

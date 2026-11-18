@@ -22,7 +22,6 @@ func (c *clientBucket) touchCapacityLocked(key any) {
 		// Retain the type binding while a handle or load still owns this key.
 		// Eviction clears only cached state and never cancels shared work or starts a refresh.
 		bucket.discardLocked(oldest, ReasonCapacity)
-		bucket.stopGCLocked(oldest)
 		bucket.notifyLocked(oldest)
 	}
 }

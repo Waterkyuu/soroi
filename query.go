@@ -346,7 +346,7 @@ func (c *clientBucket) getValueReadOnly(key any, typ reflect.Type) (value any, o
 	if cached.hasData && c.overMaxAgeLocked(cached.updatedAt) {
 		return nil, false, false
 	}
-	if !c.touchGCReadLocked(key) {
+	if !c.touchGCReadLocked(key, cached) {
 		return nil, false, false
 	}
 	if !cached.hasData {

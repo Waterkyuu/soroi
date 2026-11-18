@@ -29,6 +29,8 @@ type Client struct {
 	groups map[*queriesGroup]struct{}
 	// concurrentClock permits parallel reads only when the client owns its concurrency-safe default clock.
 	concurrentClock bool
+	// gcDefaultClock lets idle hits sample elapsed time directly from the default monotonic clock.
+	gcDefaultClock bool
 	// eventSubscriptions indexes diagnostic streams by exact key; nil owns all-key subscriptions under mu.
 	eventSubscriptions map[any]map[*EventSubscription]struct{}
 	// eventMu serializes ordered event emission across independent key owners.
@@ -98,6 +100,8 @@ type entry struct {
 	err error
 	// staleReason records the latest explicit stale cause without keeping removed-key history.
 	staleReason EventReason
+	// gcTask owns this entry's scheduled idle cleanup while the bucket is locked.
+	gcTask *gcTask
 }
 
 // queryRequest owns an erased loader and the initiating consumer's copied request policy.
@@ -191,6 +195,7 @@ func newClient(options Options, bucketCount int) *Client {
 	ctx, cancel := context.WithCancel(context.Background()) // #nosec G118 -- Close owns the client's lifetime.
 	client := &Client{
 		concurrentClock: concurrentClock,
+		gcDefaultClock:  concurrentClock,
 		options:         options, ctx: ctx, cancel: cancel,
 		loadNow: time.Now, gcAfterFunc: scheduleGC, pollAfterFunc: schedulePoll,
 		seed: maphash.MakeSeed(), buckets: make([]clientBucket, bucketCount),
@@ -290,7 +295,6 @@ func (c *Client) Remove(target any) error {
 	return c.withQueryTargets(target, func(bucket *clientBucket, key any) {
 		bucket.cancelLocked(key, ReasonRemove)
 		bucket.discardLocked(key, ReasonRemove)
-		bucket.stopGCLocked(key)
 		bucket.notifyLocked(key)
 	})
 }
@@ -306,7 +310,6 @@ func (c *Client) Clear() {
 		for key := range bucket.entries {
 			bucket.discardLocked(key, ReasonClear)
 		}
-		bucket.clearGCLocked()
 		for key := range bucket.observers {
 			bucket.notifyLocked(key)
 		}
@@ -335,8 +338,8 @@ func (c *Client) Close() {
 			}
 		}
 		clear(bucket.observers)
-		clear(bucket.entries)
 		bucket.clearGCLocked()
+		clear(bucket.entries)
 	})
 	c.recency.Init()
 	clear(c.recencyEntries)
@@ -703,6 +706,7 @@ func (c *clientBucket) bindLocked(key any, typ reflect.Type) error {
 // discardLocked clears retained state, preserves active type bindings, and records an explicit removal cause.
 // ReasonNone suppresses events for internal cleanup of empty, unowned type metadata.
 func (c *clientBucket) discardLocked(key any, reason EventReason) {
+	c.stopGCLocked(key)
 	cached := c.entryLocked(key)
 	c.forgetCapacityLocked(key)
 	if len(c.observers[key]) > 0 || c.pending[key] != nil {
