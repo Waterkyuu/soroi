@@ -64,6 +64,8 @@ reference Task targets that are absent from `Taskfile.yml`.
 
 ## Git records for performance experiments
 
+- For cache value reads, follow the [Get baseline measurement criteria](AGENTS.mc)
+  and report all 12 workload, policy and worker-count combinations.
 - Commit a record of every performance experiment, including diagnostic controls,
   rejected candidates, reverted changes and unmerged prototypes. If several
   methods are tried, identify each method and its results separately. A results-only
