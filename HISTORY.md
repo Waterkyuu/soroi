@@ -2,6 +2,7 @@
 
 The current cache uses a bucket read lock. With the default clock, a live MaxAge read can share that lock. For GCTime, each idle entry owns its cleanup task. A hit records the latest elapsed time and reuses the timer. The two later GCTime snapshot experiments were retired. Their source, read gains and write costs are recorded here.
 
+- [Default Get reader counter and publication trials](#default-get-reader-counter-and-publication-trials)
 - [Branch baseline at `443a17e` and Otter v2.4.0](#2026-11-19-branch-baseline-and-otter-comparison)
 - [Earlier cache and concurrency work](#earlier-cache-and-concurrency-work)
 - [Changes to value reads and idle cleanup](#changes-to-value-reads-and-idle-cleanup)
@@ -521,3 +522,94 @@ for order in 'soroi otter' 'otter soroi' 'soroi otter'; do
   done
 done
 ```
+
+## Default Get reader counter and publication trials
+
+Measured on 2026-11-20 on Apple M3 Pro, macOS 14.6/arm64, Go 1.27.1. The source baseline is `65f9af9`. Two experiments address different questions.
+
+### How much does reader registration cost?
+
+The read-only diagnostic removed the `RLock` and deferred `RUnlock` only in the default-policy branch of `clientBucket.getValue`. All workers read the same preloaded key. There were no concurrent writers, timers or lifecycle transitions. Stock Soroi, this control, and Otter v2.4.0 ran in all six build orders, 300 ms per case using the existing untyped Soroi and native Otter harnesses. Cells are medians of six samples in ns/op / B/op / allocs/op.
+
+| Workers | Stock Soroi | Omit reader registration | Otter | Time removed (ns/op) |
+| ---: | ---: | ---: | ---: | ---: |
+| 1 | 24.07 / 0 / 0 | 22.165 / 0 / 0 | 18.395 / 0 / 0 | 1.905 |
+| 8 | 96.7 / 0 / 0 | 3.725 / 0 / 0 | 3.118 / 0 / 0 | 92.975 |
+
+The eight-worker difference was 92.975 ns/op, about 99.4% of the 93.582 ns/op gap between the two stock libraries in this run. The difference includes the full read-lock pair and its contention. It estimates the effect on aggregate throughput for this workload. The earlier 112.3 and 3.363 ns/op came from a different run. Writes require synchronization, so the control cannot serve as a concurrent cache implementation. MaxAge, GCTime and write workloads are outside this diagnostic. [Raw control samples](benchmarks/cache_comparison/default-counter-darwin-arm64.txt)
+
+### Which publication strategy preserves overwrite allocations?
+
+- **New snapshot per eligible write** ports `935be04` onto the optimized GCTime baseline. A per-key pointer publishes an immutable record of the value, type and installation time. Default and MaxAge hits can bypass reader registration. GCTime uses the existing bucket lock.
+- **Reuse the value slot** uses a per-key `atomic.Value` holding the already-boxed result. The first eligible write creates the slot. Subsequent writes of that binding update the value in place under the bucket write lock. The fast path covers native string keys, a concrete result type, the default clock, and disabled MaxAge, GCTime and capacity. Interface-typed bindings and unavailable values use the normal lookup. Clear and Close use a generation check around the published lookup. The allocation figures below apply to overwrites of prepared small integers. The index, initial slot and boxing of other value types have separate costs.
+
+Each build ran four times for 100 ms per case. The following columns are median ns/op / B/op / allocs/op and each candidate's percentage time change against the stock build in the same series. Both candidates passed the full race suite. The reusable-slot prototype also passed targeted tests for concurrent overwrites, removal, rebinding, cached nil, Clear and Close. Both implementations are archived for evaluation.
+
+| Operation | Keys | Workers | Policy | Stock | New snapshot per write | Reuse value slot |
+| --- | ---: | ---: | --- | ---: | ---: | ---: |
+| Get | 1,024 | 1 | Default | 30.125 / 0 / 0 | 30.215 / 0 / 0 (+0.3%) | 29.245 / 0 / 0 (-2.9%) |
+| Get | 1,024 | 8 | Default | 12.545 / 0 / 0 | 5.1925 / 0 / 0 (-58.6%) | 4.871 / 0 / 0 (-61.2%) |
+| Get | 1,024 | 1 | MaxAge | 69.36 / 0 / 0 | 61.765 / 0 / 0 (-11.0%) | 69.235 / 0 / 0 (-0.2%) |
+| Get | 1,024 | 8 | MaxAge | 18.575 / 0 / 0 | 11.125 / 0 / 0 (-40.1%) | 18.9 / 0 / 0 (+1.7%) |
+| Get | 1,024 | 1 | GCTime | 49.87 / 0 / 0 | 49.89 / 0 / 0 (+0.0%) | 48.935 / 0 / 0 (-1.9%) |
+| Get | 1,024 | 8 | GCTime | 18.225 / 0 / 0 | 21.53 / 0 / 0 (+18.1%) | 17.925 / 0 / 0 (-1.6%) |
+| Get | 1 | 1 | Default | 25.605 / 0 / 0 | 19.095 / 0 / 0 (-25.4%) | 20 / 0 / 0 (-21.9%) |
+| Get | 1 | 8 | Default | 98.49 / 0 / 0 | 3.263 / 0 / 0 (-96.7%) | 5.382 / 0 / 0 (-94.5%) |
+| Get | 1 | 1 | MaxAge | 57.435 / 0 / 0 | 51.645 / 0 / 0 (-10.1%) | 57.875 / 0 / 0 (+0.8%) |
+| Get | 1 | 8 | MaxAge | 115.45 / 0 / 0 | 8.8135 / 0 / 0 (-92.4%) | 113.7 / 0 / 0 (-1.5%) |
+| Get | 1 | 1 | GCTime | 42.68 / 0 / 0 | 42.64 / 0 / 0 (-0.1%) | 42.875 / 0 / 0 (+0.5%) |
+| Get | 1 | 8 | GCTime | 122.6 / 0 / 0 | 126.5 / 0 / 0 (+3.2%) | 125.45 / 0 / 0 (+2.3%) |
+| Set | 1,024 | 1 | Default | 84.585 / 0 / 0 | 128.85 / 64 / 1 (+52.3%) | 90.41 / 0 / 0 (+6.9%) |
+| Set | 1,024 | 8 | Default | 36.425 / 0 / 0 | 55.94 / 64 / 1 (+53.6%) | 42.68 / 0 / 0 (+17.2%) |
+| Set | 1,024 | 1 | MaxAge | 89.1 / 0 / 0 | 133.3 / 64 / 1 (+49.6%) | 89.355 / 0 / 0 (+0.3%) |
+| Set | 1,024 | 8 | MaxAge | 37.745 / 0 / 0 | 60.5 / 64 / 1 (+60.3%) | 36.51 / 0 / 0 (-3.3%) |
+| Set | 1,024 | 1 | GCTime | 114.4 / 0 / 0 | 120.5 / 0 / 0 (+5.3%) | 117.75 / 0 / 0 (+2.9%) |
+| Set | 1,024 | 8 | GCTime | 45.785 / 0 / 0 | 47.25 / 0 / 0 (+3.2%) | 45.82 / 0 / 0 (+0.1%) |
+| Set | 1 | 1 | Default | 76.085 / 0 / 0 | 116.35 / 64 / 1 (+52.9%) | 80.215 / 0 / 0 (+5.4%) |
+| Set | 1 | 8 | Default | 224.95 / 0 / 0 | 227.05 / 64 / 1 (+0.9%) | 231.7 / 0 / 0 (+3.0%) |
+| Set | 1 | 1 | MaxAge | 80.49 / 0 / 0 | 116.5 / 64 / 1 (+44.7%) | 82.66 / 0 / 0 (+2.7%) |
+| Set | 1 | 8 | MaxAge | 224.5 / 0 / 0 | 246.3 / 64 / 1 (+9.7%) | 226.3 / 0 / 0 (+0.8%) |
+| Set | 1 | 1 | GCTime | 106.2 / 0 / 0 | 108.4 / 0 / 0 (+2.1%) | 111.5 / 0 / 0 (+5.0%) |
+| Set | 1 | 8 | GCTime | 249.9 / 0 / 0 | 248.7 / 0 / 0 (-0.5%) | 240.9 / 0 / 0 (-3.6%) |
+
+A second harness used default options and alternated 42 and 43. One mixed operation is a complete Set and Get by one worker. At eight workers these pairs may interleave on the same key. Cells have the same units as above. Raw samples also record fractional mallocs for the write and pair cases.
+
+| Operation | Workers | Stock | New snapshot per write | Reuse value slot |
+| --- | ---: | ---: | ---: | ---: |
+| Get1024 | 1 | 30.505 / 0 / 0 | 30.47 / 0 / 0 (-0.1%) | 29.875 / 0 / 0 (-2.1%) |
+| Get1024 | 8 | 13.52 / 0 / 0 | 5.0695 / 0 / 0 (-62.5%) | 4.954 / 0 / 0 (-63.4%) |
+| Set | 1 | 74.835 / 0 / 0 | 109.65 / 64 / 1 (+46.5%) | 81.015 / 0 / 0 (+8.3%) |
+| Set | 8 | 222.55 / 0 / 0 | 202.75 / 64 / 1 (-8.9%) | 229.75 / 0 / 0 (+3.2%) |
+| SetGetPair | 1 | 109.05 / 0 / 0 | 143.25 / 64 / 1 (+31.4%) | 112.55 / 0 / 0 (+3.2%) |
+| SetGetPair | 8 | 194.1 / 0 / 0 | 283.05 / 64 / 1 (+45.8%) | 282 / 0 / 0 (+45.3%) |
+
+With eight workers, slot reuse raised default hot-key read throughput about 18.3 times. The default distributed overwrite cost rose by 17.2% and the mixed same-key pair cost rose by 45.3%. Choosing this design for a read-heavy workload trades some write throughput for faster reads. A mixed-production throughput estimate requires its actual read/write mix. [Full trial samples](benchmarks/cache_comparison/default-publication-darwin-arm64.txt) · [Source patches and mixed harness](benchmarks/cache_comparison/default-publication-inputs.tar.gz)
+
+### Earlier cache experiments at a glance
+
+The figures here come from the separate historical 24-case series. Each Get uses eight workers. The Set column uses eight workers and 1,024 keys with the default policy. Values are median ns/op. For before/after allocations and every worker count, see the [historical 24-case tables](#24-case-comparison). Earlier return-shape, skipped timestamp store and bucket-layout controls, plus the original alternating-pair studies, retain their own units under [Original measurements](#original-measurements).
+
+| Source | Method | Default Get, hot key | Default Get, 1,024 keys | MaxAge Get, hot key | GCTime Get, hot key | Default distributed Set |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| `0250a1f` | Value-only Get | 102.6 | 12.3 | 233.6 | 403 | 33.7 |
+| `e8fa553` | Share live MaxAge reads | 96.88 | 12.59 | 107.4 | 403.1 | 40.69 |
+| `938547f` | Reuse the GCTime timer | 94.55 | 12.83 | 111.6 | 133.2 | 37.69 |
+| `elapsed` | Read elapsed time directly | 95.82 | 12.25 | 114.8 | 124.1 | 36.29 |
+| `lookup` | Store the cleanup task on the entry | 101.6 | 12.35 | 109.5 | 130 | 35.95 |
+| `combined` | Combine direct elapsed time and entry-local task | 94.64 | 13.46 | 111.4 | 130.4 | 39.83 |
+| `striped` | Four idle timestamp slots | 95.81 | 13.59 | 126.3 | 131.8 | 51.49 |
+| `febe4c7` | Retained GCTime implementation | 102.9 | 12.47 | 117.2 | 128.3 | 36.44 |
+| `two` | Two reader counters per bucket | 61.79 | 15.71 | 78.46 | 107.1 | 47.67 |
+| `four` | Four reader counters per bucket | 33.3 | 9.307 | 42.95 | 90.51 | 56.14 |
+| `935be04` | Publish a value, type and time on each write | 3.508 | 4.92 | 8.707 | 130.2 | 52.14 |
+| `74c5b70` | Extend write publication to precise GCTime renewal | 5.456 | 5.47 | 10.37 | 82.23 | 57.79 |
+| `018eadd` | Publish on first GCTime Get after write | 127.3 | 13.5 | 118.4 | 81.54 | 38.44 |
+| `5604a00` | Publish on each GCTime write | 105.4 | 12.49 | 112.1 | 82.51 | 36.51 |
+
+### Reproduce the counter and snapshot runs
+
+Export `65f9af9` separately for each build. Extract the archived inputs into a separate directory. Apply just the named patch with `git apply --no-index /absolute/path/to/build.patch` inside the export. The stock build uses the original source. The control patch is only for the no-writer benchmark.
+
+For the control experiment compile the Soroi binaries from the root of each export with `go test -c`, and Otter from its comparison module. Run each binary with `-test.run='^$' -test.bench='^Benchmark(Cache|Otter)Baseline$/^Get$/^Keys=1$/^Default$' -test.cpu=1,8 -test.benchtime=300ms -test.benchmem -test.count=1`. The raw file lists the exact round order.
+
+For the snapshot experiment copy the archived `plain_pair_test.go` to each stock, eager and reuse export before compiling the root test binary. It comes from `e24452d:lazy_read_benchmark_test.go` with default options. Run `-test.run='^$' -test.bench='^Benchmark(CacheBaseline|LazyGet)$' -test.cpu=1,8 -test.benchtime=100ms -test.benchmem -test.count=1` in the order listed in the snapshot raw file. The additional reusable-slot lifecycle tests are included in its patch and were run separately with `go test -race ./...`.

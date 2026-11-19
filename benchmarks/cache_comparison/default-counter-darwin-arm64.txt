@@ -1,0 +1,144 @@
+# round=1 build=stock
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	14635746	        24.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 3779882	        95.92 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=1 build=control
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	15563910	        22.45 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	88837692	         3.887 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=1 build=otter
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi/benchmarks/cache_comparison
+cpu: Apple M3 Pro
+BenchmarkOtterBaseline/Get/Keys=1/Default           	19104460	        18.80 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/Default-8         	100000000	         3.306 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 build=stock
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	14509742	        25.00 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 3873086	        95.70 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 build=otter
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi/benchmarks/cache_comparison
+cpu: Apple M3 Pro
+BenchmarkOtterBaseline/Get/Keys=1/Default           	20290119	        18.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/Default-8         	100000000	         3.151 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 build=control
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	15736328	        22.17 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	94353022	         3.724 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 build=control
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	16156840	        22.11 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	94640332	         3.709 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 build=stock
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	15016396	        24.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 3781866	        97.10 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 build=otter
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi/benchmarks/cache_comparison
+cpu: Apple M3 Pro
+BenchmarkOtterBaseline/Get/Keys=1/Default           	19700928	        18.33 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/Default-8         	100000000	         3.076 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=4 build=control
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	16345741	        22.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	93250140	         3.728 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=4 build=otter
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi/benchmarks/cache_comparison
+cpu: Apple M3 Pro
+BenchmarkOtterBaseline/Get/Keys=1/Default           	19619463	        18.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/Default-8         	100000000	         3.061 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=4 build=stock
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	14555942	        24.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 3633752	        98.05 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=5 build=otter
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi/benchmarks/cache_comparison
+cpu: Apple M3 Pro
+BenchmarkOtterBaseline/Get/Keys=1/Default           	19624899	        18.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/Default-8         	95515012	         3.189 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=5 build=stock
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	14424810	        26.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 4025421	       118.2 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=5 build=control
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	16161403	        22.22 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	96235249	         3.726 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=6 build=otter
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi/benchmarks/cache_comparison
+cpu: Apple M3 Pro
+BenchmarkOtterBaseline/Get/Keys=1/Default           	19359825	        18.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/Default-8         	100000000	         3.085 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=6 build=control
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	16088066	        22.16 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	95053695	         3.712 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=6 build=stock
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	14963292	        24.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 3566881	        96.30 ns/op	       0 B/op	       0 allocs/op
+PASS
