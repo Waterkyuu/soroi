@@ -5,9 +5,12 @@ overwrites retain zero amortized allocations. A single worker alternating writes
 and reads of one key pays for one new 32-byte snapshot per pair. At eight workers
 this workload also slows down, by 12.2%.
 
+The implementation was retired in `22c2300`. Git retains the measured candidate
+in `018eadd` and its benchmark harness in `e24452d`.
+
 ## Measurements
 
-Baseline 2199cfe and candidate 8653707 ran on Apple M3 Pro, Darwin/arm64, Go 1.27.1. Each cell shows the median of eight
+Baseline 2199cfe and candidate 018eadd ran on Apple M3 Pro, Darwin/arm64, Go 1.27.1. Each cell shows the median of eight
 samples per version with 300 ms per case and GOMAXPROCS set to 1 or 8.
 Baseline and candidate binaries ran sequentially in alternating order. Both
 used the same benchmark source, default clock, real timers and `GCTime: time.Hour`.
@@ -54,16 +57,16 @@ these key distributions, worker counts, value sizes and machine.
 
 ## Reproduction
 
-Run on the experiment branch from the repository root. Use Go 1.27.1 to match
+Run from the repository root. Use Go 1.27.1 to match
 the recorded samples. This builds independent binaries from the baseline and
 the experiment with the same external benchmark file.
 
 ```sh
 scratch=$(mktemp -d)
-cp lazy_read_benchmark_test.go "$scratch/"
+git show e24452d:lazy_read_benchmark_test.go > "$scratch/lazy_read_benchmark_test.go"
 for variant in baseline candidate; do
   rev=2199cfe
-  if [ "$variant" = candidate ]; then rev=8653707; fi
+  if [ "$variant" = candidate ]; then rev=018eadd; fi
   mkdir "$scratch/$variant"
   git archive -o "$scratch/$variant.tar" "$rev"
   tar -xf "$scratch/$variant.tar" -C "$scratch/$variant"
@@ -81,4 +84,4 @@ for round in 1 2 3 4 5 6 7 8; do
 done
 ```
 
-[Benchmark source](../../lazy_read_benchmark_test.go) · [All 96 measurements](lazy-get-darwin-arm64.txt)
+[All 96 measurements](lazy-get-darwin-arm64.txt)
