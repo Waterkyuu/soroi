@@ -309,8 +309,18 @@ func GetState[V any](client *Client, key any) Snapshot[V] {
 	return typedSnapshot[V](client.bucketFor(key).getSnapshot(key, reflect.TypeFor[V](), client.options))
 }
 
-// getValue applies cache retention and returns the value without projecting query state.
+// getValue reads an atomic result while its client-wide lifetime is stable.
 func (c *clientBucket) getValue(key any, typ reflect.Type) (any, bool) {
+	if c.owner.publishesValues() {
+		phase := c.owner.publicationPhase.Load()
+		if phase&1 == 0 {
+			value, ok, done := c.getPublishedValue(key, typ)
+			if done && c.owner.publicationPhase.Load() == phase {
+				return value, ok
+			}
+		}
+	}
+
 	if c.concurrentReads() {
 		c.mu.RLock()
 		defer c.mu.RUnlock()
@@ -451,6 +461,7 @@ func (c *clientBucket) setEntryLocked(key, value any, typ reflect.Type, cached *
 	cached.fetchedAt, cached.sharedExpiresAt = time.Time{}, time.Time{}
 	cached.err, cached.staleReason = nil, ReasonNone
 	c.advanceRevisionLocked(cached)
+	c.publishValueLocked(key, cached)
 	c.owner.emitEventLocked(Event{Key: key, Kind: EventLocalWrite, Reason: ReasonSet})
 	c.touchCapacityLocked(key)
 	c.touchGCLocked(key)

@@ -2,6 +2,7 @@ package soroi
 
 import (
 	"hash/maphash"
+	"sync"
 	"sync/atomic"
 )
 
@@ -39,6 +40,8 @@ type clientBucket struct {
 	// Updating a retained key reuses its node. Removal may destroy it, so callers must not
 	// retain a node pointer across an unlock. Nil maps avoid allocating for unused buckets.
 	entries map[any]*entry
+	// published indexes the independently published Get result for each bound key.
+	published sync.Map
 	// pending owns at most one active load per key and is allocated on the first load.
 	pending map[any]*flight
 	// observers owns live consumers and is allocated on the first subscription.
