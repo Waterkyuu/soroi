@@ -316,6 +316,11 @@ func (c *clientBucket) getValue(key any, typ reflect.Type) (any, bool) {
 		defer c.mu.RUnlock()
 	} else {
 		if c.owner.concurrentClock && c.owner.options.MaxEntries <= 0 {
+			if c.owner.options.GCTime > 0 && c.owner.options.MaxAge <= 0 {
+				if value, ok := c.readPublished(key, typ); ok {
+					return value, true
+				}
+			}
 			if value, ok, done := c.getValueReadOnly(key, typ); done {
 				return value, ok
 			}
@@ -352,6 +357,7 @@ func (c *clientBucket) getValueReadOnly(key any, typ reflect.Type) (value any, o
 	if !cached.hasData {
 		return nil, false, true
 	}
+	c.publishReadLocked(key, cached)
 	return cached.value, true, true
 }
 
@@ -444,6 +450,7 @@ func (c *clientBucket) setEntryLocked(key, value any, typ reflect.Type, cached *
 		c.entries[key] = cached
 	}
 	// Keep registered tags and shared identity in place while renewing local result state.
+	cached.invalidateReadLocked()
 	cached.typ, cached.value, cached.hasData = typ, value, true
 	cached.updatedAt = now
 	cached.expiresAt = c.limitExpiry(now, now.Add(c.owner.options.StaleTime))
