@@ -1,0 +1,180 @@
+# round=1 library=soroi
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 3305094	        46.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1284108	       112.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 1247286	        97.30 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       127.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1758679	        67.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       138.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 2180281	        50.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 7257057	        21.54 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1000000	       110.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 3638587	        32.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1487190	        68.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 4484095	        26.40 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1489845	        75.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  604369	       229.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1453544	        83.47 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  563026	       266.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       127.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  478723	       289.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1290860	        90.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 1276431	        79.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1000000	       109.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 1381196	        92.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  991495	       132.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	  890619	       117.5 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=1 library=otter
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi/benchmarks/cache_comparison
+cpu: Apple M3 Pro
+BenchmarkOtterBaseline/Get/Keys=1/Default           	 6357068	        18.85 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/Default-8         	27907788	         3.796 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/MaxAge            	 3750418	        33.27 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/MaxAge-8          	16121448	         6.531 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/GCTime            	 2475594	        46.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/GCTime-8          	13231173	         9.822 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/Default        	 5744340	        20.15 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/Default-8      	31596907	         3.904 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/MaxAge         	 3299550	        34.70 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/MaxAge-8       	15269360	         7.037 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/GCTime         	 2282085	        48.23 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/GCTime-8       	13554472	         8.643 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/Default           	 1557842	        80.17 ns/op	      24 B/op	       1 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/Default-8         	  668532	       174.2 ns/op	      24 B/op	       1 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/MaxAge            	 1330155	        91.47 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/MaxAge-8          	  603798	       200.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/GCTime            	 1295197	        92.18 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/GCTime-8          	  526401	       211.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/Default        	 1505067	        81.45 ns/op	      24 B/op	       1 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/Default-8      	 3860992	        29.86 ns/op	      24 B/op	       1 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/MaxAge         	 1273040	        94.74 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/MaxAge-8       	 3060436	        40.70 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/GCTime         	 1274060	        94.28 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/GCTime-8       	 3111979	        38.45 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 library=otter
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi/benchmarks/cache_comparison
+cpu: Apple M3 Pro
+BenchmarkOtterBaseline/Get/Keys=1/Default           	 6363880	        18.83 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/Default-8         	31636183	         3.363 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/MaxAge            	 3707985	        31.55 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/MaxAge-8          	17982132	         5.849 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/GCTime            	 2658976	        44.55 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/GCTime-8          	13168783	         8.125 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/Default        	 5947021	        19.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/Default-8      	29535429	         3.532 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/MaxAge         	 3570746	        33.54 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/MaxAge-8       	17624488	         6.063 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/GCTime         	 2509873	        50.84 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/GCTime-8       	14242900	         8.973 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/Default           	 1455308	        86.00 ns/op	      24 B/op	       1 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/Default-8         	  548487	       192.0 ns/op	      24 B/op	       1 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/MaxAge            	 1284050	        94.28 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/MaxAge-8          	  528013	       259.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/GCTime            	 1084101	       148.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/GCTime-8          	  270090	       384.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/Default        	 1092247	       120.4 ns/op	      24 B/op	       1 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/Default-8      	 2903869	       104.0 ns/op	      24 B/op	       1 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/MaxAge         	 1201240	        95.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/MaxAge-8       	 2913268	        40.77 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/GCTime         	 1266176	        95.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/GCTime-8       	 3072553	        38.86 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 library=soroi
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4691905	        25.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1267146	        96.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2073144	        58.97 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       114.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2863369	        41.86 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       129.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3892353	        30.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 7309440	        13.86 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1704174	        71.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 5173017	        19.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2443767	        49.46 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5670596	        20.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1562521	        74.84 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  667748	       198.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1485826	        78.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  619461	       225.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       106.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  506480	       255.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1435222	        87.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2994915	        39.37 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1361098	        86.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3274918	        41.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	 1000000	       113.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2765571	        46.33 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 library=soroi
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4629152	        25.25 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1212932	       120.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 1959120	        60.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       126.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2760799	        43.26 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       116.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3806839	        30.84 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 5767947	        50.92 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1723632	        71.18 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 5225864	        24.86 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2278046	        51.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5871008	        21.82 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1565707	        76.82 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  583503	       203.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1350098	        83.93 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  555984	       222.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       110.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  506079	       260.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1405342	        84.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3149313	        49.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1297378	        89.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3307750	        37.56 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	 1000000	       114.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2634763	        43.16 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 library=otter
+goos: darwin
+goarch: arm64
+pkg: github.com/Waterkyuu/soroi/benchmarks/cache_comparison
+cpu: Apple M3 Pro
+BenchmarkOtterBaseline/Get/Keys=1/Default           	 6475285	        18.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/Default-8         	37458537	         3.113 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/MaxAge            	 3777236	        30.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/MaxAge-8          	21873860	         5.597 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/GCTime            	 2438373	        45.07 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1/GCTime-8          	15433752	         7.997 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/Default        	 5639406	        19.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/Default-8      	35845419	         3.382 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/MaxAge         	 3589329	        32.68 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/MaxAge-8       	21892316	         5.346 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/GCTime         	 2569454	        46.65 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Get/Keys=1024/GCTime-8       	14171134	         9.546 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/Default           	 1542265	        83.83 ns/op	      24 B/op	       1 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/Default-8         	  701497	       176.6 ns/op	      24 B/op	       1 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/MaxAge            	 1328592	        96.69 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/MaxAge-8          	  594316	       227.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/GCTime            	 1334440	        90.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1/GCTime-8          	  572791	       214.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/Default        	 1527062	        85.54 ns/op	      24 B/op	       1 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/Default-8      	 5213820	        23.25 ns/op	      24 B/op	       1 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/MaxAge         	 1309214	        92.11 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/MaxAge-8       	 4337499	        26.97 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/GCTime         	 1315675	        91.31 ns/op	       0 B/op	       0 allocs/op
+BenchmarkOtterBaseline/Set/Keys=1024/GCTime-8       	 4229857	        27.89 ns/op	       0 B/op	       0 allocs/op
+PASS

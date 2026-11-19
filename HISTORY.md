@@ -2,6 +2,7 @@
 
 The current cache uses a bucket read lock. With the default clock, a live MaxAge read can share that lock. For GCTime, each idle entry owns its cleanup task. A hit records the latest elapsed time and reuses the timer. The two later GCTime snapshot experiments were retired. Their source, read gains and write costs are recorded here.
 
+- [Branch baseline at `443a17e` and Otter v2.4.0](#2026-11-19-branch-baseline-and-otter-comparison)
 - [Earlier cache and concurrency work](#earlier-cache-and-concurrency-work)
 - [Changes to value reads and idle cleanup](#changes-to-value-reads-and-idle-cleanup)
 - [24-case comparison across 14 implementations](#24-case-comparison)
@@ -470,3 +471,53 @@ done > "$scratch/samples.txt"
 ```
 
 Use a POSIX shell for the reproduction block. Each source must produce 24 cases in each of the three rounds. The benchmark setup, including the first read of each populated key, is outside the timer.
+
+## 2026-11-19 branch baseline and Otter comparison
+
+The **branch baseline** is the original 24-case run on `waterkyuu/feat/typed-cache-value` at `443a17e`. The next two columns come from a separate three-round comparison of the same Soroi revision and Otter v2.4.0. Both ran on Apple M3 Pro, macOS 14.6/arm64, Go 1.27.1. All cells report **median ns/op / B/op / allocs/op**, with three 100 ms samples per workload. The last column divides Otter's median time by Soroi's median time from the comparison rounds and subtracts one. A negative percentage means Otter completed the workload in less time. At eight workers ns/op is elapsed time per operation across all workers.
+
+Each cache is warmed before timing. Soroi calls the untyped `client.Get(key)` with prepared string keys boxed as `any`. Otter calls `GetIfPresent` on a `Cache[string, int]`. Both overwrite existing keys with the integers 42 and 43 and verify the final values after timing. The shared hot key and the 1,024-key worker stripes match across both harnesses. Capacity limits are disabled. Otter uses its defaults, `ExpiryWriting(1h)` for the MaxAge comparison, and `ExpiryAccessing(1h)` for GCTime. Otter may skip a deadline write when the deadline moves by up to one second and both lifetimes exceed that tolerance. Soroi records the latest exact access for GCTime. [Otter deadline rules](https://github.com/maypok86/otter/blob/v2.4.0/deadline.go#L28)
+
+| Operation | Keys | Workers | Policy | Soroi branch baseline | Soroi comparison | Otter comparison | Otter time change |
+| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |
+| Get | 1,024 | 1 | Default | 30.12 / 0 / 0 | 30.84 / 0 / 0 | 19.62 / 0 / 0 | -36.4% |
+| Get | 1,024 | 8 | Default | 16.72 / 0 / 0 | 21.54 / 0 / 0 | 3.532 / 0 / 0 | -83.6% |
+| Get | 1,024 | 1 | MaxAge | 70.02 / 0 / 0 | 71.18 / 0 / 0 | 33.54 / 0 / 0 | -52.9% |
+| Get | 1,024 | 8 | MaxAge | 23.56 / 0 / 0 | 24.86 / 0 / 0 | 6.063 / 0 / 0 | -75.6% |
+| Get | 1,024 | 1 | GCTime | 51.55 / 0 / 0 | 51.81 / 0 / 0 | 48.23 / 0 / 0 | -6.9% |
+| Get | 1,024 | 8 | GCTime | 19.16 / 0 / 0 | 21.82 / 0 / 0 | 8.973 / 0 / 0 | -58.9% |
+| Get | 1 | 1 | Default | 24.20 / 0 / 0 | 25.34 / 0 / 0 | 18.83 / 0 / 0 | -25.7% |
+| Get | 1 | 8 | Default | 102.5 / 0 / 0 | 112.3 / 0 / 0 | 3.363 / 0 / 0 | -97.0% |
+| Get | 1 | 1 | MaxAge | 55.85 / 0 / 0 | 60.20 / 0 / 0 | 31.55 / 0 / 0 | -47.6% |
+| Get | 1 | 8 | MaxAge | 136.1 / 0 / 0 | 126.6 / 0 / 0 | 5.849 / 0 / 0 | -95.4% |
+| Get | 1 | 1 | GCTime | 42.36 / 0 / 0 | 43.26 / 0 / 0 | 45.07 / 0 / 0 | +4.2% |
+| Get | 1 | 8 | GCTime | 128.1 / 0 / 0 | 129.3 / 0 / 0 | 8.125 / 0 / 0 | -93.7% |
+| Set | 1,024 | 1 | Default | 82.85 / 0 / 0 | 87.88 / 0 / 0 | 85.54 / 24 / 1 | -2.7% |
+| Set | 1,024 | 8 | Default | 33.65 / 0 / 0 | 49.10 / 0 / 0 | 29.86 / 24 / 1 | -39.2% |
+| Set | 1,024 | 1 | MaxAge | 91.00 / 0 / 0 | 89.20 / 0 / 0 | 94.74 / 0 / 0 | +6.2% |
+| Set | 1,024 | 8 | MaxAge | 50.12 / 0 / 0 | 41.52 / 0 / 0 | 40.70 / 0 / 0 | -2.0% |
+| Set | 1,024 | 1 | GCTime | 121.1 / 0 / 0 | 114.8 / 0 / 0 | 94.28 / 0 / 0 | -17.9% |
+| Set | 1,024 | 8 | GCTime | 49.03 / 0 / 0 | 46.33 / 0 / 0 | 38.45 / 0 / 0 | -17.0% |
+| Set | 1 | 1 | Default | 76.84 / 0 / 0 | 75.44 / 0 / 0 | 83.83 / 24 / 1 | +11.1% |
+| Set | 1 | 8 | Default | 223.9 / 0 / 0 | 203.9 / 0 / 0 | 176.6 / 24 / 1 | -13.4% |
+| Set | 1 | 1 | MaxAge | 80.75 / 0 / 0 | 83.47 / 0 / 0 | 94.28 / 0 / 0 | +13.0% |
+| Set | 1 | 8 | MaxAge | 225.0 / 0 / 0 | 225.1 / 0 / 0 | 227.0 / 0 / 0 | +0.8% |
+| Set | 1 | 1 | GCTime | 107.8 / 0 / 0 | 110.0 / 0 / 0 | 92.18 / 0 / 0 | -16.2% |
+| Set | 1 | 8 | GCTime | 258.3 / 0 / 0 | 260.3 / 0 / 0 | 214.3 / 0 / 0 | -17.7% |
+
+[Original branch output](benchmarks/cache_comparison/443a17e-baseline-darwin-arm64.txt) · [Paired raw output and run order](benchmarks/cache_comparison/443a17e-otter-paired-darwin-arm64.txt) · [Soroi harness](cache_baseline_benchmark_test.go) · [Otter harness](benchmarks/cache_comparison/otter_baseline_benchmark_test.go)
+
+To repeat the branch baseline, run the first command under [Reproduction](#reproduction). For the comparison, run these commands from the repository root in a POSIX shell.
+
+```sh
+set -eu
+bench_dir=$(mktemp -d)
+go test -c -o "$bench_dir/soroi.test" .
+go -C benchmarks/cache_comparison test -c -o "$bench_dir/otter.test" .
+for order in 'soroi otter' 'otter soroi' 'soroi otter'; do
+  for lib in $order; do
+    "$bench_dir/$lib.test" '-test.run=^$' '-test.bench=^Benchmark(Cache|Otter)Baseline$' \
+      -test.cpu=1,8 -test.benchtime=100ms -test.count=1 -test.benchmem
+  done
+done
+```
