@@ -316,11 +316,6 @@ func (c *clientBucket) getValue(key any, typ reflect.Type) (any, bool) {
 		defer c.mu.RUnlock()
 	} else {
 		if c.owner.concurrentClock && c.owner.options.MaxEntries <= 0 {
-			if c.owner.options.GCTime > 0 && c.owner.options.MaxAge <= 0 {
-				if value, ok := c.readPublished(key, typ); ok {
-					return value, true
-				}
-			}
 			if value, ok, done := c.getValueReadOnly(key, typ); done {
 				return value, ok
 			}
@@ -456,7 +451,6 @@ func (c *clientBucket) setEntryLocked(key, value any, typ reflect.Type, cached *
 	cached.fetchedAt, cached.sharedExpiresAt = time.Time{}, time.Time{}
 	cached.err, cached.staleReason = nil, ReasonNone
 	c.advanceRevisionLocked(cached)
-	c.publishWriteLocked(key, cached)
 	c.owner.emitEventLocked(Event{Key: key, Kind: EventLocalWrite, Reason: ReasonSet})
 	c.touchCapacityLocked(key)
 	c.touchGCLocked(key)

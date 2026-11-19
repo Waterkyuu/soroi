@@ -21,7 +21,6 @@ func (c *clientBucket) storeEntryLocked(key any, value entry) {
 	if cached := c.entries[key]; cached != nil {
 		value.gcTask = cached.gcTask
 		*cached = value
-		c.publishWriteLocked(key, cached)
 		return
 	}
 	// Allocating inside the miss branch keeps the value parameter off the heap on overwrites.
