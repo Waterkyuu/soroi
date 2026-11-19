@@ -19,7 +19,6 @@ func (c *clientBucket) entryLocked(key any) entry {
 // Readers can safely dereference the node only while holding this bucket's lock.
 func (c *clientBucket) storeEntryLocked(key any, value entry) {
 	if cached := c.entries[key]; cached != nil {
-		cached.invalidateReadLocked()
 		value.gcTask = cached.gcTask
 		*cached = value
 		return
