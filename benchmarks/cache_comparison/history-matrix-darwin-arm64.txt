@@ -1,0 +1,1218 @@
+# round=1 source=0250a1f
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4156611	        26.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1000000	       102.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 1323740	        92.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	  591484	       242.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	  411199	       311.7 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  293046	       403.0 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3932916	        30.28 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9638070	        12.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1212286	        99.79 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 3127422	        37.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	  296503	       436.0 ns/op	     222 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	  745784	       189.7 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1550204	        77.38 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  635186	       213.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1523160	        78.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  551682	       227.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  408661	       390.5 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  262454	       449.8 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1379940	        92.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3389088	        33.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1371765	        88.40 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2672317	        42.99 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  248506	       519.4 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	  636984	       168.9 ns/op	     208 B/op	       4 allocs/op
+PASS
+# round=1 source=e8fa553
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4410708	        25.98 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1298665	        96.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2152216	        56.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       115.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	  450351	       299.0 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  292138	       403.1 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3892238	        31.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9318788	        12.59 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1778790	        66.33 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6711831	        18.37 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	  306248	       406.0 ns/op	     225 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	  841842	       151.3 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1629806	        73.42 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  616833	       222.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1542255	        78.15 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  554367	       219.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  385939	       367.5 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  259990	       450.2 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1464240	        81.56 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3295525	        33.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1386918	        86.09 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3147193	        38.50 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  245214	       525.5 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	  648356	       321.7 ns/op	     208 B/op	       4 allocs/op
+PASS
+# round=1 source=938547f
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4315017	        26.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1261540	        94.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2069000	        57.17 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	  977031	       108.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1842874	        65.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  848106	       133.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3912554	        31.93 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9477268	        12.83 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1635584	        69.73 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6283078	        18.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1534992	        83.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 4658618	        25.85 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1528446	        77.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  629508	       217.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1510959	        79.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  575446	       220.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  923846	       133.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  550279	       241.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1423215	        81.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3169114	        37.69 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1361089	        90.91 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3064941	        36.38 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  763986	       152.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2212413	        52.04 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=1 source=febe4c7
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4417923	        25.72 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1244175	        99.91 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2133908	        56.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	  998682	       134.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2821515	        42.23 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       142.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 4052832	        29.78 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9486477	        12.31 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1767250	        68.42 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6653713	        20.94 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2474617	        48.73 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 6732100	        17.55 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1608982	        74.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  616186	       223.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1390758	        78.27 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  567576	       227.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       105.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  529372	       233.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1446148	        82.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3248100	        35.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1376677	        87.33 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3188866	        35.31 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	 1000000	       114.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2767296	        44.26 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=1 source=935be04
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 5206911	        21.15 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	33763974	         3.508 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2321599	        51.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	14291172	         8.532 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1839775	        66.48 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  989180	       131.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 4018186	        29.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	24273072	         4.920 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1989326	        59.54 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	12154771	         9.757 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1513531	        79.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5097903	        22.96 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1000000	       105.0 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  609110	       239.2 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1000000	       107.9 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  525441	       204.0 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  915651	       132.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  449024	       245.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1000000	       126.1 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2263914	        52.14 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1000000	       126.4 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2299731	        53.08 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  765021	       152.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2131053	        60.08 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=1 source=74c5b70
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4599763	        23.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	29957871	         3.883 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2315277	        52.42 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	13983024	         8.496 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2353069	        49.92 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1416997	        79.84 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3795620	        31.68 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	23570043	         5.211 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1958236	        61.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	11795252	        10.65 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1946898	        62.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	11287299	        10.56 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1000000	       104.6 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  643374	       241.2 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1000000	       112.2 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  622191	       212.6 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  853762	       161.5 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  477405	       238.8 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1000000	       127.0 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2509668	        50.38 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1000000	       127.7 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2400189	        48.55 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  703192	       205.3 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1572968	        79.87 ns/op	      64 B/op	       1 allocs/op
+PASS
+# round=1 source=018eadd
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4527891	        26.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1000000	       127.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2046626	        57.75 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       118.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 3235620	        38.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1395766	        80.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3965161	        29.87 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	10072042	        12.09 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1855159	        64.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6534241	        18.45 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2711407	        70.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	15361802	         8.825 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1574870	        75.60 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  565704	       226.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1486154	        81.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  574288	       228.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       106.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  489520	       248.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1438591	        83.80 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3346155	        35.07 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1330490	        89.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3100357	        45.73 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  978526	       119.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1770556	        65.41 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=1 source=5604a00
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4565319	        28.77 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1252519	       119.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2106904	        56.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       110.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 3257402	        38.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1442428	        82.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3908672	        31.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9009037	        15.92 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1000000	       102.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 4829086	        22.39 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2651737	        45.46 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	14710312	         8.533 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1599014	        76.68 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  571677	       215.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1445817	        80.91 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  537874	       220.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  909722	       146.6 ns/op	      32 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  495278	       239.4 ns/op	      32 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1344541	        88.26 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3351267	        37.54 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1261258	        93.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3184304	        34.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  886917	       154.8 ns/op	      32 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2064807	        54.57 ns/op	      32 B/op	       1 allocs/op
+PASS
+# round=1 source=elapsed
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4442731	        26.30 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1263649	        95.82 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2134183	        57.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	  953199	       114.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2331452	        51.31 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  959647	       120.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3903326	        31.33 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9561435	        12.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1756178	        67.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6466329	        18.17 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1949955	        65.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5099005	        21.03 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1570116	        79.89 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  571280	       211.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1488642	        80.59 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  560802	       215.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       122.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  519544	       254.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1423292	        83.78 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2250530	        46.84 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1282333	        94.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3231884	        36.82 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  849932	       133.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2033733	        70.25 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=1 source=lookup
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4177137	        27.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1257212	       125.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2035410	        59.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	  965535	       109.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2083989	        64.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       116.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3440049	        34.42 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 8366401	        13.79 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1717933	        68.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6465487	        22.30 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1659969	        71.54 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5676655	        20.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1580992	        78.66 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  568854	       213.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1460335	        80.97 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  580633	       208.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  973071	       126.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  443978	       266.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1408185	        84.38 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2795836	        38.46 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1345507	        90.67 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2947795	        39.85 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  912894	       133.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2428860	        52.99 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=1 source=combined
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 3735063	        26.99 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1239922	        94.64 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2016321	        58.64 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       131.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2790781	        43.00 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  908001	       148.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3759010	        32.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9564514	        13.46 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1725507	        69.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 5880214	        18.71 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2444055	        50.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 6676108	        17.72 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1591831	        75.66 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  611335	       204.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1500750	        78.77 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  577269	       209.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       111.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  552496	       242.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1407145	        85.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3292534	        39.83 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1346961	        88.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3217006	        35.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	 1000000	       131.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2252780	        44.51 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=1 source=striped
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4262575	        26.61 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1248380	        95.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2038970	        60.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       132.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2759931	        42.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  955255	       131.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3754668	        31.71 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9587535	        13.59 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1591678	        73.46 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6457275	        18.72 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1986818	        59.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 7202034	        17.00 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1561354	        79.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  588439	       221.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1374954	        83.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  572222	       265.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1030476	       118.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  585794	       254.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1366399	        93.84 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2867354	        51.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1252466	        90.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3224653	        34.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  991087	       121.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2613386	        46.55 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=1 source=two
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4153272	        27.69 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1812291	        75.85 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2051667	        59.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 2104434	        82.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1714328	        69.25 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       106.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3615210	        32.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	10625109	        11.71 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1649036	        72.22 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6878252	        17.48 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1383678	        81.89 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5297739	        23.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1450480	        80.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  564063	       224.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1434386	        89.58 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  614360	       229.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  875007	       138.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  541780	       218.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1352764	        86.93 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2633515	        57.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1234482	        94.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2525384	        53.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  636885	       194.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1688745	        74.23 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=1 source=four
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4066130	        28.60 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 3588591	        33.73 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 1965523	        60.93 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 2838366	        42.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1755919	        69.74 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1215484	        90.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3802482	        32.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	12501519	         9.315 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1684474	        71.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 7885570	        15.77 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1445734	        81.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5655319	        20.99 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1385134	        89.37 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  596260	       184.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1299150	        93.65 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  633704	       193.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  810810	       147.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  511626	       231.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1000000	       101.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 1502552	        72.78 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	  948272	       122.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2092983	        56.50 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  701548	       166.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1669902	        70.16 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 source=four
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4347438	        27.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 5946837	        33.30 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2008350	        60.75 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 4206205	        33.33 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1782110	        68.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       102.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3666159	        32.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	13114096	         9.307 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1660534	        74.39 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 7065160	        16.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1428922	        86.00 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 4951652	        21.58 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1375886	        86.71 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  578347	       187.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1243340	        97.17 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  722401	       158.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  762206	       154.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  515619	       228.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1201953	        99.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 1983649	        56.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1000000	       101.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2004886	        73.83 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  705034	       172.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1458140	        72.15 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 source=two
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4241131	        27.66 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 2120064	        59.59 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 1888576	        63.11 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1703886	        73.11 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1729116	        67.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       108.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3824599	        44.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 7102167	        16.54 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1507928	        75.17 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6670758	        18.70 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1459411	        81.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5510580	        22.01 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1411351	        81.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  680690	       226.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1368556	        85.73 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  547122	       239.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  888175	       136.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  519714	       230.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1396120	        97.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2645047	        45.85 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1281668	        91.15 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2305693	        48.30 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  721514	       164.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1806982	        67.66 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 source=striped
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4391702	        27.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1224657	       121.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2052604	        57.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       104.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2708510	        44.75 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       116.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3505840	        32.61 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9098404	        13.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1632208	        70.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6273033	        18.89 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1933664	        62.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 6872835	        16.93 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1580803	        75.33 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  619861	       215.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1479536	        80.78 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  572211	       227.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       107.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  542485	       261.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1450645	        81.83 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3140014	        35.16 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1374631	        86.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3277378	        42.27 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  850083	       127.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2586831	        47.04 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 source=combined
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4586271	        26.75 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1232380	        82.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 1000000	       123.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       111.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2758855	        43.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       119.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3770299	        31.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9218978	        12.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1732870	        70.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6323762	        18.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2550150	        47.74 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 6603352	        17.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1631124	        74.33 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  710181	       197.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1520596	        79.65 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  601818	       228.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       105.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  494760	       218.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1464908	        82.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3287565	        35.71 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1379168	        87.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3316286	        34.91 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  945222	       114.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2672877	        42.13 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 source=lookup
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4653657	        25.74 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1000000	       100.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2126305	        57.29 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       114.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2070492	        57.26 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       149.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3726866	        31.30 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9268616	        12.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1729611	        69.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6562545	        18.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1757611	        67.97 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5039343	        20.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1632775	        75.28 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  600763	       213.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1538690	        77.96 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  566706	       224.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       122.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  522268	       274.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1397743	        82.67 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3065995	        35.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1351582	        86.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2953372	        35.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  933277	       128.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2563230	        45.20 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 source=elapsed
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4602328	        25.75 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1000000	       101.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2028398	        58.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       114.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2394571	        49.85 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       124.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 4056618	        30.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9338823	        12.60 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1772275	        67.77 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6511152	        19.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1891581	        62.72 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5867504	        20.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1622773	        73.84 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  631910	       219.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1522942	        80.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  593154	       222.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       118.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  582358	       294.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1293114	        84.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2884498	        36.29 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1369876	        92.79 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2536104	        43.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  809148	       140.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2362120	        47.90 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 source=5604a00
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4684426	        25.74 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1236384	       105.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2123044	        56.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       115.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 3351030	        35.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1393129	        79.09 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 4023588	        30.18 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9872616	        12.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1796346	        67.18 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6212640	        21.71 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2763156	        42.50 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	16007826	         8.014 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1602477	        77.26 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  589584	       221.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1496920	        82.78 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  569282	       218.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       126.5 ns/op	      32 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  486247	       242.8 ns/op	      32 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1436806	        95.42 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3205645	        36.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1355260	        87.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3147567	        34.47 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  906429	       174.3 ns/op	      32 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2170760	        49.69 ns/op	      32 B/op	       1 allocs/op
+PASS
+# round=2 source=018eadd
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4685836	        25.58 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1000000	       133.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2112864	        56.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       117.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 3269052	        60.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1526733	        81.68 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3469808	        34.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 7928336	        17.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1480880	        74.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6071504	        18.87 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2779935	        43.18 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	15092158	         8.285 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1612728	        74.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  579196	       221.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1501387	        90.11 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  647103	       226.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       110.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  517009	       245.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1427702	        81.85 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3146736	        38.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1321646	        94.33 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2780235	        39.80 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	 1000000	       117.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1000000	       108.2 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 source=74c5b70
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4090048	        25.26 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	22886384	         5.456 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2169927	        55.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	10967542	        10.37 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2216767	        73.92 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1462539	        82.23 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3744139	        37.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	21923530	         5.470 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1810203	        63.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	11118188	        11.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1902418	        61.66 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	11333139	        10.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1000000	       114.0 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  590926	       201.7 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1000000	       126.8 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  591326	       201.7 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  799155	       177.1 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  519264	       237.5 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1000000	       130.0 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2004884	        57.79 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1000000	       130.2 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2174976	        61.86 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  677247	       207.6 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1512372	        75.69 ns/op	      64 B/op	       1 allocs/op
+PASS
+# round=2 source=935be04
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 5808394	        20.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	33291330	         3.496 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2383142	        50.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	13517761	         8.707 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1837674	        66.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       130.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 4001344	        31.69 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	21754729	         4.899 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 2032741	        59.29 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	11821300	        10.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1480752	        79.56 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5073602	        23.00 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1000000	       108.6 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  595878	       208.4 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1000000	       111.7 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  578022	       208.7 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  896078	       135.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  492576	       240.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1000000	       122.2 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2367542	        50.50 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1000000	       132.3 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 1353442	       101.1 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  664113	       157.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2091600	        52.78 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 source=febe4c7
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4667096	        25.73 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1000000	       102.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2116250	        55.65 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       117.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2852790	        42.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       122.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 4012254	        31.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9637940	        12.47 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1783489	        68.40 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 5855800	        18.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2515528	        47.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 6896023	        17.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1619991	        75.01 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  556779	       221.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1505830	        78.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  572450	       224.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       105.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  496816	       238.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1470282	        83.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2805777	        36.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1382402	        87.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3148359	        34.56 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	 1000000	       145.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2706427	        43.53 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 source=938547f
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4393062	        27.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1251168	        96.96 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2145061	        55.87 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       115.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1854776	        64.67 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  908602	       120.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3691804	        33.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9967466	        11.91 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1727004	        69.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 5994342	        18.58 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1541589	        77.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5380180	        22.60 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1630137	        74.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  596692	       223.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1539961	        78.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  589088	       222.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  919129	       134.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  482451	       222.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1428616	        84.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3273519	        33.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1254236	        94.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3163135	        49.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  760294	       152.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2255986	        54.07 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=2 source=e8fa553
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4633360	        25.86 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1000000	       131.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2167495	        56.39 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       107.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	  426054	       300.5 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  293004	       440.7 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 4017783	        32.11 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9150932	        11.85 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1804350	        70.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6474805	        20.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	  306868	       421.4 ns/op	     225 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	  873051	       135.8 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1241552	        89.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  650611	       205.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1466433	        79.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  562005	       230.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  356258	       411.5 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  257402	       458.8 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1440702	        84.68 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3025171	        40.69 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1381440	        88.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3347820	        34.47 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  264494	       473.9 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	  788257	       150.2 ns/op	     208 B/op	       4 allocs/op
+PASS
+# round=2 source=0250a1f
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4680582	        25.74 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1223967	       127.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 1351345	        88.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	  561621	       226.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	  427102	       298.0 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  298720	       403.5 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 4093345	        29.58 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9294669	        12.30 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1000000	       100.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 3132416	        38.25 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	  294610	       434.2 ns/op	     222 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	  642526	       169.6 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1426857	        78.07 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  616002	       189.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1486008	        77.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  598777	       230.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  396442	       384.2 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  252885	       453.1 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1484710	        81.91 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3220438	        33.70 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1393458	        86.03 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3207144	        34.31 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  249988	       467.2 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	  644698	       158.0 ns/op	     208 B/op	       4 allocs/op
+PASS
+# round=3 source=0250a1f
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4659756	        25.93 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1293124	        92.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 1324404	        90.92 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	  495440	       233.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	  436555	       312.4 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  282848	       402.9 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 4050592	        29.85 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9811536	        12.22 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1236882	        98.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 3142714	        36.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	  284478	       399.0 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	  762516	       145.4 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1635582	        73.01 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  561961	       225.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1551553	        84.91 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  571734	       225.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  394039	       355.2 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  268225	       441.2 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1473782	        82.67 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2829537	        39.46 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1227258	        92.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2686218	        46.30 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  257925	       503.2 ns/op	     224 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	  667609	       162.5 ns/op	     208 B/op	       4 allocs/op
+PASS
+# round=3 source=e8fa553
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4438874	        26.56 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1328178	        94.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2071688	        57.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       104.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	  412825	       316.8 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  356342	       378.8 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3073849	        36.16 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 7263866	        17.80 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1000000	       107.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 3994092	        25.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	  281623	       499.9 ns/op	     223 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	  564606	       196.8 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1465777	        83.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  608146	       215.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1390815	        84.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  616886	       209.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  375326	       460.3 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  277750	       392.5 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1343343	        98.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2042469	        62.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1303100	        91.74 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 1894176	        61.29 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  249566	       641.3 ns/op	     208 B/op	       4 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	  340832	       321.1 ns/op	     208 B/op	       4 allocs/op
+PASS
+# round=3 source=938547f
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4304908	        28.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1307156	        94.55 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 1911240	        64.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	  949398	       111.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1462785	        78.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       133.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3197835	        39.03 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 7308345	        17.37 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1343371	        86.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 4529319	        27.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1000000	       103.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 3306562	        38.83 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1221915	        88.87 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  587503	       220.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1000000	       142.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  557707	       243.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  861217	       140.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  546961	       230.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1000000	       114.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	  958753	       104.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1306022	        95.39 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 1416096	        82.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  733588	       161.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1048722	       106.4 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 source=febe4c7
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4398276	        27.48 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1000000	       129.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 1991349	        64.25 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       108.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2235506	        56.38 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  994474	       128.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3267628	        31.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 8028410	        13.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1711014	        70.11 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 5391440	        21.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2390482	        51.17 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5584132	        20.27 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1570603	        75.56 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  576380	       213.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1485595	        80.15 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  607888	       213.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       106.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  529518	       222.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1409318	        84.39 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2969110	        41.82 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1356855	       112.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2377082	        54.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  898762	       135.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2098946	        58.73 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 source=935be04
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 5163464	        22.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	29776984	         4.087 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2224202	        54.03 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	12613376	         9.090 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1760610	        68.94 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  978493	       110.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3595509	        32.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	21288708	         5.445 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1903999	        61.29 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	11052565	        11.31 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1319127	        85.82 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 4148450	        30.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1000000	       127.7 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  368311	       326.9 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	  776091	       170.6 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  341636	       322.1 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  741751	       229.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  417775	       329.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	  848131	       143.0 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	  968131	       117.3 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1000000	       145.5 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	  823869	       125.2 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  703330	       190.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	  856078	       139.3 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 source=74c5b70
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4445466	        25.93 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	21063561	         5.475 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 1832352	        55.92 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 8179285	        14.29 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1884488	        64.16 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1514450	        92.29 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3639662	        35.98 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	14155674	         7.693 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1775809	        69.42 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 8393271	        15.79 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1691667	        72.47 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 7966760	        15.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1000000	       123.1 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  613418	       196.8 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1000000	       126.1 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  568719	       290.6 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  628309	       193.8 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  405296	       364.0 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1000000	       141.0 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 1059820	        97.09 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1000000	       137.3 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 1932004	        62.18 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  657924	       267.7 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1000000	       123.4 ns/op	      64 B/op	       1 allocs/op
+PASS
+# round=3 source=018eadd
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4574775	        26.98 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1298968	       126.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2066569	        56.72 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	  984278	       134.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 3239397	        36.23 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1377877	        81.54 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3824157	        31.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9120763	        13.50 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1808156	        64.72 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6523896	        21.60 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2713701	        44.39 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	12654778	         8.780 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1557420	        76.18 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  597956	       215.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1370012	        87.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  494174	       208.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       114.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  500468	       220.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1361092	        88.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2802516	        39.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1280708	        95.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2825576	        40.16 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  940500	       121.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2417443	        49.87 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 source=5604a00
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4499184	        27.11 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1212495	        91.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2007514	        59.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       112.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 3268622	        37.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1454175	        85.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3868362	        33.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9396866	        12.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1747350	        69.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6581050	        20.77 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2611864	        44.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	14132332	         8.970 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1582239	        75.61 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  609020	       215.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1402995	        81.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  564948	       229.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  970448	       126.8 ns/op	      32 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  506836	       246.9 ns/op	      32 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1409371	        85.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2987988	        34.37 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1245056	        93.12 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2636046	        38.18 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  860112	       153.3 ns/op	      32 B/op	       1 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2141208	        51.24 ns/op	      32 B/op	       1 allocs/op
+PASS
+# round=3 source=elapsed
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4653342	        25.82 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1259940	        95.39 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2131086	        57.25 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	  963693	       114.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2327780	        50.56 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       139.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3728724	        31.94 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9410688	        12.25 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1779817	        67.78 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6591278	        18.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1930648	        65.09 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5597221	        22.16 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1570453	        74.99 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  579849	       217.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1528586	        78.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  564218	       217.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  983035	       119.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  546592	       218.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1398475	        84.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3192433	        34.96 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1376402	        86.96 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 3438511	        36.87 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  886262	       133.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2367166	        48.28 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 source=lookup
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4653642	        25.78 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1000000	       101.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2108275	        56.74 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       100.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2151441	        55.68 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       130.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3925672	        30.98 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 9622773	        12.30 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1777017	        68.48 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 6210885	        18.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1758174	        68.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5636812	        20.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1630574	        76.80 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  611919	       224.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1532942	        78.07 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  566883	       228.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  995884	       117.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  456504	       278.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1462041	        81.50 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 3396642	        32.92 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1388341	        86.12 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2854404	        37.42 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  806067	       141.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 2561563	        46.20 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 source=combined
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4536139	        26.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1000000	       100.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2115298	        57.22 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       110.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2819948	        42.55 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       130.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3663408	        32.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 8943681	        13.91 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1704250	        72.80 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 5729301	        25.48 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 2373090	        51.23 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5808547	        22.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1526914	        80.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  591387	       197.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1479229	        81.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  639630	       214.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	 1000000	       113.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  511190	       229.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1409905	        88.35 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 1401370	        83.79 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1324136	        89.86 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2020513	        70.94 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  898932	       120.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1419804	        87.08 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 source=striped
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4388791	        27.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 1275150	        92.47 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2013118	        59.78 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1000000	       126.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 2674770	        43.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	  917313	       138.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3664891	        58.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 7441386	        15.31 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1662919	        72.12 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 5161734	        23.40 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1738372	        67.31 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5790934	        21.11 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1532150	        76.82 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  589764	       189.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1362981	        83.38 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  528643	       216.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  934335	       112.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  491604	       238.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1414611	        84.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2621334	        57.25 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1323705	        90.26 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 1734594	        67.27 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  942007	       126.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	  899782	       112.1 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 source=two
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4143585	        33.99 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 2329371	        61.79 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 1000000	       108.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 1615561	        78.46 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1410586	        86.77 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 1000000	       107.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3429714	        50.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	 7666587	        15.71 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1536627	        78.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 5030479	        22.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1273418	        89.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 4695416	        28.38 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1434303	        91.82 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  420505	       288.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1364092	       100.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  661885	       236.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  742363	       141.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  569275	       209.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1353598	        88.01 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2854206	        47.67 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1300846	        96.29 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2024530	        52.15 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  727106	       157.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1961694	        87.69 ns/op	       0 B/op	       0 allocs/op
+PASS
+# round=3 source=four
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkCacheBaseline/Get/Keys=1/Default           	 4079545	        28.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/Default-8         	 3975867	        27.53 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge            	 2002032	        64.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/MaxAge-8          	 2842044	        63.16 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime            	 1404219	        72.39 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1/GCTime-8          	 2224456	        59.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default        	 3522672	        34.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/Default-8      	12337693	         8.987 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge         	 1619475	        70.66 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/MaxAge-8       	 8017615	        15.39 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime         	 1482310	        82.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Get/Keys=1024/GCTime-8       	 5796388	        20.01 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default           	 1357588	        88.07 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/Default-8         	  627943	       165.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge            	 1299741	        93.22 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/MaxAge-8          	  643374	       200.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime            	  823232	       146.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1/GCTime-8          	  491248	       237.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default        	 1264982	        96.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/Default-8      	 2183070	        52.96 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge         	 1000000	       100.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/MaxAge-8       	 2215612	        53.82 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime         	  731893	       162.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCacheBaseline/Set/Keys=1024/GCTime-8       	 1672954	        68.45 ns/op	       0 B/op	       0 allocs/op
+PASS

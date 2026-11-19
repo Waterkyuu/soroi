@@ -64,6 +64,17 @@ reference Task targets that are absent from `Taskfile.yml`.
 
 ## Git records for performance experiments
 
+- Maintain the root [HISTORY.md](HISTORY.md) as the chronological record of
+  performance experiments. Append an entry in the same change that records the
+  experiment. Preserve earlier measurements when a method is superseded or
+  reverted, and update its disposition. Include the baseline and candidate
+  revisions, method, outcome, and links to the harness and raw samples.
+- For cache read or write optimizations, record all 24 Get and Set baseline
+  cases defined below in HISTORY.md, with before/after ns/op, B/op, allocs/op
+  and the time change. Record additional workloads such as alternating Set/Get
+  separately and define what one operation measures. For historical backfills
+  and diagnostic controls, identify unavailable or inapplicable measurements
+  and the reason.
 - Commit a record of every performance experiment, including diagnostic controls,
   rejected candidates, reverted changes and unmerged prototypes. If several
   methods are tried, identify each method and its results separately. A results-only
