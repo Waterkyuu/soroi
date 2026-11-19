@@ -62,19 +62,32 @@ reference Task targets that are absent from `Taskfile.yml`.
    rerun the check. If the failure is demonstrably unrelated to the current commit,
    leave unrelated code untouched and report the failure clearly.
 
-## Performance optimization commits
+## Git records for performance experiments
 
-- For every performance optimization, record the measured impact in the Git
-  commit body. Name the benchmark and workload, then give the baseline and
-  optimized values with units and the absolute or percentage change.
-- Run the same workload under the same conditions before and after the change.
-  Identify relevant settings such as worker count and sample count. Report
-  material regressions and state when the measurements show no clear improvement.
+- Commit a record of every performance experiment, including diagnostic controls,
+  rejected candidates, reverted changes and unmerged prototypes. If several
+  methods are tried, identify each method and its results separately. A results-only
+  commit on the experiment branch is sufficient for a discarded prototype.
+- In the commit body, identify the baseline revision, describe what the candidate
+  changed and why, and state the outcome. Record regressions and inconclusive
+  results alongside improvements. If a run fails before producing measurements,
+  record the failure and identify the missing metrics.
+- Benchmark the baseline and candidate under the same conditions. Record the
+  benchmark command, Go version, OS/architecture, CPU, workload, worker count,
+  sample count and summary statistic. For cache experiments, specify the API,
+  key distribution, read/write mix and enabled policies.
+- Give numeric before-and-after results for each measured workload and worker
+  count in the commit body. Include units and the absolute or percentage change.
+  For Go operation benchmarks, use `-benchmem` and report ns/op, B/op and
+  allocs/op, including zeros. Define one operation for batches and mixed workloads.
+- Keep the benchmark harness and raw samples in Git, or reference their existing
+  tracked paths and revisions. The commit body may point to a tracked report
+  for reproduction details and full sample output.
 
-Example commit-body bullet from the GCTime benchmark:
+One result bullet from the GCTime experiment illustrates the numeric format.
 
 ```text
-- BenchmarkAtomicHotKey/Soroi/Get/GCTime (one key, 1 worker, median of 6 samples): 66.08 to 42.90 ns/op, down 35.1%.
+- BenchmarkAtomicHotKey/Soroi/Get/GCTime (one key, 1 worker, median of 6 samples): 66.08 to 42.90 ns/op (-35.1%), 0 to 0 B/op, 0 to 0 allocs/op.
 ```
 
 ## Code organization
