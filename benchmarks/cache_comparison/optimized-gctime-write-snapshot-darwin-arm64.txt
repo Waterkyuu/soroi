@@ -1,0 +1,264 @@
+baseline sample 1
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7239496	        49.55 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	20547358	        17.55 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3423343	       104.9 ns/op	         0.0000018 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1680832	       255.7 ns/op	         0.0000208 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2353896	       154.5 ns/op	         0.0000025 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1448497	       250.3 ns/op	         0.0000200 mallocs/op	       0 B/op	       0 allocs/op
+PASS
+first-get sample 1
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 8496926	        44.69 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	39198606	         8.520 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3344904	       106.0 ns/op	         0.0000018 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1735351	       250.8 ns/op	         0.0000138 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 1965700	       188.4 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1265557	       283.9 ns/op	         0.9900 mallocs/op	      31 B/op	       0 allocs/op
+PASS
+each-set sample 1
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 8268494	        45.03 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	46722148	         8.504 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 2943849	       128.5 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/Set-8             	 1472402	       241.6 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2183898	       176.0 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1320162	       279.5 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+PASS
+baseline sample 2
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7542609	        47.64 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	20571918	        17.29 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3440784	       105.0 ns/op	         0.0000017 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1405555	       250.9 ns/op	         0.0000213 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2337532	       157.1 ns/op	         0.0000026 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1394269	       256.4 ns/op	         0.0000179 mallocs/op	       0 B/op	       0 allocs/op
+PASS
+each-set sample 2
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7839685	        43.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	46713564	         8.893 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 2829028	       136.1 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/Set-8             	 1500108	       241.2 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2170976	       165.0 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1299074	       279.1 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+PASS
+first-get sample 2
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 8177620	        43.61 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	46294563	         8.384 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3308206	       106.7 ns/op	         0.0000018 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1447210	       259.6 ns/op	         0.0000290 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 1841088	       199.4 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1260726	       284.4 ns/op	         0.9920 mallocs/op	      31 B/op	       0 allocs/op
+PASS
+first-get sample 3
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7850641	        44.22 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	43954256	         8.739 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3234288	       106.7 ns/op	         0.0000019 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1740603	       251.0 ns/op	         0.0000201 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 1975518	       199.6 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1237966	       289.7 ns/op	         0.9869 mallocs/op	      31 B/op	       0 allocs/op
+PASS
+baseline sample 3
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7346001	        50.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	16561114	        18.62 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3153930	       112.7 ns/op	         0.0000019 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1306473	       263.5 ns/op	         0.0000260 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2170063	       163.8 ns/op	         0.0000028 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1306116	       271.3 ns/op	         0.0000230 mallocs/op	       0 B/op	       0 allocs/op
+PASS
+each-set sample 3
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 8170196	        48.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	37498902	         9.386 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 2733320	       142.4 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/Set-8             	 1653727	       241.3 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair        	 1971382	       183.4 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1235488	       270.4 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+PASS
+first-get sample 4
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7434470	        45.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	43730008	         9.711 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3341685	       108.8 ns/op	         0.0000018 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1429765	       216.5 ns/op	         0.0000182 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 1967878	       185.3 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1240298	       283.7 ns/op	         0.9909 mallocs/op	      31 B/op	       0 allocs/op
+PASS
+each-set sample 4
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 8251723	        45.38 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	40633965	         8.476 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 2742246	       138.1 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/Set-8             	 1651323	       243.4 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2185050	       165.1 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1243360	       273.2 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+PASS
+baseline sample 4
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7550037	        48.19 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	20581866	        17.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3407574	       104.4 ns/op	         0.0000018 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1652978	       243.9 ns/op	         0.0000139 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2347953	       153.2 ns/op	         0.0000026 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1380322	       258.0 ns/op	         0.0000181 mallocs/op	       0 B/op	       0 allocs/op
+PASS
+each-set sample 5
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 8113696	        43.65 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	47143557	         8.526 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 2904426	       126.7 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/Set-8             	 1812998	       245.1 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2213473	       168.0 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1308387	       275.7 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+PASS
+baseline sample 5
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7446504	        48.71 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	20165431	        17.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3409044	       104.6 ns/op	         0.0000018 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1345822	       251.9 ns/op	         0.0000193 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2353364	       156.5 ns/op	         0.0000025 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1294780	       250.7 ns/op	         0.0000193 mallocs/op	       0 B/op	       0 allocs/op
+PASS
+first-get sample 5
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7999710	        42.79 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	44627637	         9.569 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3219249	       109.5 ns/op	         0.0000019 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1399020	       250.7 ns/op	         0.0000250 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 1966784	       184.3 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1301880	       292.6 ns/op	         0.9901 mallocs/op	      31 B/op	       0 allocs/op
+PASS
+each-set sample 6
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 8138780	        42.90 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	42922082	         7.986 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 2886460	       129.5 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/Set-8             	 1448569	       242.9 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2178928	       166.7 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1278498	       280.5 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+PASS
+first-get sample 6
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 8384263	        43.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	43419266	         8.459 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3375530	       105.4 ns/op	         0.0000018 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1393482	       224.2 ns/op	         0.0000287 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 1985601	       197.1 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1252585	       291.1 ns/op	         0.9897 mallocs/op	      31 B/op	       0 allocs/op
+PASS
+baseline sample 6
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7651482	        49.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	19779132	        18.38 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3274611	       106.3 ns/op	         0.0000018 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1356034	       248.8 ns/op	         0.0000162 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2364360	       152.0 ns/op	         0.0000025 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1375264	       259.0 ns/op	         0.0000269 mallocs/op	       0 B/op	       0 allocs/op
+PASS
+baseline sample 7
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7550143	        48.18 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	20484272	        17.49 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3447976	       104.1 ns/op	         0.0000017 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1399275	       255.0 ns/op	         0.0000250 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2322288	       154.9 ns/op	         0.0000026 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1415049	       252.2 ns/op	         0.0000198 mallocs/op	       0 B/op	       0 allocs/op
+PASS
+first-get sample 7
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 8143591	        42.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	44609438	         8.761 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3376339	       108.4 ns/op	         0.0000018 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1389193	       246.1 ns/op	         0.0000158 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 1879904	       193.5 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1243525	       292.9 ns/op	         0.9899 mallocs/op	      31 B/op	       0 allocs/op
+PASS
+each-set sample 7
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 8338310	        43.32 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	44873092	         8.768 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 2868432	       129.7 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/Set-8             	 1642870	       246.2 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2144062	       177.3 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1379707	       273.7 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+PASS
+each-set sample 8
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7970670	        44.39 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	39377076	        10.21 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 2653056	       136.8 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/Set-8             	 1475520	       245.6 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2060907	       178.1 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1260218	       279.0 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+PASS
+first-get sample 8
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7951978	        43.90 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	42647918	         8.538 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3344744	       107.3 ns/op	         0.0000018 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1494162	       220.0 ns/op	         0.0000134 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 1854411	       187.7 ns/op	         1.000 mallocs/op	      32 B/op	       1 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1246406	       289.9 ns/op	         0.9907 mallocs/op	      31 B/op	       0 allocs/op
+PASS
+baseline sample 8
+goos: darwin
+goarch: arm64
+cpu: Apple M3 Pro
+BenchmarkLazyGet/Get1024           	 7559934	        48.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Get1024-8         	20879904	        17.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set               	 3361090	       109.2 ns/op	         0.0000018 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/Set-8             	 1451826	       251.5 ns/op	         0.0000179 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair        	 2213107	       156.5 ns/op	         0.0000027 mallocs/op	       0 B/op	       0 allocs/op
+BenchmarkLazyGet/SetGetPair-8      	 1394013	       260.3 ns/op	         0.0000158 mallocs/op	       0 B/op	       0 allocs/op
+PASS
