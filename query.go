@@ -321,48 +321,14 @@ func (c *clientBucket) getValue(key any, typ reflect.Type) (any, bool) {
 		}
 	}
 
-	if c.concurrentReads() {
-		c.mu.RLock()
-		defer c.mu.RUnlock()
-	} else {
-		if c.owner.concurrentClock && c.owner.options.MaxEntries <= 0 {
-			if value, ok, done := c.getValueReadOnly(key, typ); done {
-				return value, ok
-			}
-		}
-
-		// A concurrent write may replace the entry or its idle task after RUnlock.
-		// Revalidate the current entry before changing its age or retention state.
-		c.mu.Lock()
-		defer c.mu.Unlock()
-	}
-
+	// Revalidate the current entry before changing its age or retention state.
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	cached, err := c.readEntryLocked(key, typ)
 	if err != nil || cached == nil || !cached.hasData {
 		return nil, false
 	}
 	return cached.value, true
-}
-
-// getValueReadOnly renews existing idle tasks and returns done=false when age
-// cleanup or a new idle task needs an exclusive lock.
-func (c *clientBucket) getValueReadOnly(key any, typ reflect.Type) (value any, ok, done bool) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	cached, err := c.checkedEntryLocked(key, typ)
-	if err != nil || cached == nil {
-		return nil, false, true
-	}
-	if cached.hasData && c.overMaxAgeLocked(cached.updatedAt) {
-		return nil, false, false
-	}
-	if !c.touchGCReadLocked(key, cached) {
-		return nil, false, false
-	}
-	if !cached.hasData {
-		return nil, false, true
-	}
-	return cached.value, true, true
 }
 
 // getSnapshot reads shared state using one consumer's freshness without changing another consumer's policy.

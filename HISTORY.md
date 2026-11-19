@@ -1,7 +1,8 @@
 # Performance history
 
-The current cache uses a bucket read lock. With the default clock, a live MaxAge read can share that lock. For GCTime, each idle entry owns its cleanup task. A hit records the latest elapsed time and reuses the timer. The two later GCTime snapshot experiments were retired. Their source, read gains and write costs are recorded here.
+The current branch publishes one immutable value record per eligible key on each overwrite. With the default clock and no capacity limit, value hits can bypass bucket reader registration. MaxAge checks the record's installation time. GCTime renews the owning entry's exact idle deadline using the existing timer. See the landed implementation below for the read gains and write costs.
 
+- [Landed single-key snapshots with exact GCTime](#landed-single-key-snapshots-with-exact-gctime)
 - [Default Get reader counter and publication trials](#default-get-reader-counter-and-publication-trials)
 - [Branch baseline at `443a17e` and Otter v2.4.0](#2026-11-19-branch-baseline-and-otter-comparison)
 - [Earlier cache and concurrency work](#earlier-cache-and-concurrency-work)
@@ -37,7 +38,7 @@ These runs predate the public value-only Get in `0250a1f`. The old Get returned 
 | `938547f` | GCTime hits advance an exact per-key timestamp. The existing timer checks the latest deadline on wakeup. | Retained. |
 | `elapsed`, `lookup`, `combined`, `striped` | Isolate direct monotonic elapsed time, move the cleanup task onto the entry, combine both, then split timestamp writes across four padded slots. | Prototypes based on `938547f`. The four-slot version used extra memory per timer. |
 | `two`, `four` | Split each bucket's reader registration across two or four padded counters. Writers acquire every shard. | Prototypes based on `938547f`. Shard selection used private Go runtime functions. |
-| `935be04` → `74c5b70` | Each eligible Set replaces one key's immutable value record. The first version handles default and MaxAge reads. The second extends the fast path to exact GCTime renewal. | Separate experimental branch, based on `938547f`. |
+| `935be04` → `74c5b70` | Each eligible Set replaces one key's immutable value record. The first version handles default and MaxAge reads. The second extends the fast path to exact GCTime renewal. | Originally tested on `938547f`. Integrated on the optimized GCTime baseline in the [landed comparison](#landed-single-key-snapshots-with-exact-gctime). |
 | `febe4c7` | Store the cleanup task on the entry and use `time.Since` with the default clock. This version puts the task pointer at the end of the entry. | Retained. Its production Go source matches `527ea6d`. |
 | `018eadd` | After a write, the first eligible Get builds a snapshot. Later Gets reuse it. Another Set invalidates it. | Retired in `22c2300`. |
 | `5604a00` | Every eligible Set creates a 32-byte snapshot. The next Get can immediately use it. | Retired in `a78b555`. Both later snapshot trials start from optimized GCTime. |
@@ -613,3 +614,57 @@ Export `65f9af9` separately for each build. Extract the archived inputs into a s
 For the control experiment compile the Soroi binaries from the root of each export with `go test -c`, and Otter from its comparison module. Run each binary with `-test.run='^$' -test.bench='^Benchmark(Cache|Otter)Baseline$/^Get$/^Keys=1$/^Default$' -test.cpu=1,8 -test.benchtime=300ms -test.benchmem -test.count=1`. The raw file lists the exact round order.
 
 For the snapshot experiment copy the archived `plain_pair_test.go` to each stock, eager and reuse export before compiling the root test binary. It comes from `e24452d:lazy_read_benchmark_test.go` with default options. Run `-test.run='^$' -test.bench='^Benchmark(CacheBaseline|LazyGet)$' -test.cpu=1,8 -test.benchtime=100ms -test.benchmem -test.count=1` in the order listed in the snapshot raw file. The additional reusable-slot lifecycle tests are included in its patch and were run separately with `go test -race ./...`.
+
+## Landed single-key snapshots with exact GCTime
+
+On 2026-11-20 the feature branch adopted the per-key publication scheme from `935be04` and `74c5b70`. The before build is `7bc81ac`. The after build includes `4f86e40` (default and MaxAge) and the exact GCTime implementation in the commit introducing this section. This port keeps the idle task on its entry and uses direct monotonic elapsed time on the default clock. A collector atomically retires the idle task before removing its key. A reader racing an overwrite checks the result again after renewal. Capacity-limited clients and supplied clocks continue through the locked path.
+
+Go 1.27.1, macOS 14.6/arm64, Apple M3 Pro. Both Soroi builds use untyped Get. Each cell reports the median ns/op / B/op / allocs/op from four 150 ms samples. A negative time change means that the landed code completed the workload faster than the before build. All three binaries ran sequentially with alternating order, using one shared hot key or 1,024 naturally hashed keys distributed across 1 or 8 workers. Otter v2.4.0 uses its public GetIfPresent and Set with the corresponding default, one-hour write expiry and one-hour access expiry policies. Otter access expiry allows up to a second of tolerance when updating long deadlines.
+
+| Operation | Keys | Workers | Policy | Before | Landed | Time change | Otter |
+| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: |
+| Get | 1,024 | 1 | Default | 29.92 / 0 / 0 | 30.47 / 0 / 0 | +1.8% | 19.015 / 0 / 0 |
+| Get | 1,024 | 8 | Default | 12.39 / 0 / 0 | 4.9555 / 0 / 0 | -60.0% | 3.218 / 0 / 0 |
+| Get | 1,024 | 1 | MaxAge | 67.205 / 0 / 0 | 62.33 / 0 / 0 | -7.3% | 32.165 / 0 / 0 |
+| Get | 1,024 | 8 | MaxAge | 18.585 / 0 / 0 | 10.77 / 0 / 0 | -42.1% | 5.2715 / 0 / 0 |
+| Get | 1,024 | 1 | GCTime | 49.17 / 0 / 0 | 46.985 / 0 / 0 | -4.4% | 46.065 / 0 / 0 |
+| Get | 1,024 | 8 | GCTime | 18.575 / 0 / 0 | 8.078 / 0 / 0 | -56.5% | 7.7325 / 0 / 0 |
+| Get | 1 | 1 | Default | 24.915 / 0 / 0 | 19.82 / 0 / 0 | -20.4% | 18.405 / 0 / 0 |
+| Get | 1 | 8 | Default | 97.96 / 0 / 0 | 3.397 / 0 / 0 | -96.5% | 3.1515 / 0 / 0 |
+| Get | 1 | 1 | MaxAge | 55.395 / 0 / 0 | 51.215 / 0 / 0 | -7.5% | 30.39 / 0 / 0 |
+| Get | 1 | 8 | MaxAge | 114.75 / 0 / 0 | 8.8085 / 0 / 0 | -92.3% | 5.1105 / 0 / 0 |
+| Get | 1 | 1 | GCTime | 42.125 / 0 / 0 | 36.375 / 0 / 0 | -13.6% | 44.28 / 0 / 0 |
+| Get | 1 | 8 | GCTime | 125.9 / 0 / 0 | 78.03 / 0 / 0 | -38.0% | 7.5865 / 0 / 0 |
+| Set | 1,024 | 1 | Default | 82.53 / 0 / 0 | 127.4 / 64 / 1 | +54.4% | 80.265 / 24 / 1 |
+| Set | 1,024 | 8 | Default | 34.94 / 0 / 0 | 50.105 / 64 / 1 | +43.4% | 23.995 / 24 / 1 |
+| Set | 1,024 | 1 | MaxAge | 87.565 / 0 / 0 | 129.15 / 64 / 1 | +47.5% | 92.025 / 0 / 0 |
+| Set | 1,024 | 8 | MaxAge | 35.48 / 0 / 0 | 50.155 / 64 / 1 | +41.4% | 27.695 / 0 / 0 |
+| Set | 1,024 | 1 | GCTime | 113.5 / 0 / 0 | 166.75 / 64 / 1 | +46.9% | 92.85 / 0 / 0 |
+| Set | 1,024 | 8 | GCTime | 43.29 / 0 / 0 | 68.625 / 64 / 1 | +58.5% | 29.855 / 0 / 0 |
+| Set | 1 | 1 | Default | 74.935 / 0 / 0 | 112.2 / 64 / 1 | +49.7% | 78.19 / 24 / 1 |
+| Set | 1 | 8 | Default | 225.9 / 0 / 0 | 217.65 / 64 / 1 | -3.7% | 191.05 / 24 / 1 |
+| Set | 1 | 1 | MaxAge | 79.095 / 0 / 0 | 116.8 / 64 / 1 | +47.7% | 89.975 / 0 / 0 |
+| Set | 1 | 8 | MaxAge | 227.2 / 0 / 0 | 239.6 / 64 / 1 | +5.5% | 224.3 / 0 / 0 |
+| Set | 1 | 1 | GCTime | 104.7 / 0 / 0 | 146.35 / 64 / 1 | +39.8% | 89.725 / 0 / 0 |
+| Set | 1 | 8 | GCTime | 248.95 / 0 / 0 | 205.35 / 64 / 1 | -17.5% | 225.15 / 0 / 0 |
+
+### Cost of reading immediately after an overwrite
+
+One operation is a Set followed by an untyped Get on the same key. At eight workers, pairs can interleave. Both values (42 and 43) and the key are prepared outside the timed loop. Units match the matrix above, per complete pair.
+
+| Policy | Workers | Before | Landed | Time change |
+| --- | ---: | ---: | ---: | ---: |
+| Default | 1 | 108.55 / 0 / 0 | 141.05 / 64 / 1 | +29.9% |
+| Default | 8 | 195.65 / 0 / 0 | 290.25 / 64 / 1 | +48.4% |
+| GCTime | 1 | 152.25 / 0 / 0 | 181.15 / 64 / 1 | +19.0% |
+| GCTime | 8 | 253.3 / 0 / 0 | 309.45 / 64 / 1 | +22.2% |
+
+For future write-side comparisons, use the **Landed** Set and pair columns as the reference. Every measured overwrite in this build allocated one 64-byte immutable record. Snapshot readers retain a coherent view of the old record even when a writer replaces it.
+
+[Raw samples and round order](benchmarks/cache_comparison/landed-single-key-snapshots-darwin-arm64.txt) · [Soroi harness](cache_baseline_benchmark_test.go) · [Otter harness](benchmarks/cache_comparison/otter_baseline_benchmark_test.go)
+
+### Reproduce the landed comparison
+
+Export the before and after revisions into separate directories. Identify the exact after revision with `git log -1 --diff-filter=A --format=%H -- benchmarks/cache_comparison/landed-single-key-snapshots-darwin-arm64.txt`. In each export, add `e24452d:lazy_read_benchmark_test.go` as `idle_pair_test.go`. Also extract `plain_pair_test.go` from `benchmarks/cache_comparison/default-publication-inputs.tar.gz` and replace every `Lazy` with `Default` and `lazy` with `default` in that file so both policy harnesses compile together. Build each Soroi binary with `go test -c` at its export root, and the Otter binary in the baseline's comparison module.
+
+Run the binaries using the round labels in the raw file. Each invocation uses `-test.run='^$' -test.cpu=1,8 -test.benchtime=150ms -test.count=1 -test.benchmem`. Select `-test.bench='^BenchmarkCacheBaseline$'` and then `-test.bench='^Benchmark(DefaultGet|LazyGet)$/^SetGetPair$'` for Soroi. Select `-test.bench='^BenchmarkOtterBaseline$'` for Otter.
