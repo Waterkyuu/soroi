@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+// retiredGCOffset prevents detached tasks from accepting further lock-free renewals.
+const retiredGCOffset int64 = -1
+
 // gcTask identifies one inactive key's retention deadline and owns its scheduled cleanup.
 type gcTask struct {
 	// startedAt retains the clock reading from the first idle access covered by this task.
@@ -12,17 +15,25 @@ type gcTask struct {
 	// accessOffset records the latest access as nanoseconds since startedAt.
 	// Offsets preserve the monotonic component of the default clock.
 	accessOffset atomic.Int64
+	// snapshot holds the current value published under the bucket write lock.
+	snapshot atomic.Pointer[readSnapshot]
+	// indexed records read-index membership under the bucket write lock.
+	indexed bool
 	// stop releases the current timer when the task is detached.
 	stop func()
 }
 
 // recordAccess renews the idle window. A later reader can finish first, so
 // publication only moves the latest access forward.
-func (task *gcTask) recordAccess(elapsed time.Duration) {
+func (task *gcTask) recordAccess(elapsed time.Duration) bool {
 	offset := int64(elapsed)
-	for previous := task.accessOffset.Load(); offset > previous; previous = task.accessOffset.Load() {
-		if task.accessOffset.CompareAndSwap(previous, offset) {
-			return
+	for {
+		previous := task.accessOffset.Load()
+		if previous == retiredGCOffset {
+			return false
+		}
+		if offset <= previous || task.accessOffset.CompareAndSwap(previous, offset) {
+			return true
 		}
 	}
 }
@@ -65,7 +76,7 @@ func (c *clientBucket) touchGCLocked(key any) {
 	}
 	cached := c.entries[key]
 	if c.owner.closed {
-		cached.stopIdleTaskLocked()
+		c.stopIdleTaskLocked(key, cached)
 		return
 	}
 	unowned := len(c.observers[key]) == 0 && c.pending[key] == nil
@@ -78,7 +89,7 @@ func (c *clientBucket) touchGCLocked(key any) {
 		return
 	}
 	if options.GCTime <= 0 || cached == nil || !unowned {
-		cached.stopIdleTaskLocked()
+		c.stopIdleTaskLocked(key, cached)
 		return
 	}
 	if task := cached.gcTask; task != nil && c.owner.concurrentClock {
@@ -88,9 +99,10 @@ func (c *clientBucket) touchGCLocked(key any) {
 	}
 
 	// Supplied clocks may move backwards. Preserve their serialized timer resets.
-	cached.stopIdleTaskLocked()
+	c.stopIdleTaskLocked(key, cached)
 	task := &gcTask{startedAt: options.Clock()}
 	cached.gcTask = task
+	c.publishWriteLocked(key, cached)
 	task.stop = c.owner.gcAfterFunc(options.GCTime, func() { c.collectGC(key, task) })
 }
 
@@ -104,13 +116,20 @@ func (c *clientBucket) collectGC(key any, task *gcTask) {
 	if cached == nil || cached.gcTask != task {
 		return
 	}
-	lastAccess := task.startedAt.Add(time.Duration(task.accessOffset.Load()))
-	deadline := lastAccess.Add(c.owner.options.GCTime)
-	if remaining := deadline.Sub(c.owner.options.Clock()); remaining > 0 {
-		task.stop = c.owner.gcAfterFunc(remaining, func() { c.collectGC(key, task) })
-		return
+	for {
+		offset := task.accessOffset.Load()
+		lastAccess := task.startedAt.Add(time.Duration(offset))
+		deadline := lastAccess.Add(c.owner.options.GCTime)
+		if remaining := deadline.Sub(c.owner.options.Clock()); remaining > 0 {
+			task.stop = c.owner.gcAfterFunc(remaining, func() { c.collectGC(key, task) })
+			return
+		}
+		// A reader can renew while this callback holds the bucket write lock.
+		if task.accessOffset.CompareAndSwap(offset, retiredGCOffset) {
+			break
+		}
 	}
-	cached.gcTask = nil
+	c.stopIdleTaskLocked(key, cached)
 	if len(c.observers[key]) == 0 && c.pending[key] == nil {
 		c.stats.GCCollections++
 		c.discardLocked(key, ReasonInactive)
@@ -120,14 +139,18 @@ func (c *clientBucket) collectGC(key any, task *gcTask) {
 // stopGCLocked detaches a key's cleanup before stopping its timer.
 func (c *clientBucket) stopGCLocked(key any) {
 	if c.owner.options.GCTime > 0 {
-		c.entries[key].stopIdleTaskLocked()
+		c.stopIdleTaskLocked(key, c.entries[key])
 	}
 }
 
 // stopIdleTaskLocked detaches a record's timer while holding its bucket exclusively.
-func (cached *entry) stopIdleTaskLocked() {
+func (c *clientBucket) stopIdleTaskLocked(key any, cached *entry) {
 	if cached != nil && cached.gcTask != nil {
 		task := cached.gcTask
+		task.accessOffset.Store(retiredGCOffset)
+		if task.indexed {
+			c.readTasks.Delete(key)
+		}
 		cached.gcTask = nil
 		task.stop()
 	}
@@ -136,8 +159,8 @@ func (cached *entry) stopIdleTaskLocked() {
 // clearGCLocked stops entry timers before their storage is cleared.
 func (c *clientBucket) clearGCLocked() {
 	if c.owner.options.GCTime > 0 {
-		for _, cached := range c.entries {
-			cached.stopIdleTaskLocked()
+		for key, cached := range c.entries {
+			c.stopIdleTaskLocked(key, cached)
 		}
 	}
 }
